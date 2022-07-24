@@ -2,7 +2,6 @@ plugins {
     id("com.android.application")
     kotlin("android")
     kotlin("plugin.serialization")
-    id(Plugins.Ids.AndroidX.navigation)
 }
 
 android {
@@ -14,9 +13,8 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.appCompat)
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.material)
-    implementation(libs.androidx.navigation.fragmentKtx)
-    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.serialization)
     implementation(project(":kotlin-kvs"))
 }

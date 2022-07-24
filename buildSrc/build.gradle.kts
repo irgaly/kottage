@@ -6,6 +6,6 @@ repositories {
     gradlePluginPortal()
 }
 dependencies {
-    implementation("com.android.tools.build:gradle:7.1.0-alpha02")
-    implementation("org.jetbrains.kotlin.kapt:org.jetbrains.kotlin.kapt.gradle.plugin:1.5.20")
+    implementation("com.android.tools.build:gradle:7.2.1")
+    implementation("org.jetbrains.kotlin.kapt:org.jetbrains.kotlin.kapt.gradle.plugin:1.6.21")
 }

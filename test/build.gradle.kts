@@ -7,12 +7,10 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api(libs.bundles.commonTestDependencies)
             }
         }
         val jvmMain by getting {
             dependencies {
-                api(libs.bundles.jvmTestDependencies)
             }
         }
     }
