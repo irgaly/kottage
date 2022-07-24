@@ -18,7 +18,7 @@ test-kotest-assertions = { module = "io.kotest:kotest-assertions-core", version.
 test-kotest-engine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
 test-mockk = { module = "io.mockk:mockk", version = "1.12.4" }
 klock = { module = "com.soywiz.korlibs.klock:klock", version = "2.7.0" }
-kodein-di = { module = "org.kodein.di:kodein-di", version = "7.12.0" }
+kodein-di = { module = "org.kodein.di:kodein-di", version = "7.14.0" }
 
 [bundles]
 test-common = [
