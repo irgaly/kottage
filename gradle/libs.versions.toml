@@ -1,7 +1,12 @@
 [versions]
+kkvs = "0.0.1"
 kotlin = "1.7.10"
 kotlin-coroutines = "1.6.1"
 kotest = "5.3.0"
+gradle-android = "7.2.1"
+gradle-android-compile-sdk = "30"
+gradle-android-target-sdk = "30"
+gradle-android-min-sdk = "16"
 
 [libraries]
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
@@ -19,6 +24,7 @@ test-kotest-engine = { module = "io.kotest:kotest-framework-engine", version.ref
 test-mockk = { module = "io.mockk:mockk", version = "1.12.4" }
 klock = { module = "com.soywiz.korlibs.klock:klock", version = "2.7.0" }
 kodein-di = { module = "org.kodein.di:kodein-di", version = "7.14.0" }
+gradle-android = { module = "com.android.tools.build:gradle", version.ref = "gradle-android" }
 
 [bundles]
 test-common = [

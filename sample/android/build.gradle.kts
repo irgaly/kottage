@@ -1,14 +1,12 @@
 plugins {
-    id("com.android.application")
-    kotlin("android")
+    id("build-logic.android.application")
     kotlin("plugin.serialization")
 }
 
 android {
-    applyCommon(project)
     defaultConfig {
-        applicationId = Packages.Sample.name
-        versionName = Versions.versionName
+        applicationId = "net.irgaly.kkvs.sample"
+        versionName = libs.versions.kkvs.get()
     }
 }
 

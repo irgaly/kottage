@@ -3,6 +3,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     `kotlin-dsl` apply false
     kotlin("multiplatform") apply false
+    id("com.android.application") apply false
+    id("build-logic.dependency-graph")
 }
 
 subprojects {
@@ -14,5 +16,14 @@ subprojects {
     }
     tasks.withType<Test> {
         useJUnitPlatform()
+    }
+}
+
+val projectDependencyGraph by tasks.getting {
+    doLast {
+        copy {
+            from(rootProject.buildDir.resolve("reports/dependency-graph/project.dot.png"))
+            into(rootProject.projectDir)
+        }
     }
 }

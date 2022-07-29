@@ -1,9 +1,7 @@
 plugins {
     kotlin("multiplatform")
-    id("com.android.library")
+    id("build-logic.android.library")
 }
-
-applyCommon(android)
 
 kotlin {
     android()

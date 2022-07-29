@@ -1,14 +1,15 @@
+package net.irgaly.buildlogic
+
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.tasks.TaskAction
 import java.util.*
-import kotlin.collections.LinkedHashMap
-import kotlin.collections.LinkedHashSet
 
 @Suppress("unused")
 open class ProjectDependencyGraphTask : DefaultTask() {
-    @TaskAction fun run() {
+    @TaskAction
+    fun run() {
         val dot = project.rootProject.buildDir.resolve("reports/dependency-graph/project.dot")
         dot.parentFile.mkdirs()
         dot.delete()

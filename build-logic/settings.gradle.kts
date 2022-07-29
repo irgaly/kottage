@@ -6,9 +6,6 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
     }
-    plugins {
-        kotlin("jvm") version "1.6.21"
-    }
 }
 dependencyResolutionManagement {
     repositories {
@@ -21,4 +18,4 @@ dependencyResolutionManagement {
         }
     }
 }
-rootProject.name = "plugin"
+rootProject.name = "build-logic"

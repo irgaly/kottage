@@ -28,3 +28,4 @@ include(
     ":test:android",
     ":test"
 )
+includeBuild("build-logic")
