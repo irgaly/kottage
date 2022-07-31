@@ -3,6 +3,9 @@ plugins {
     kotlin("plugin.serialization")
     id(libs.plugins.buildlogic.android.library.get().pluginId)
     alias(libs.plugins.sqldelight)
+    id("maven-publish")
+    id("signing")
+    alias(libs.plugins.dokka)
 }
 
 sqldelight {
@@ -73,6 +76,12 @@ kotlin {
         val iosMain by getting {
             dependsOn(darwinMain)
         }
+        val watchosMain by getting {
+            dependsOn(iosMain)
+        }
+        val tvosMain by getting {
+            dependsOn(iosMain)
+        }
         val iosSimulatorArm64Main by getting {
             dependsOn(iosMain)
         }
@@ -91,3 +100,49 @@ kotlin {
     }
 }
 
+val dokkaHtml by tasks.getting(org.jetbrains.dokka.gradle.DokkaTask::class)
+val javadocJar by tasks.registering(Jar::class) {
+    dependsOn(dokkaHtml)
+    from(dokkaHtml.outputDirectory)
+    archiveClassifier.set("javadoc")
+}
+
+signing {
+    useInMemoryPgpKeys(System.getenv("SIGNING_PGP_KEY"), System.getenv("SIGNING_PGP_PASSWORD"))
+    //sign(publishing.publications)
+}
+
+group = "io.github.irgaly.kkvs"
+version = libs.versions.kkvs.get()
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenCentral") {
+            artifact(javadocJar)
+            artifactId = "kotlin-kvs"
+            pom {
+                name.set(artifactId)
+                description.set("")
+                url.set("https://github.com/irgaly/kotlin-kvs")
+                developers {
+                    developer {
+                        id.set("irgaly")
+                        name.set("irgaly")
+                        email.set("irgaly@gmail.com")
+                    }
+                }
+                licenses {
+                    license {
+                        name.set("The Apache License, Version 2.0")
+                        url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                    }
+                }
+                scm {
+                    connection.set("git@github.com:irgaly/kotlin-kvs.git")
+                    developerConnection.set("git@github.com:irgaly/kotlin-kvs.git")
+                    url.set("https://github.com/irgaly/kotlin-kvs")
+                }
+            }
+        }
+    }
+}
