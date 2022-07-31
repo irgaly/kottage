@@ -2,7 +2,7 @@
 kkvs = "0.0.1"
 kotlin = "1.7.10"
 kotlin-coroutines = "1.6.1"
-kotest = "5.3.0"
+kotest = "5.4.1"
 gradle-android = "7.4.0-alpha08"
 gradle-android-compile-sdk = "30"
 gradle-android-target-sdk = "30"
