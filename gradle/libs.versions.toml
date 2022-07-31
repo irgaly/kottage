@@ -9,6 +9,7 @@ gradle-android-target-sdk = "30"
 gradle-android-min-sdk = "16"
 
 [libraries]
+gradle-android = { module = "com.android.tools.build:gradle", version.ref = "gradle-android" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlin-coroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlin-coroutines" }
@@ -24,7 +25,7 @@ test-kotest-engine = { module = "io.kotest:kotest-framework-engine", version.ref
 test-mockk = { module = "io.mockk:mockk", version = "1.12.4" }
 klock = { module = "com.soywiz.korlibs.klock:klock", version = "2.7.0" }
 kodein-di = { module = "org.kodein.di:kodein-di", version = "7.14.0" }
-gradle-android = { module = "com.android.tools.build:gradle", version.ref = "gradle-android" }
+napier = { module = "io.github.aakira:napier", version = "2.6.1" }
 
 [bundles]
 test-common = [
@@ -35,3 +36,5 @@ test-common = [
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization" }
 kotest-multiplatform = { id = "io.kotest.multiplatform" }
 compose = { id = "org.jetbrains.compose", version = "1.1.0" }
+sqldelight = { id = "com.squareup.sqldelight", version = "1.5.3" }
+buildlogic-android-library = { id = "build-logic.android.library" }

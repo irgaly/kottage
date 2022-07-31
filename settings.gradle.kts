@@ -25,7 +25,6 @@ rootProject.name = "kkvs"
 include(
     ":kotlin-kvs",
     ":sample:android",
-    ":test:android",
     ":test"
 )
 includeBuild("build-logic")

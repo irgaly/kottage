@@ -2,7 +2,20 @@
 
 Kotlin Simple Cache Storage for Kotlin Multiplatform
 
+調べること:
+
+* SQLDelight のマイグレーションの方法
+* 以下のそれぞれの、アプリ保存ディレクトリ、キャッシュディレクトリの取得方法:
+  * Android
+  * iOS
+  * Linux
+  * macOS
+  * Windows
+* Kotlin MPP ライブラリ maven publish
+
 以下は設計メモ:
+
+* ログはアプリ側からDIする
 
 ---
 
@@ -34,6 +47,7 @@ Kotlin Simple Cache Storage for Kotlin Multiplatform
 // Create Instance
 val kkvs = Kkvs("kkvs-name") // SQLite ファイル名
 val storage: KkvsStorage = kkvs.storage("storage-name", kkvsStorage {
+  // kkvs.cache() だとキャッシュ専用のストレージを得る
   strategy = KkvsLruStrategy(
     maxEntryCount = 1024 // counts
   )

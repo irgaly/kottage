@@ -13,7 +13,7 @@ gradlePlugin {
             implementationClass = "net.irgaly.buildlogic.AndroidApplicationPlugin"
         }
         register("android.library") {
-            id = "build-logic.android.library"
+            id = libs.plugins.buildlogic.android.library.get().pluginId
             implementationClass = "net.irgaly.buildlogic.AndroidLibraryPlugin"
         }
         register("dependency-graph") {

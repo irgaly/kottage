@@ -31,6 +31,7 @@ fun Project.configureAndroidLibrary() {
         }
         sourceSets.configureEach {
             setRoot("src/android/$name")
+            java.srcDirs("src/android/$name/kotlin")
         }
     }
 }

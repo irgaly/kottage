@@ -1,0 +1,8 @@
+CREATE TABLE item_event (
+  created_at INTEGER,
+  type TEXT NOT NULL,
+  item_key TEXT NOT NULL,
+  event TEXT NOT NULL
+);
+CREATE INDEX item_event_created_at ON item_event(created_at);
+CREATE INDEX item_event_type ON item_event(type);
