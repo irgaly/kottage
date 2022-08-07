@@ -4,6 +4,7 @@ plugins {
 }
 
 android {
+    namespace = "net.irgaly.kkvs.sample"
     defaultConfig {
         applicationId = "net.irgaly.kkvs.sample"
         versionName = libs.versions.kkvs.get()

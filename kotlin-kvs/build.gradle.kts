@@ -14,6 +14,10 @@ sqldelight {
     }
 }
 
+android {
+    namespace = "net.irgaly.kkvs"
+}
+
 kotlin {
     // Android AAR
     android {
@@ -47,7 +51,7 @@ kotlin {
     // Linux
     linuxX64() // Linux on x86_64 platforms
     // Windows
-    //mingwX64() // 64-bit Microsoft Windows
+    mingwX64() // 64-bit Microsoft Windows
     sourceSets {
         commonMain {
             dependencies {
@@ -55,10 +59,14 @@ kotlin {
         }
         commonTest {
             dependencies {
-                api(project(":test"))
             }
         }
         val jvmMain by getting {
+        }
+        val jvmTest by getting {
+            dependencies {
+                api(projects.test)
+            }
         }
         val jsMain by getting {
         }

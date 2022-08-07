@@ -4,8 +4,8 @@ kotlin = "1.7.10"
 kotlin-coroutines = "1.6.1"
 kotest = "5.4.1"
 gradle-android = "7.4.0-alpha09"
-gradle-android-compile-sdk = "30"
-gradle-android-target-sdk = "30"
+gradle-android-compile-sdk = "33"
+gradle-android-target-sdk = "33"
 gradle-android-min-sdk = "16"
 
 [libraries]
