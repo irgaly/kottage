@@ -124,32 +124,29 @@ group = "io.github.irgaly.kkvs"
 version = libs.versions.kkvs.get()
 
 publishing {
-    publications {
-        create<MavenPublication>("mavenCentral") {
-            artifact(javadocJar)
-            artifactId = "kotlin-kvs"
-            pom {
-                name.set(artifactId)
-                description.set("")
+    publications.withType<MavenPublication> {
+        artifact(javadocJar)
+        pom {
+            name.set(artifactId)
+            description.set("")
+            url.set("https://github.com/irgaly/kotlin-kvs")
+            developers {
+                developer {
+                    id.set("irgaly")
+                    name.set("irgaly")
+                    email.set("irgaly@gmail.com")
+                }
+            }
+            licenses {
+                license {
+                    name.set("The Apache License, Version 2.0")
+                    url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                }
+            }
+            scm {
+                connection.set("git@github.com:irgaly/kotlin-kvs.git")
+                developerConnection.set("git@github.com:irgaly/kotlin-kvs.git")
                 url.set("https://github.com/irgaly/kotlin-kvs")
-                developers {
-                    developer {
-                        id.set("irgaly")
-                        name.set("irgaly")
-                        email.set("irgaly@gmail.com")
-                    }
-                }
-                licenses {
-                    license {
-                        name.set("The Apache License, Version 2.0")
-                        url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
-                    }
-                }
-                scm {
-                    connection.set("git@github.com:irgaly/kotlin-kvs.git")
-                    developerConnection.set("git@github.com:irgaly/kotlin-kvs.git")
-                    url.set("https://github.com/irgaly/kotlin-kvs")
-                }
             }
         }
     }
