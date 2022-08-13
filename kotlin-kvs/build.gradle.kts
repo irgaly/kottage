@@ -9,7 +9,7 @@ plugins {
 }
 
 sqldelight {
-    database("SqlDelight") {
+    database("Database") {
         packageName = "net.irgaly.kkvs"
     }
 }
@@ -61,7 +61,15 @@ kotlin {
             dependencies {
             }
         }
+        val androidMain by getting {
+            dependencies {
+                implementation(libs.sqldelight.driver.android)
+            }
+        }
         val jvmMain by getting {
+            dependencies {
+                implementation(libs.sqldelight.driver.jvm)
+            }
         }
         val jvmTest by getting {
             dependencies {
@@ -69,14 +77,24 @@ kotlin {
             }
         }
         val jsMain by getting {
+            dependencies {
+                implementation(libs.sqldelight.driver.js)
+                implementation(libs.kotlinx.coroutines.js)
+            }
+        }
+        val nativeMain by creating {
+            dependsOn(commonMain.get())
+            dependencies {
+                implementation(libs.sqldelight.driver.native)
+            }
         }
         val darwinMain by creating {
             // ios + macOS
-            dependsOn(commonMain.get())
+            dependsOn(nativeMain)
         }
         val linuxMain by creating {
             // Linux
-            dependsOn(commonMain.get())
+            dependsOn(nativeMain)
         }
         val linuxX64Main by getting {
             dependsOn(linuxMain)
@@ -104,6 +122,9 @@ kotlin {
         }
         val macosArm64Main by getting {
             dependsOn(darwinMain)
+        }
+        val mingwX64Main by getting {
+            dependsOn(nativeMain)
         }
     }
 }

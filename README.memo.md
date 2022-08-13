@@ -45,7 +45,7 @@ Kotlin Simple Cache Storage for Kotlin Multiplatform
 ```kotlin
 
 // Create Instance
-val kkvs = Kkvs("kkvs-name") // SQLite ファイル名
+val kkvs = Kkvs("kkvs-name", dir) // SQLite ファイル名, ディレクトリ名
 val storage: KkvsStorage = kkvs.storage("storage-name", kkvsStorage {
   // kkvs.cache() だとキャッシュ専用のストレージを得る
   strategy = KkvsLruStrategy(
