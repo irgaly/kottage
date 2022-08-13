@@ -8,7 +8,7 @@ import net.irgaly.kkvs.Database
 import net.irgaly.kkvs.KkvsEnvironment
 
 internal actual class DriverFactory actual constructor(private val environment: KkvsEnvironment) {
-    actual suspend fun createDriver(fileName: String, directory: String): SqlDriver {
+    actual suspend fun createDriver(fileName: String, directoryPath: String): SqlDriver {
         val schema = Database.Schema
         return NativeSqliteDriver(
             DatabaseConfiguration(
@@ -22,7 +22,7 @@ internal actual class DriverFactory actual constructor(private val environment: 
                 },
                 inMemory = false,
                 extendedConfig = DatabaseConfiguration.Extended(
-                    basePath = directory
+                    basePath = directoryPath
                 )
             ),
         )

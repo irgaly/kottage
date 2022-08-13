@@ -7,7 +7,7 @@ import net.irgaly.kkvs.internal.DriverFactory
  */
 class Kkvs(
     val name: String,
-    val directory: String
+    val directoryPath: String
 ) {
     companion object {
         lateinit var environment: KkvsEnvironment

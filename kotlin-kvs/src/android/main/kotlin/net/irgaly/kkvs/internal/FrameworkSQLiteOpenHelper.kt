@@ -28,7 +28,7 @@ internal class FrameworkSQLiteOpenHelper @JvmOverloads constructor(
     private val mContext: Context,
     private val mName: String?,
     private val mCallback: SupportSQLiteOpenHelper.Callback,
-    private val directory: String? = null,
+    private val directoryPath: String? = null,
     private val mUseNoBackupDirectory: Boolean = false
 ) : SupportSQLiteOpenHelper {
     private val mLock: Any = Any()
@@ -57,8 +57,8 @@ internal class FrameworkSQLiteOpenHelper @JvmOverloads constructor(
                 if (mDelegate == null) {
                     val dbRef = arrayOfNulls<FrameworkSQLiteDatabase>(1)
                     mDelegate =
-                        if (directory != null && mName != null) {
-                            val file = File(directory, mName)
+                        if (directoryPath != null && mName != null) {
+                            val file = File(directoryPath, mName)
                             OpenHelper(mContext, file.absolutePath, dbRef, mCallback)
                         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && mName != null && mUseNoBackupDirectory) {
                             val file = File(

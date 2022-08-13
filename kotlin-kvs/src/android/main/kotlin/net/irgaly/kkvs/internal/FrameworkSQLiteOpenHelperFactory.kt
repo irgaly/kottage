@@ -22,7 +22,7 @@ import androidx.sqlite.db.SupportSQLiteOpenHelper
  * framework.
  */
 internal class FrameworkSQLiteOpenHelperFactory(
-    private val directory: String
+    private val directoryPath: String
 ) : SupportSQLiteOpenHelper.Factory {
     override fun create(
         configuration: SupportSQLiteOpenHelper.Configuration
@@ -31,7 +31,7 @@ internal class FrameworkSQLiteOpenHelperFactory(
             configuration.context,
             configuration.name,
             configuration.callback,
-            directory,
+            directoryPath,
             configuration.useNoBackupDirectory
         )
     }
