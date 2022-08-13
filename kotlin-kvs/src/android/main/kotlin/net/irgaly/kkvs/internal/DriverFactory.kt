@@ -7,6 +7,11 @@ import net.irgaly.kkvs.KkvsEnvironment
 
 internal actual class DriverFactory actual constructor(private val environment: KkvsEnvironment) {
     actual suspend fun createDriver(fileName: String, directory: String): SqlDriver {
-        return AndroidSqliteDriver(Database.Schema, environment.context, fileName)
+        return AndroidSqliteDriver(
+            Database.Schema,
+            environment.context,
+            fileName,
+            FrameworkSQLiteOpenHelperFactory(directory)
+        )
     }
 }
