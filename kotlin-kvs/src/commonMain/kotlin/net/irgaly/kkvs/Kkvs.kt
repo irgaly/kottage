@@ -11,15 +11,9 @@ import net.irgaly.kkvs.internal.KkvsStorageImpl
 class Kkvs(
     val name: String,
     val directoryPath: String,
+    val environment: KkvsEnvironment,
     val json: Json = Json
 ) {
-    companion object {
-        lateinit var environment: KkvsEnvironment
-        fun initialize(environment: KkvsEnvironment) {
-            this.environment = environment
-        }
-    }
-
     private val driver by lazy {
         DriverFactory(environment).createDriver(name, directoryPath)
     }
