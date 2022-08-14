@@ -2,15 +2,27 @@ CREATE TABLE item (
   -- "{type}+{key}"
   key TEXT PRIMARY KEY,
   type TEXT NOT NULL,
-  value TEXT,
+  string_value TEXT,
+  long_value INTEGER,
+  double_value REAL,
+  bytes_value BLOB,
   created_at INTEGER NOT NULL,
-  last_read INTEGER NOT NULL,
+  last_read_at INTEGER NOT NULL,
   expire_at INTEGER NOT NULL
 );
 CREATE INDEX item_type ON item(type);
 CREATE INDEX item_created_at ON item(created_at);
-CREATE INDEX item_last_read ON item(last_read);
+CREATE INDEX item_last_read ON item(last_read_at);
 CREATE INDEX item_expire_at ON item(expire_at);
+
+replaceItem:
+REPLACE INTO item VALUES ?;
+
+updateLastRead:
+UPDATE item SET last_read_at = ? WHERE key = ?;
+
+updateExpireAt:
+UPDATE item SET expire_at = ? WHERE key = ?;
 
 selectItem:
 SELECT * FROM item WHERE key = ?;
