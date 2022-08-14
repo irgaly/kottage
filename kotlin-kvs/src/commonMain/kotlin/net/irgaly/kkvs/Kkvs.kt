@@ -25,6 +25,11 @@ class Kkvs(
     }
 
     fun storage(name: String, options: KkvsStorageOptions): KkvsStorage {
-        return KkvsStorageImpl(name, options, KkvsSqliteRepository(name, driver))
+        return KkvsStorageImpl(
+            name,
+            options,
+            KkvsSqliteRepository(name, driver),
+            environment.calendar
+        )
     }
 }

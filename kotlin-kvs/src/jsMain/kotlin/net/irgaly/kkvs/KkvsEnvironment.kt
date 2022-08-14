@@ -1,3 +1,7 @@
 package net.irgaly.kkvs
 
-actual class KkvsEnvironment
+import net.irgaly.kkvs.platform.KkvsPlatformCalendar
+
+actual class KkvsEnvironment(
+    actual val calendar: KkvsPlatformCalendar
+)

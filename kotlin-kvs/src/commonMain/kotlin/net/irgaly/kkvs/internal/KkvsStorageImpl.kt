@@ -3,6 +3,7 @@ package net.irgaly.kkvs.internal
 import net.irgaly.kkvs.KkvsEntry
 import net.irgaly.kkvs.KkvsStorage
 import net.irgaly.kkvs.KkvsStorageOptions
+import net.irgaly.kkvs.platform.KkvsPlatformCalendar
 import kotlin.reflect.KClass
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -11,7 +12,8 @@ import kotlin.time.ExperimentalTime
 class KkvsStorageImpl(
     val name: String,
     val options: KkvsStorageOptions,
-    val repository: KkvsRepository
+    val repository: KkvsRepository,
+    val calendar: KkvsPlatformCalendar
 ): KkvsStorage {
     override val defaultExpireTime: Duration? get() = options.defaultExpireTime
 
