@@ -1,8 +1,8 @@
 package net.irgaly.kkvs
 
 import kotlinx.serialization.json.Json
-import net.irgaly.kkvs.internal.KkvsRepositoryFactory
 import net.irgaly.kkvs.internal.KkvsStorageImpl
+import net.irgaly.kkvs.internal.repository.KkvsRepositoryFactory
 
 /**
  * Kotlin KVS
@@ -13,11 +13,15 @@ class Kkvs(
     val environment: KkvsEnvironment,
     val json: Json = Json
 ) {
+    private val repositoryFactory by lazy {
+        KkvsRepositoryFactory(name, directoryPath, environment)
+    }
+
     fun storage(name: String, options: KkvsStorageOptions): KkvsStorage {
         return KkvsStorageImpl(
             name,
             options,
-            KkvsRepositoryFactory().create(name, this.name, directoryPath, environment),
+            repositoryFactory.create(name),
             environment.calendar
         )
     }

@@ -1,16 +1,10 @@
-package net.irgaly.kkvs.internal
+package net.irgaly.kkvs.internal.repository
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import net.irgaly.kkvs.KkvsEnvironment
 import net.irgaly.kkvs.internal.model.Item
 
-class KkvsIndexeddbRepository(
-    private val itemType: String,
-    fileName: String,
-    directoryPath: String,
-    environment: KkvsEnvironment,
-): KkvsRepository {
+class KkvsIndexeddbItemRepository(private val itemType: String) : KkvsItemRepository {
     override suspend fun upsert(item: Item) {
         TODO("Not yet implemented")
     }
@@ -31,6 +25,3 @@ class KkvsIndexeddbRepository(
         TODO("Not yet implemented")
     }
 }
-
-
-

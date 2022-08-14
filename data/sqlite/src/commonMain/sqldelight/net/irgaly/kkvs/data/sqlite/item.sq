@@ -15,7 +15,7 @@ CREATE INDEX item_created_at ON item(created_at);
 CREATE INDEX item_last_read ON item(last_read_at);
 CREATE INDEX item_expire_at ON item(expire_at);
 
-replaceItem:
+replace:
 REPLACE INTO item VALUES ?;
 
 updateLastRead:
@@ -24,8 +24,8 @@ UPDATE item SET last_read_at = ? WHERE key = ?;
 updateExpireAt:
 UPDATE item SET expire_at = ? WHERE key = ?;
 
-selectItem:
+select:
 SELECT * FROM item WHERE key = ?;
 
-deleteItem:
+delete:
 DELETE FROM item WHERE key = ?;

@@ -1,23 +1,20 @@
-package net.irgaly.kkvs.internal
+package net.irgaly.kkvs.internal.repository
 
+import com.squareup.sqldelight.EnumColumnAdapter
+import com.squareup.sqldelight.db.SqlDriver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import net.irgaly.kkvs.KkvsEnvironment
-import net.irgaly.kkvs.data.sqlite.DriverFactory
+import net.irgaly.kkvs.data.sqlite.Item_event
 import net.irgaly.kkvs.data.sqlite.KkvsDatabase
 import net.irgaly.kkvs.data.sqlite.extension.executeAsExists
 import net.irgaly.kkvs.internal.model.Item
 
-class KkvsSqliteRepository(
-    private val itemType: String,
-    fileName: String,
-    directoryPath: String,
-    environment: KkvsEnvironment,
-): KkvsRepository {
+class KkvsSqliteItemRepository(
+    private val driver: SqlDriver,
+    private val itemType: String
+) : KkvsItemRepository {
     private val database: KkvsDatabase by lazy {
-        KkvsDatabase(
-            DriverFactory(environment.context).createDriver(fileName, directoryPath)
-        )
+        KkvsDatabase(driver, Item_event.Adapter(EnumColumnAdapter()))
     }
 
     init {
@@ -28,7 +25,7 @@ class KkvsSqliteRepository(
 
     override suspend fun upsert(item: Item) = withContext(Dispatchers.Default) {
         database.itemQueries
-            .replaceItem(
+            .replace(
                 net.irgaly.kkvs.data.sqlite.Item(
                     key = item.key,
                     type = item.type,
@@ -55,19 +52,16 @@ class KkvsSqliteRepository(
 
     override suspend fun exists(key: String): Boolean = withContext(Dispatchers.Default) {
         database.itemQueries
-            .selectItem(key(key))
+            .select(key(key))
             .executeAsExists()
     }
 
     override suspend fun delete(key: String) = withContext(Dispatchers.Default) {
         database.itemQueries
-            .deleteItem(key(key))
+            .delete(key(key))
     }
 
-    private inline fun key(key: String): String {
+    private fun key(key: String): String {
         return "${itemType}+${key}"
     }
 }
-
-
-

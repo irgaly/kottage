@@ -1,8 +1,15 @@
+import net.irgaly.kkvs.data.sqlite.entity.ItemEventType;
 CREATE TABLE item_event (
-  created_at INTEGER,
-  type TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  item_type TEXT NOT NULL,
   item_key TEXT NOT NULL,
-  event TEXT NOT NULL
+  event_type TEXT AS ItemEventType NOT NULL
 );
 CREATE INDEX item_event_created_at ON item_event(created_at);
-CREATE INDEX item_event_type ON item_event(type);
+CREATE INDEX item_event_item_type ON item_event(item_type);
+
+insert:
+INSERT INTO item_event VALUES ?;
+
+deleteBefore:
+DELETE FROM item_event WHERE created_at < ?;

@@ -1,8 +1,8 @@
-package net.irgaly.kkvs.internal
+package net.irgaly.kkvs.internal.repository
 
 import net.irgaly.kkvs.internal.model.Item
 
-internal interface KkvsRepository {
+internal interface KkvsItemRepository {
     suspend fun upsert(item: Item)
     suspend fun updateLastRead(key: String, lastReadAt: Long)
     suspend fun updateExpireAt(key: String, expireAt: Long)
