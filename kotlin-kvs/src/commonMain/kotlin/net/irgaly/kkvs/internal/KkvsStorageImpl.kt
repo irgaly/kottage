@@ -10,7 +10,8 @@ import kotlin.time.ExperimentalTime
 @OptIn(ExperimentalTime::class)
 class KkvsStorageImpl(
     val name: String,
-    val options: KkvsStorageOptions
+    val options: KkvsStorageOptions,
+    val repository: KkvsRepository
 ): KkvsStorage {
     override val defaultExpireTime: Duration? get() = options.defaultExpireTime
 

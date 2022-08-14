@@ -2,6 +2,7 @@ package net.irgaly.kkvs
 
 import kotlinx.serialization.json.Json
 import net.irgaly.kkvs.internal.DriverFactory
+import net.irgaly.kkvs.internal.KkvsSqliteRepository
 import net.irgaly.kkvs.internal.KkvsStorageImpl
 
 /**
@@ -24,6 +25,6 @@ class Kkvs(
     }
 
     fun storage(name: String, options: KkvsStorageOptions): KkvsStorage {
-        return KkvsStorageImpl(name, options)
+        return KkvsStorageImpl(name, options, KkvsSqliteRepository(name, driver))
     }
 }

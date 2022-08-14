@@ -1,4 +1,5 @@
 CREATE TABLE item (
+  -- "{type}+{key}"
   key TEXT PRIMARY KEY,
   type TEXT NOT NULL,
   value TEXT,
@@ -10,3 +11,9 @@ CREATE INDEX item_type ON item(type);
 CREATE INDEX item_created_at ON item(created_at);
 CREATE INDEX item_last_read ON item(last_read);
 CREATE INDEX item_expire_at ON item(expire_at);
+
+selectItem:
+SELECT * FROM item WHERE key = ?;
+
+deleteItem:
+DELETE FROM item WHERE key = ?;
