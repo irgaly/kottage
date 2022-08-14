@@ -1,8 +1,7 @@
 package net.irgaly.kkvs
 
 import kotlinx.serialization.json.Json
-import net.irgaly.kkvs.internal.DriverFactory
-import net.irgaly.kkvs.internal.KkvsSqliteRepository
+import net.irgaly.kkvs.internal.KkvsRepositoryFactory
 import net.irgaly.kkvs.internal.KkvsStorageImpl
 
 /**
@@ -14,15 +13,11 @@ class Kkvs(
     val environment: KkvsEnvironment,
     val json: Json = Json
 ) {
-    private val driver by lazy {
-        DriverFactory(environment).createDriver(name, directoryPath)
-    }
-
     fun storage(name: String, options: KkvsStorageOptions): KkvsStorage {
         return KkvsStorageImpl(
             name,
             options,
-            KkvsSqliteRepository(name, driver),
+            KkvsRepositoryFactory().create(name, this.name, directoryPath, environment),
             environment.calendar
         )
     }

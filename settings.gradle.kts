@@ -24,7 +24,10 @@ dependencyResolutionManagement {
 rootProject.name = "kkvs"
 include(
     ":kotlin-kvs",
-    ":sample:android",
-    ":test"
+    ":data:sqlite",
+    ":data:indexeddb",
+    ":core",
+    ":core:test",
+    ":sample:android"
 )
 includeBuild("build-logic")

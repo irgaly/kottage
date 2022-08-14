@@ -9,12 +9,12 @@ import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
-class KkvsStorageImpl(
+internal class KkvsStorageImpl(
     val name: String,
     val options: KkvsStorageOptions,
     val repository: KkvsRepository,
     val calendar: KkvsPlatformCalendar
-): KkvsStorage {
+) : KkvsStorage {
     override val defaultExpireTime: Duration? get() = options.defaultExpireTime
 
     override suspend fun <T : Any> get(key: String, type: KClass<T>): T {
