@@ -21,7 +21,7 @@ class Kkvs(
         return KkvsStorageImpl(
             name,
             options,
-            repositoryFactory.create(name),
+            repositoryFactory,
             environment.calendar
         )
     }

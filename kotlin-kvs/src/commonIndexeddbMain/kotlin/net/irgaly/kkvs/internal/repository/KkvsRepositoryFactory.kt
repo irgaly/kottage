@@ -7,7 +7,19 @@ internal actual class KkvsRepositoryFactory actual constructor(
     directoryPath: String,
     environment: KkvsEnvironment
 ) {
-    actual fun create(itemType: String): KkvsItemRepository {
+    actual fun <R> transactionWithResult(bodyWithReturn: () -> R): R {
+        TODO("Not yet implemented")
+    }
+
+    actual fun transaction(body: () -> Unit) {
+        TODO("Not yet implemented")
+    }
+
+    actual fun createItemRepository(itemType: String): KkvsItemRepository {
         return KkvsIndexeddbItemRepository(itemType)
+    }
+
+    actual fun createItemEventRepository(): KkvsItemEventRepository {
+        return KkvsIndexeddbItemEventRepository()
     }
 }

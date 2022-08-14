@@ -1,22 +1,15 @@
 package net.irgaly.kkvs.internal.repository
 
-import com.squareup.sqldelight.EnumColumnAdapter
-import com.squareup.sqldelight.db.SqlDriver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import net.irgaly.kkvs.data.sqlite.Item_event
 import net.irgaly.kkvs.data.sqlite.KkvsDatabase
 import net.irgaly.kkvs.data.sqlite.extension.executeAsExists
 import net.irgaly.kkvs.internal.model.Item
 
 class KkvsSqliteItemRepository(
-    private val driver: SqlDriver,
+    private val database: KkvsDatabase,
     private val itemType: String
 ) : KkvsItemRepository {
-    private val database: KkvsDatabase by lazy {
-        KkvsDatabase(driver, Item_event.Adapter(EnumColumnAdapter()))
-    }
-
     init {
         check(itemType.contains("+")) {
             "itemType should not contains \"+\": itemType = \"$itemType\""
