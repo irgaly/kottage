@@ -16,5 +16,5 @@ internal expect class DriverFactory constructor(environment: KkvsEnvironment) {
      * @param fileName 拡張子を除いた sqlite ファイル名。"{fileName}.db" として保存されます
      * @param directoryPath sqlite を保存するディレクトリ。該当ディレクトリは存在している必要がある。
      */
-    suspend fun createDriver(fileName: String, directoryPath: String): SqlDriver
+    fun createDriver(fileName: String, directoryPath: String): SqlDriver
 }

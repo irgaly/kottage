@@ -45,7 +45,7 @@ Kotlin Simple Cache Storage for Kotlin Multiplatform
 ```kotlin
 
 // Create Instance
-val kkvs = Kkvs("kkvs-name", dir) // SQLite ファイル名, ディレクトリ名
+val kkvs = Kkvs("kkvs-name", dir, json) // SQLite ファイル名, ディレクトリ名
 val storage: KkvsStorage = kkvs.storage("storage-name", kkvsStorage {
   // kkvs.cache() だとキャッシュ専用のストレージを得る
   strategy = KkvsLruStrategy(
@@ -58,6 +58,7 @@ val storage: KkvsStorage = kkvs.storage("storage-name", kkvsStorage {
   defaultExpireTime = 1.month // nullable
   autoClean = true
   withLastHit = true // 有効期限切れのエントリーを返すか
+  json = Json
 })
 
 // Save Cache
@@ -69,6 +70,7 @@ storage.put("key", "cache", storage.defaultExpireTime)
 val value: KkvsEntry<String> = storage.read<String>("key") // Meta 要素あり
 val value: KkvsEntry<ByteArray> = storage.read<ByteArray>("key")
 val value: String? = storage.get("key") // 値のみ
+val contains: Boolean = storage.contains("key")
 
 // List View
 val list = storage.list("list-key")
