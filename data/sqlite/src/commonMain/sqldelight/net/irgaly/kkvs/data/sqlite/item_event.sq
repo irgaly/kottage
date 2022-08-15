@@ -11,5 +11,11 @@ CREATE INDEX item_event_item_type ON item_event(item_type);
 insert:
 INSERT INTO item_event VALUES ?;
 
+selectAfter:
+SELECT * FROM item_event WHERE created_at >= ? ORDER BY created_at ASC;
+
+selectItemTypeAfter:
+SELECT * FROM item_event WHERE item_type = ? AND created_at >= ? ORDER BY created_at ASC;
+
 deleteBefore:
 DELETE FROM item_event WHERE created_at < ?;

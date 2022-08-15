@@ -7,6 +7,14 @@ class KkvsIndexeddbItemEventRepository : KkvsItemEventRepository {
         TODO("Not yet implemented")
     }
 
+    override suspend fun selectAfter(itemType: String, createdAt: Long): List<ItemEvent> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun selectAfter(createdAt: Long): List<ItemEvent> {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun deleteBefore(createdAt: Long) {
         TODO("Not yet implemented")
     }

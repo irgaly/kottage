@@ -18,35 +18,31 @@ class KkvsSqliteItemRepository(
 
     override suspend fun upsert(item: Item) = withContext(Dispatchers.Default) {
         database.itemQueries
-            .replace(
-                net.irgaly.kkvs.data.sqlite.Item(
-                    key = item.key,
-                    type = item.type,
-                    string_value = item.stringValue,
-                    long_value = item.longValue,
-                    double_value = item.doubleValue,
-                    bytes_value = item.bytesValue,
-                    created_at = item.createdAt,
-                    last_read_at = item.lastReadAt,
-                    expire_at = item.expireAt
-                )
-            )
+            .replace(item.toEntity())
     }
 
-    override suspend fun updateLastRead(key: String, lastReadAt: Long) {
-        database.itemQueries
-            .updateLastRead(lastReadAt, key)
-    }
+    override suspend fun updateLastRead(key: String, lastReadAt: Long) =
+        withContext(Dispatchers.Default) {
+            database.itemQueries
+                .updateLastRead(lastReadAt, key)
+        }
 
-    override suspend fun updateExpireAt(key: String, expireAt: Long) {
-        database.itemQueries
-            .updateExpireAt(expireAt, key)
-    }
+    override suspend fun updateExpireAt(key: String, expireAt: Long) =
+        withContext(Dispatchers.Default) {
+            database.itemQueries
+                .updateExpireAt(expireAt, key)
+        }
 
     override suspend fun exists(key: String): Boolean = withContext(Dispatchers.Default) {
         database.itemQueries
             .select(key(key))
             .executeAsExists()
+    }
+
+    override suspend fun get(key: String): Item? = withContext(Dispatchers.Default) {
+        database.itemQueries
+            .select(key(key))
+            .executeAsOneOrNull()?.toDomain()
     }
 
     override suspend fun delete(key: String) = withContext(Dispatchers.Default) {
