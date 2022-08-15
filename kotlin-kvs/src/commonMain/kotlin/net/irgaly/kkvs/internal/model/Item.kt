@@ -10,13 +10,13 @@ data class Item (
     val bytesValue: ByteArray?,
     val createdAt: Long,
     val lastReadAt: Long,
-    val expireAt: Long
+    val expireAt: Long?
 ) {
     fun isAvailable(now: Long): Boolean {
-        return (now < expireAt)
+        return expireAt?.let { now < it } ?: true
     }
 
     fun isExpired(now: Long): Boolean {
-        return (expireAt <= now)
+        return expireAt?.let { it <= now } ?: false
     }
 }

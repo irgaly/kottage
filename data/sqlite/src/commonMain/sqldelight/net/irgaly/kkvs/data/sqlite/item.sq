@@ -8,7 +8,7 @@ CREATE TABLE item (
   bytes_value BLOB,
   created_at INTEGER NOT NULL,
   last_read_at INTEGER NOT NULL,
-  expire_at INTEGER NOT NULL
+  expire_at INTEGER
 );
 CREATE INDEX item_type ON item(type);
 CREATE INDEX item_created_at ON item(created_at);

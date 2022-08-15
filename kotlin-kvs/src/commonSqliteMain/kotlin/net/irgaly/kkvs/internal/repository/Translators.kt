@@ -46,6 +46,7 @@ fun ItemEventType.toEntity(): net.irgaly.kkvs.data.sqlite.entity.ItemEventType {
         ItemEventType.Create -> net.irgaly.kkvs.data.sqlite.entity.ItemEventType.Create
         ItemEventType.Update -> net.irgaly.kkvs.data.sqlite.entity.ItemEventType.Update
         ItemEventType.Delete -> net.irgaly.kkvs.data.sqlite.entity.ItemEventType.Delete
+        ItemEventType.Expired -> net.irgaly.kkvs.data.sqlite.entity.ItemEventType.Expired
     }
 }
 
@@ -54,5 +55,6 @@ fun net.irgaly.kkvs.data.sqlite.entity.ItemEventType.toDomain(): ItemEventType {
         net.irgaly.kkvs.data.sqlite.entity.ItemEventType.Create -> ItemEventType.Create
         net.irgaly.kkvs.data.sqlite.entity.ItemEventType.Update -> ItemEventType.Update
         net.irgaly.kkvs.data.sqlite.entity.ItemEventType.Delete -> ItemEventType.Delete
+        net.irgaly.kkvs.data.sqlite.entity.ItemEventType.Expired -> ItemEventType.Expired
     }
 }

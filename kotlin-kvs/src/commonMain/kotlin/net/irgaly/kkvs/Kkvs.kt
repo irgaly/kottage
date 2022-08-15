@@ -20,6 +20,7 @@ class Kkvs(
     fun storage(name: String, options: KkvsStorageOptions): KkvsStorage {
         return KkvsStorageImpl(
             name,
+            options.json ?: json,
             options,
             repositoryFactory,
             environment.calendar
