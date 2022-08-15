@@ -7,8 +7,8 @@ internal expect class KkvsRepositoryFactory(
     directoryPath: String,
     environment: KkvsEnvironment
 ) {
-    fun <R> transactionWithResult(bodyWithReturn: () -> R): R
-    fun transaction(body: () -> Unit)
+    suspend fun <R> transactionWithResult(bodyWithReturn: suspend () -> R): R
+    suspend fun transaction(body: suspend () -> Unit)
     fun createItemRepository(itemType: String): KkvsItemRepository
     fun createItemEventRepository(): KkvsItemEventRepository
 }

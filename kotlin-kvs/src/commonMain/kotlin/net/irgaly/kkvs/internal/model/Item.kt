@@ -11,4 +11,12 @@ data class Item (
     val createdAt: Long,
     val lastReadAt: Long,
     val expireAt: Long
-)
+) {
+    fun isAvailable(now: Long): Boolean {
+        return (now < expireAt)
+    }
+
+    fun isExpired(now: Long): Boolean {
+        return (expireAt <= now)
+    }
+}

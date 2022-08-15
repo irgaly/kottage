@@ -7,11 +7,11 @@ internal actual class KkvsRepositoryFactory actual constructor(
     directoryPath: String,
     environment: KkvsEnvironment
 ) {
-    actual fun <R> transactionWithResult(bodyWithReturn: () -> R): R {
+    actual suspend fun <R> transactionWithResult(bodyWithReturn: suspend () -> R): R {
         TODO("Not yet implemented")
     }
 
-    actual fun transaction(body: () -> Unit) {
+    actual suspend fun transaction(body: suspend () -> Unit) {
         TODO("Not yet implemented")
     }
 

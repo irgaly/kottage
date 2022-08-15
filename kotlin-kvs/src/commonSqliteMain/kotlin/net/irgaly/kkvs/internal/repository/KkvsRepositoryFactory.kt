@@ -2,6 +2,9 @@ package net.irgaly.kkvs.internal.repository
 
 import com.squareup.sqldelight.EnumColumnAdapter
 import com.squareup.sqldelight.db.SqlDriver
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import net.irgaly.kkvs.KkvsEnvironment
 import net.irgaly.kkvs.data.sqlite.DriverFactory
 import net.irgaly.kkvs.data.sqlite.Item_event
@@ -20,15 +23,20 @@ internal actual class KkvsRepositoryFactory actual constructor(
         KkvsDatabase(driver, Item_event.Adapter(EnumColumnAdapter()))
     }
 
-    actual fun <R> transactionWithResult(bodyWithReturn: () -> R): R {
-        return database.itemQueries.transactionWithResult {
-            bodyWithReturn()
+    actual suspend fun <R> transactionWithResult(bodyWithReturn: suspend () -> R): R =
+        withContext(Dispatchers.Default) {
+            database.itemQueries.transactionWithResult {
+                runBlocking {
+                    bodyWithReturn()
+                }
+            }
         }
-    }
 
-    actual fun transaction(body: () -> Unit) {
-        return database.itemQueries.transaction {
-            body()
+    actual suspend fun transaction(body: suspend () -> Unit) = withContext(Dispatchers.Default) {
+        database.itemQueries.transaction {
+            runBlocking {
+                body()
+            }
         }
     }
 
