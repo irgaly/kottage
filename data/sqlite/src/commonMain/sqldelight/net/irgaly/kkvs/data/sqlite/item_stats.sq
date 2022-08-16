@@ -1,0 +1,13 @@
+CREATE TABLE item_stats (
+  item_type TEXT PRIMARY KEY,
+  count INTEGER NOT NULL DEFAULT 0
+);
+
+insert:
+INSERT INTO item_stats(item_type) VALUES(?);
+
+countUp:
+UPDATE item_stats SET count = count + 1 WHERE item_type = ?;
+
+updateCount:
+UPDATE item_stats SET count = ? WHERE item_type = ?;

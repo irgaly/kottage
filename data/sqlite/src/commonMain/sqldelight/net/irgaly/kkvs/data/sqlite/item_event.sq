@@ -6,7 +6,7 @@ CREATE TABLE item_event (
   event_type TEXT AS ItemEventType NOT NULL
 );
 CREATE INDEX item_event_created_at ON item_event(created_at);
-CREATE INDEX item_event_item_type ON item_event(item_type);
+CREATE INDEX item_event_item_type_created_at ON item_event(item_type, created_at);
 
 insert:
 INSERT INTO item_event VALUES ?;

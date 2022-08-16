@@ -67,7 +67,7 @@ internal class KkvsSqliteItemRepository(
 
     override suspend fun deleteAll() {
         database.itemQueries
-            .deleteAllType(itemType)
+            .deleteAllByType(itemType)
     }
 
     private fun key(key: String): String {

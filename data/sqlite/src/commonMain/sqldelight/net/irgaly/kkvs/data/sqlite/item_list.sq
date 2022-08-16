@@ -1,7 +1,7 @@
 CREATE TABLE item_list (
-  key TEXT,
+  key TEXT PRIMARY KEY,
   type TEXT NOT NULL,
-  item_key TEXT,
+  item_key TEXT NOT NULL,
   prev_key TEXT,
   next_key TEXT
 );
