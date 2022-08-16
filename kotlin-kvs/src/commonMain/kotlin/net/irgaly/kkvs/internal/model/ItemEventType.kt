@@ -1,6 +1,6 @@
 package net.irgaly.kkvs.internal.model
 
-enum class ItemEventType {
+internal enum class ItemEventType {
     Create,
     Update,
     Delete,

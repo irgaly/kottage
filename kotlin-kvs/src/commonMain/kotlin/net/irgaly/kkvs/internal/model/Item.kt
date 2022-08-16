@@ -1,6 +1,6 @@
 package net.irgaly.kkvs.internal.model
 
-data class Item (
+internal data class Item(
     val key: String,
     val type: String,
     val stringValue: String?,

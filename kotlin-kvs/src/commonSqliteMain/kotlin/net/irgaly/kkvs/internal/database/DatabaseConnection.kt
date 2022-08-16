@@ -10,7 +10,7 @@ import net.irgaly.kkvs.data.sqlite.DriverFactory
 import net.irgaly.kkvs.data.sqlite.Item_event
 import net.irgaly.kkvs.data.sqlite.KkvsDatabase
 
-actual data class DatabaseConnection (
+internal actual data class DatabaseConnection(
     val sqlDriver: SqlDriver,
     val database: KkvsDatabase
 ) {
@@ -38,7 +38,7 @@ actual data class DatabaseConnection (
     }
 }
 
-actual fun createDatabaseConnection(
+internal actual fun createDatabaseConnection(
     fileName: String,
     directoryPath: String,
     environment: KkvsEnvironment

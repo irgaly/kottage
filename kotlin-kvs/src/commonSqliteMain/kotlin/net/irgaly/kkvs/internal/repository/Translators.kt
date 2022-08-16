@@ -4,7 +4,7 @@ import net.irgaly.kkvs.internal.model.Item
 import net.irgaly.kkvs.internal.model.ItemEvent
 import net.irgaly.kkvs.internal.model.ItemEventType
 
-fun net.irgaly.kkvs.data.sqlite.Item.toDomain(): Item {
+internal fun net.irgaly.kkvs.data.sqlite.Item.toDomain(): Item {
     return Item(
         key = key,
         type = type,
@@ -18,7 +18,7 @@ fun net.irgaly.kkvs.data.sqlite.Item.toDomain(): Item {
     )
 }
 
-fun Item.toEntity(): net.irgaly.kkvs.data.sqlite.Item {
+internal fun Item.toEntity(): net.irgaly.kkvs.data.sqlite.Item {
     return net.irgaly.kkvs.data.sqlite.Item(
         key = key,
         type = type,
@@ -32,7 +32,7 @@ fun Item.toEntity(): net.irgaly.kkvs.data.sqlite.Item {
     )
 }
 
-fun net.irgaly.kkvs.data.sqlite.Item_event.toDomain(): ItemEvent {
+internal fun net.irgaly.kkvs.data.sqlite.Item_event.toDomain(): ItemEvent {
     return ItemEvent(
         createdAt = created_at,
         itemType = item_type,
@@ -41,7 +41,7 @@ fun net.irgaly.kkvs.data.sqlite.Item_event.toDomain(): ItemEvent {
     )
 }
 
-fun ItemEventType.toEntity(): net.irgaly.kkvs.data.sqlite.entity.ItemEventType {
+internal fun ItemEventType.toEntity(): net.irgaly.kkvs.data.sqlite.entity.ItemEventType {
     return when (this) {
         ItemEventType.Create -> net.irgaly.kkvs.data.sqlite.entity.ItemEventType.Create
         ItemEventType.Update -> net.irgaly.kkvs.data.sqlite.entity.ItemEventType.Update
@@ -50,7 +50,7 @@ fun ItemEventType.toEntity(): net.irgaly.kkvs.data.sqlite.entity.ItemEventType {
     }
 }
 
-fun net.irgaly.kkvs.data.sqlite.entity.ItemEventType.toDomain(): ItemEventType {
+internal fun net.irgaly.kkvs.data.sqlite.entity.ItemEventType.toDomain(): ItemEventType {
     return when (this) {
         net.irgaly.kkvs.data.sqlite.entity.ItemEventType.Create -> ItemEventType.Create
         net.irgaly.kkvs.data.sqlite.entity.ItemEventType.Update -> ItemEventType.Update

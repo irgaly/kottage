@@ -2,7 +2,7 @@ package net.irgaly.kkvs.internal.database
 
 import net.irgaly.kkvs.KkvsEnvironment
 
-expect class DatabaseConnection {
+internal expect class DatabaseConnection {
     suspend fun <R> transactionWithResult(bodyWithReturn: suspend () -> R): R
     suspend fun transaction(body: suspend () -> Unit)
 
@@ -14,7 +14,7 @@ expect class DatabaseConnection {
     suspend fun deleteAll()
 }
 
-expect fun createDatabaseConnection(
+internal expect fun createDatabaseConnection(
     fileName: String,
     directoryPath: String,
     environment: KkvsEnvironment

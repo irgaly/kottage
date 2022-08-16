@@ -2,7 +2,7 @@ package net.irgaly.kkvs.internal.database
 
 import net.irgaly.kkvs.KkvsEnvironment
 
-actual class DatabaseConnection {
+internal actual class DatabaseConnection {
     actual suspend fun <R> transactionWithResult(bodyWithReturn: suspend () -> R): R {
         TODO("Not yet implemented")
     }
@@ -16,7 +16,7 @@ actual class DatabaseConnection {
     }
 }
 
-actual fun createDatabaseConnection(
+internal actual fun createDatabaseConnection(
     fileName: String,
     directoryPath: String,
     environment: KkvsEnvironment

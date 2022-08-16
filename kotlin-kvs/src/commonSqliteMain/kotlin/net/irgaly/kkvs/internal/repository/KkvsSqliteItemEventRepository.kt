@@ -6,7 +6,7 @@ import net.irgaly.kkvs.data.sqlite.Item_event
 import net.irgaly.kkvs.data.sqlite.KkvsDatabase
 import net.irgaly.kkvs.internal.model.ItemEvent
 
-class KkvsSqliteItemEventRepository(
+internal class KkvsSqliteItemEventRepository(
     private val database: KkvsDatabase
 ) : KkvsItemEventRepository {
     override suspend fun create(itemEvent: ItemEvent) = withContext(Dispatchers.Default) {

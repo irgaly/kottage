@@ -4,7 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.irgaly.kkvs.internal.model.Item
 
-class KkvsIndexeddbItemRepository(private val itemType: String) : KkvsItemRepository {
+internal class KkvsIndexeddbItemRepository(private val itemType: String) : KkvsItemRepository {
     override suspend fun upsert(item: Item) {
         TODO("Not yet implemented")
     }

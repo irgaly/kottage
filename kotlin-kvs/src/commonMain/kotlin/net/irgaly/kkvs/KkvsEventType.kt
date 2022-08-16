@@ -9,8 +9,8 @@ enum class KkvsEventType {
     Expired;
 
     companion object {
-        fun from(itemEventType: ItemEventType): KkvsEventType {
-            return when(itemEventType) {
+        internal fun from(itemEventType: ItemEventType): KkvsEventType {
+            return when (itemEventType) {
                 ItemEventType.Create -> Create
                 ItemEventType.Update -> Update
                 ItemEventType.Delete -> Delete

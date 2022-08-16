@@ -8,7 +8,7 @@ import net.irgaly.kkvs.data.sqlite.KkvsDatabase
 import net.irgaly.kkvs.data.sqlite.extension.executeAsExists
 import net.irgaly.kkvs.internal.model.Item
 
-class KkvsSqliteItemRepository(
+internal class KkvsSqliteItemRepository(
     private val database: KkvsDatabase,
     private val itemType: String
 ) : KkvsItemRepository {
