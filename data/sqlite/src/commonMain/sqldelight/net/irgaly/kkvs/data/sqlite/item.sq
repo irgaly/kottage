@@ -27,5 +27,14 @@ UPDATE item SET expire_at = ? WHERE key = ?;
 select:
 SELECT * FROM item WHERE key = ?;
 
+selectAllKeys:
+SELECT key FROM item WHERE type = ? ORDER BY created_at ASC;
+
 delete:
 DELETE FROM item WHERE key = ?;
+
+deleteAllType:
+DELETE FROM item WHERE type = ?;
+
+deleteAll:
+DELETE FROM item;

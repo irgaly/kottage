@@ -8,5 +8,7 @@ internal interface KkvsItemRepository {
     suspend fun updateExpireAt(key: String, expireAt: Long)
     suspend fun exists(key: String): Boolean
     suspend fun get(key: String): Item?
+    suspend fun getAllKeys(receiver: suspend (key: String) -> Unit)
     suspend fun delete(key: String)
+    suspend fun deleteAll()
 }

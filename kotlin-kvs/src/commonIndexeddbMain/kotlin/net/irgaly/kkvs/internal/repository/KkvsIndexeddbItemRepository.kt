@@ -25,7 +25,15 @@ class KkvsIndexeddbItemRepository(private val itemType: String) : KkvsItemReposi
         TODO("Not yet implemented")
     }
 
+    override suspend fun getAllKeys(receiver: suspend (key: String) -> Unit) {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun delete(key: String) = withContext(Dispatchers.Default) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteAll() {
         TODO("Not yet implemented")
     }
 }

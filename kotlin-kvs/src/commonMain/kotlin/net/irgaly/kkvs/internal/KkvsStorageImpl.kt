@@ -8,7 +8,6 @@ import net.irgaly.kkvs.internal.encoder.Encoder
 import net.irgaly.kkvs.internal.model.Item
 import net.irgaly.kkvs.internal.model.ItemEvent
 import net.irgaly.kkvs.internal.model.ItemEventType
-import net.irgaly.kkvs.internal.repository.KkvsRepositoryFactory
 import net.irgaly.kkvs.platform.KkvsPlatformCalendar
 import kotlin.reflect.KType
 import kotlin.time.Duration
@@ -17,24 +16,24 @@ internal class KkvsStorageImpl(
     val name: String,
     json: Json,
     val options: KkvsStorageOptions,
-    val repositoryFactory: KkvsRepositoryFactory,
+    val databaseManager: KkvsDatabaseManager,
     val calendar: KkvsPlatformCalendar
 ) : KkvsStorage {
     private val encoder = Encoder(json)
 
     private val itemRepository by lazy {
-        repositoryFactory.createItemRepository(name)
+        databaseManager.getItemRepository(name)
     }
 
     private val itemEventRepository by lazy {
-        repositoryFactory.createItemEventRepository()
+        databaseManager.itemEventRepository
     }
 
     override val defaultExpireTime: Duration? get() = options.defaultExpireTime
 
     override suspend fun <T : Any> get(key: String, type: KType): T {
         val now = calendar.nowUtcEpochTimeMillis()
-        val item = repositoryFactory.transactionWithResult {
+        val item = databaseManager.transactionWithResult {
             var item = itemRepository.get(key)
             if (item != null) {
                 if (item.isAvailable(now)) {
@@ -60,7 +59,7 @@ internal class KkvsStorageImpl(
 
     override suspend fun <T : Any> getOrNull(key: String, type: KType): T? {
         val now = calendar.nowUtcEpochTimeMillis()
-        val item = repositoryFactory.transactionWithResult {
+        val item = databaseManager.transactionWithResult {
             var item = itemRepository.get(key)
             if (item != null) {
                 if (item.isAvailable(now)) {
@@ -86,7 +85,7 @@ internal class KkvsStorageImpl(
 
     override suspend fun <T : Any> read(key: String, type: KType): KkvsEntry<T> {
         val now = calendar.nowUtcEpochTimeMillis()
-        val item = repositoryFactory.transactionWithResult {
+        val item = databaseManager.transactionWithResult {
             var item = itemRepository.get(key)
             if (item != null) {
                 if (item.isAvailable(now)) {
@@ -143,7 +142,7 @@ internal class KkvsStorageImpl(
                 }
             )
         }
-        repositoryFactory.transaction {
+        databaseManager.transaction {
             itemRepository.upsert(item)
             itemEventRepository.create(
                 ItemEvent(
@@ -158,7 +157,7 @@ internal class KkvsStorageImpl(
 
     override suspend fun remove(key: String): Boolean {
         val now = calendar.nowUtcEpochTimeMillis()
-        return repositoryFactory.transactionWithResult {
+        return databaseManager.transactionWithResult {
             val exists = itemRepository.exists(key)
             if (exists) {
                 itemRepository.delete(key)
@@ -173,5 +172,30 @@ internal class KkvsStorageImpl(
             }
             exists
         }
+    }
+
+    override suspend fun removeAll(key: String) {
+        val now = calendar.nowUtcEpochTimeMillis()
+        databaseManager.transaction {
+            itemRepository.getAllKeys { key ->
+                itemEventRepository.create(
+                    ItemEvent(
+                        createdAt = now,
+                        itemType = name,
+                        itemKey = key,
+                        eventType = ItemEventType.Delete
+                    )
+                )
+            }
+            itemRepository.deleteAll()
+        }
+    }
+
+    override suspend fun clean() {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun clear() {
+        itemRepository.deleteAll()
     }
 }

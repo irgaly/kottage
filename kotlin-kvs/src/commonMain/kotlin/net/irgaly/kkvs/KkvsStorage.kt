@@ -39,6 +39,21 @@ interface KkvsStorage {
     )
     suspend fun <T : Any> put(key: String, value: T, type: KType)
     suspend fun remove(key: String): Boolean
+
+    /**
+     * Delete all entries
+     */
+    suspend fun removeAll(key: String)
+
+    /**
+     * Clean Expired entries
+     */
+    suspend fun clean()
+
+    /**
+     * Delete all entries and events
+     */
+    suspend fun clear()
 }
 
 suspend inline fun <reified T : Any> KkvsStorage.get(key: String): T {
