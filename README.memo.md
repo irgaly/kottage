@@ -69,7 +69,7 @@ storage.put("key", "cache", storage.defaultExpireTime)
 // Read Cache
 val value: KkvsEntry<String> = storage.read<String>("key") // Meta 要素あり
 val value: KkvsEntry<ByteArray> = storage.read<ByteArray>("key")
-val value: String? = storage.get("key") // 値のみ
+val value: String? = storage.getOrNull("key") // 値のみ
 val contains: Boolean = storage.contains("key")
 
 // List View

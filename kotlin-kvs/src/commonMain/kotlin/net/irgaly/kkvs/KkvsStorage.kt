@@ -2,13 +2,10 @@ package net.irgaly.kkvs
 
 import kotlinx.serialization.SerializationException
 import kotlin.coroutines.cancellation.CancellationException
-import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalTime::class)
 interface KkvsStorage {
     val defaultExpireTime: Duration?
 
@@ -27,7 +24,12 @@ interface KkvsStorage {
         CancellationException::class,
     )
     suspend fun <T : Any> getOrNull(key: String, type: KType): T?
-    suspend fun <T : Any> read(key: String, type: KClass<T>): KkvsEntry<T>
+
+    @Throws(
+        NoSuchElementException::class,
+        CancellationException::class,
+    )
+    suspend fun <T : Any> read(key: String, type: KType): KkvsEntry<T>
     suspend fun contains(key: String): Boolean
 
     @Throws(
@@ -45,4 +47,8 @@ suspend inline fun <reified T : Any> KkvsStorage.get(key: String): T {
 
 suspend inline fun <reified T : Any> KkvsStorage.put(key: String, value: T) {
     put(key, value, typeOf<T>())
+}
+
+suspend inline fun <reified T : Any> KkvsStorage.read(key: String): KkvsEntry<T> {
+    return read(key, typeOf<T>())
 }

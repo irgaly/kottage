@@ -10,12 +10,9 @@ import net.irgaly.kkvs.internal.model.ItemEvent
 import net.irgaly.kkvs.internal.model.ItemEventType
 import net.irgaly.kkvs.internal.repository.KkvsRepositoryFactory
 import net.irgaly.kkvs.platform.KkvsPlatformCalendar
-import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalTime::class)
 internal class KkvsStorageImpl(
     val name: String,
     json: Json,
@@ -39,18 +36,22 @@ internal class KkvsStorageImpl(
         val now = calendar.nowUtcEpochTimeMillis()
         val item = repositoryFactory.transactionWithResult {
             var item = itemRepository.get(key)
-            if (item?.isExpired(now) == true) {
-                // delete cache
-                item = null
-                itemRepository.delete(key)
-                itemEventRepository.create(
-                    ItemEvent(
-                        createdAt = now,
-                        itemType = name,
-                        itemKey = key,
-                        eventType = ItemEventType.Expired
+            if (item != null) {
+                if (item.isAvailable(now)) {
+                    itemRepository.updateLastRead(key, now)
+                } else {
+                    // delete cache
+                    item = null
+                    itemRepository.delete(key)
+                    itemEventRepository.create(
+                        ItemEvent(
+                            createdAt = now,
+                            itemType = name,
+                            itemKey = key,
+                            eventType = ItemEventType.Expired
+                        )
                     )
-                )
+                }
             }
             item
         } ?: throw NoSuchElementException("key = $key, storage name = $name")
@@ -61,26 +62,56 @@ internal class KkvsStorageImpl(
         val now = calendar.nowUtcEpochTimeMillis()
         val item = repositoryFactory.transactionWithResult {
             var item = itemRepository.get(key)
-            if (item?.isExpired(now) == true) {
-                // delete cache
-                item = null
-                itemRepository.delete(key)
-                itemEventRepository.create(
-                    ItemEvent(
-                        createdAt = now,
-                        itemType = name,
-                        itemKey = key,
-                        eventType = ItemEventType.Expired
+            if (item != null) {
+                if (item.isAvailable(now)) {
+                    itemRepository.updateLastRead(key, now)
+                } else {
+                    // delete cache
+                    item = null
+                    itemRepository.delete(key)
+                    itemEventRepository.create(
+                        ItemEvent(
+                            createdAt = now,
+                            itemType = name,
+                            itemKey = key,
+                            eventType = ItemEventType.Expired
+                        )
                     )
-                )
+                }
             }
             item
         }
         return item?.let { encoder.decode(it, type) }
     }
 
-    override suspend fun <T : Any> read(key: String, type: KClass<T>): KkvsEntry<T> {
-        TODO("Not yet implemented")
+    override suspend fun <T : Any> read(key: String, type: KType): KkvsEntry<T> {
+        val now = calendar.nowUtcEpochTimeMillis()
+        val item = repositoryFactory.transactionWithResult {
+            var item = itemRepository.get(key)
+            if (item != null) {
+                if (item.isAvailable(now)) {
+                    itemRepository.updateLastRead(key, now)
+                } else {
+                    // delete cache
+                    item = null
+                    itemRepository.delete(key)
+                    itemEventRepository.create(
+                        ItemEvent(
+                            createdAt = now,
+                            itemType = name,
+                            itemKey = key,
+                            eventType = ItemEventType.Expired
+                        )
+                    )
+                }
+            }
+            item
+        } ?: throw NoSuchElementException("key = $key, storage name = $name")
+        return KkvsEntry(
+            item,
+            type,
+            encoder
+        )
     }
 
     override suspend fun contains(key: String): Boolean {
