@@ -8,7 +8,9 @@ import net.irgaly.kkvs.internal.encoder.Encoder
 import net.irgaly.kkvs.internal.model.Item
 import net.irgaly.kkvs.internal.model.ItemEvent
 import net.irgaly.kkvs.internal.model.ItemEventType
+import net.irgaly.kkvs.internal.strategy.KkvsStrategyOperatorImpl
 import net.irgaly.kkvs.platform.KkvsPlatformCalendar
+import net.irgaly.kkvs.strategy.KkvsStrategy
 import kotlin.reflect.KType
 import kotlin.time.Duration
 
@@ -21,12 +23,23 @@ internal class KkvsStorageImpl(
 ) : KkvsStorage {
     private val encoder = Encoder(json)
 
+    private val strategy: KkvsStrategy = options.strategy
+
     private val itemRepository by lazy {
         databaseManager.getItemRepository(name)
     }
 
     private val itemEventRepository by lazy {
         databaseManager.itemEventRepository
+    }
+
+    init {
+        strategy.initialize(
+            KkvsStrategyOperatorImpl(
+                databaseManager,
+                name
+            )
+        )
     }
 
     override val defaultExpireTime: Duration? get() = options.defaultExpireTime
@@ -37,11 +50,12 @@ internal class KkvsStorageImpl(
             var item = itemRepository.get(key)
             if (item != null) {
                 if (item.isAvailable(now)) {
-                    itemRepository.updateLastRead(key, now)
+                    strategy.onItemRead(key, now)
                 } else {
                     // delete cache
                     item = null
                     itemRepository.delete(key)
+                    itemRepository.decrementCount(1)
                     itemEventRepository.create(
                         ItemEvent(
                             createdAt = now,
@@ -63,11 +77,12 @@ internal class KkvsStorageImpl(
             var item = itemRepository.get(key)
             if (item != null) {
                 if (item.isAvailable(now)) {
-                    itemRepository.updateLastRead(key, now)
+                    strategy.onItemRead(key, now)
                 } else {
                     // delete cache
                     item = null
                     itemRepository.delete(key)
+                    itemRepository.decrementCount(1)
                     itemEventRepository.create(
                         ItemEvent(
                             createdAt = now,
@@ -94,6 +109,7 @@ internal class KkvsStorageImpl(
                     // delete cache
                     item = null
                     itemRepository.delete(key)
+                    itemRepository.decrementCount(1)
                     itemEventRepository.create(
                         ItemEvent(
                             createdAt = now,
@@ -143,7 +159,13 @@ internal class KkvsStorageImpl(
             )
         }
         databaseManager.transaction {
+            val isCreate = !itemRepository.exists(key)
             itemRepository.upsert(item)
+            if (isCreate) {
+                itemRepository.incrementCount(1)
+                val count = itemRepository.getCount()
+                strategy.onItemCreate(key, count, now)
+            }
             itemEventRepository.create(
                 ItemEvent(
                     createdAt = now,
@@ -161,6 +183,7 @@ internal class KkvsStorageImpl(
             val exists = itemRepository.exists(key)
             if (exists) {
                 itemRepository.delete(key)
+                itemRepository.decrementCount(1)
                 itemEventRepository.create(
                     ItemEvent(
                         createdAt = now,
@@ -188,6 +211,7 @@ internal class KkvsStorageImpl(
                 )
             }
             itemRepository.deleteAll()
+            itemRepository.updateCount(0)
         }
     }
 
@@ -196,6 +220,9 @@ internal class KkvsStorageImpl(
     }
 
     override suspend fun clear() {
-        itemRepository.deleteAll()
+        databaseManager.transaction {
+            itemRepository.deleteAll()
+            itemRepository.deleteStats()
+        }
     }
 }

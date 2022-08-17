@@ -1,5 +1,10 @@
 package net.irgaly.kkvs.strategy
 
 interface KkvsStrategy {
-    //fun reduce(deleteCount: Int)
+    fun initialize(
+        operator: KkvsStrategyOperator
+    )
+
+    suspend fun onItemRead(key: String, now: Long)
+    suspend fun onItemCreate(key: String, itemCount: Long, now: Long)
 }

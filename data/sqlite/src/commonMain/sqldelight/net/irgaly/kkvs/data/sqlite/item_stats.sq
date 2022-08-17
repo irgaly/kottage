@@ -3,11 +3,20 @@ CREATE TABLE item_stats (
   count INTEGER NOT NULL DEFAULT 0
 );
 
-insert:
-INSERT INTO item_stats(item_type) VALUES(?);
+insertIfNotExists:
+INSERT OR IGNORE INTO item_stats(item_type) VALUES(?);
 
-countUp:
-UPDATE item_stats SET count = count + 1 WHERE item_type = ?;
+select:
+SELECT * FROM item_stats WHERE item_type = ?;
+
+incrementCount:
+UPDATE item_stats SET count = count + ? WHERE item_type = ?;
+
+decrementCount:
+UPDATE item_stats SET count = count - ? WHERE item_type = ?;
 
 updateCount:
 UPDATE item_stats SET count = ? WHERE item_type = ?;
+
+delete:
+DELETE FROM item_stats WHERE item_type = ?;
