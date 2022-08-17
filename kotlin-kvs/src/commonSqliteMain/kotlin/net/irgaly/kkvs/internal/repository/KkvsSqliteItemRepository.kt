@@ -84,6 +84,18 @@ internal class KkvsSqliteItemRepository(
             }
     }
 
+    override suspend fun deleteOlderItems(limit: Long) = withContext(Dispatchers.Default) {
+        database.itemQueries
+            .selectOlderCreatedKeys(itemType, limit)
+            .execute().use { cursor ->
+                while (cursor.next()) {
+                    val key = checkNotNull(cursor.getString(0))
+                    database.itemQueries
+                        .delete(key)
+                }
+            }
+    }
+
     override suspend fun deleteAll() = withContext(Dispatchers.Default) {
         database.itemQueries
             .deleteAllByType(itemType)

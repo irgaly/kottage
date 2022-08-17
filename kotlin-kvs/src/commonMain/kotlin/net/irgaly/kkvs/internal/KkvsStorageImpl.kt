@@ -163,8 +163,6 @@ internal class KkvsStorageImpl(
             itemRepository.upsert(item)
             if (isCreate) {
                 itemRepository.incrementStatsCount(1)
-                val count = itemRepository.getStatsCount()
-                strategy.onItemCreate(key, count, now)
             }
             itemEventRepository.create(
                 ItemEvent(
@@ -174,6 +172,10 @@ internal class KkvsStorageImpl(
                     eventType = ItemEventType.Create
                 )
             )
+            if (isCreate) {
+                val count = itemRepository.getStatsCount()
+                strategy.onPostItemCreate(key, count, now)
+            }
         }
     }
 

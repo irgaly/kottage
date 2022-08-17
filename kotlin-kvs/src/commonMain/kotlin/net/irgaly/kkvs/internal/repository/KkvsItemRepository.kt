@@ -12,6 +12,7 @@ internal interface KkvsItemRepository {
     suspend fun getAllKeys(receiver: suspend (key: String) -> Unit)
     suspend fun delete(key: String)
     suspend fun deleteLeastRecentlyUsed(limit: Long)
+    suspend fun deleteOlderItems(limit: Long)
     suspend fun deleteAll()
     suspend fun getStatsCount(): Long
     suspend fun incrementStatsCount(count: Long)

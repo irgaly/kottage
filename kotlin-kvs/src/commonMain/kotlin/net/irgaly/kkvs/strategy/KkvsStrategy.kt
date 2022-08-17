@@ -6,5 +6,5 @@ interface KkvsStrategy {
     )
 
     suspend fun onItemRead(key: String, now: Long)
-    suspend fun onItemCreate(key: String, itemCount: Long, now: Long)
+    suspend fun onPostItemCreate(key: String, itemCount: Long, now: Long)
 }

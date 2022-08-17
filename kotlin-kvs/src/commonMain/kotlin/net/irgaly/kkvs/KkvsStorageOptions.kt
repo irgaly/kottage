@@ -47,7 +47,7 @@ fun kkvsStorage(builder: KkvsStorageOptions.Builder.() -> Unit): KkvsStorageOpti
 @OptIn(ExperimentalTime::class)
 fun kkvsCache(builder: KkvsStorageOptions.Builder.() -> Unit): KkvsStorageOptions {
     return KkvsStorageOptions.Builder(
-        strategy = KkvsFifoStrategy(),
+        strategy = KkvsFifoStrategy(1000),
         defaultExpireTime = 30.days,
         autoClean = true
     ).apply(builder).build()

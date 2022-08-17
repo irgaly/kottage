@@ -41,6 +41,10 @@ internal class KkvsIndexeddbItemRepository(private val itemType: String) : KkvsI
         TODO("Not yet implemented")
     }
 
+    override suspend fun deleteOlderItems(limit: Long) {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun deleteAll() {
         TODO("Not yet implemented")
     }

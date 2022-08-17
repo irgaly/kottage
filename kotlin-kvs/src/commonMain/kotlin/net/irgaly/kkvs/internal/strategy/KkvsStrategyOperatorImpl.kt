@@ -20,4 +20,10 @@ internal class KkvsStrategyOperatorImpl(
         val count = itemRepository.getCount()
         itemRepository.updateStatsCount(count)
     }
+
+    override suspend fun deleteOlderItems(limit: Long) {
+        itemRepository.deleteOlderItems(limit)
+        val count = itemRepository.getCount()
+        itemRepository.updateStatsCount(count)
+    }
 }
