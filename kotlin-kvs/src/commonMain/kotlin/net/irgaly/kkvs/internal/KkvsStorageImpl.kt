@@ -55,7 +55,7 @@ internal class KkvsStorageImpl(
                     // delete cache
                     item = null
                     itemRepository.delete(key)
-                    itemRepository.decrementCount(1)
+                    itemRepository.decrementStatsCount(1)
                     itemEventRepository.create(
                         ItemEvent(
                             createdAt = now,
@@ -82,7 +82,7 @@ internal class KkvsStorageImpl(
                     // delete cache
                     item = null
                     itemRepository.delete(key)
-                    itemRepository.decrementCount(1)
+                    itemRepository.decrementStatsCount(1)
                     itemEventRepository.create(
                         ItemEvent(
                             createdAt = now,
@@ -109,7 +109,7 @@ internal class KkvsStorageImpl(
                     // delete cache
                     item = null
                     itemRepository.delete(key)
-                    itemRepository.decrementCount(1)
+                    itemRepository.decrementStatsCount(1)
                     itemEventRepository.create(
                         ItemEvent(
                             createdAt = now,
@@ -162,8 +162,8 @@ internal class KkvsStorageImpl(
             val isCreate = !itemRepository.exists(key)
             itemRepository.upsert(item)
             if (isCreate) {
-                itemRepository.incrementCount(1)
-                val count = itemRepository.getCount()
+                itemRepository.incrementStatsCount(1)
+                val count = itemRepository.getStatsCount()
                 strategy.onItemCreate(key, count, now)
             }
             itemEventRepository.create(
@@ -183,7 +183,7 @@ internal class KkvsStorageImpl(
             val exists = itemRepository.exists(key)
             if (exists) {
                 itemRepository.delete(key)
-                itemRepository.decrementCount(1)
+                itemRepository.decrementStatsCount(1)
                 itemEventRepository.create(
                     ItemEvent(
                         createdAt = now,
@@ -211,7 +211,7 @@ internal class KkvsStorageImpl(
                 )
             }
             itemRepository.deleteAll()
-            itemRepository.updateCount(0)
+            itemRepository.updateStatsCount(0)
         }
     }
 

@@ -25,6 +25,10 @@ internal class KkvsIndexeddbItemRepository(private val itemType: String) : KkvsI
         TODO("Not yet implemented")
     }
 
+    override suspend fun getCount(): Long {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun getAllKeys(receiver: suspend (key: String) -> Unit) {
         TODO("Not yet implemented")
     }
@@ -33,23 +37,27 @@ internal class KkvsIndexeddbItemRepository(private val itemType: String) : KkvsI
         TODO("Not yet implemented")
     }
 
+    override suspend fun deleteLeastRecentlyUsed(limit: Long) {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun deleteAll() {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getCount(): Long {
+    override suspend fun getStatsCount(): Long {
         TODO("Not yet implemented")
     }
 
-    override suspend fun incrementCount(count: Long) {
+    override suspend fun incrementStatsCount(count: Long) {
         TODO("Not yet implemented")
     }
 
-    override suspend fun decrementCount(count: Long) {
+    override suspend fun decrementStatsCount(count: Long) {
         TODO("Not yet implemented")
     }
 
-    override suspend fun updateCount(count: Long) {
+    override suspend fun updateStatsCount(count: Long) {
         TODO("Not yet implemented")
     }
 

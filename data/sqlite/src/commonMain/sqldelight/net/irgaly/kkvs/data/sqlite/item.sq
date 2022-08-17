@@ -32,11 +32,26 @@ SELECT key FROM item WHERE key = ?;
 selectAllKeys:
 SELECT key FROM item WHERE type = ? ORDER BY created_at ASC;
 
+selectLeastRecentlyUsedKeys:
+SELECT key FROM item WHERE type = ? ORDER BY last_read_at ASC LIMIT :limit;
+
+countByType:
+SELECT count(*) FROM item WHERE type = ?;
+
 delete:
 DELETE FROM item WHERE key = ?;
 
 deleteAllByType:
 DELETE FROM item WHERE type = ?;
+
+-- DELETE...LIMIT goes build errer in sqldelight v1.5.3:
+-- Cannot bind unknown types or null
+-- Execution failed for task ':data:sqlite:generateCommonMainKkvsDatabaseInterface'.
+--   > A failure occurred while executing com.squareup.sqldelight.gradle.SqlDelightTask$GenerateInterfaces
+--      > Failed to compile SqlDeleteStmtLimitedImpl(DELETE_STMT_LIMITED): [] :
+--        DELETE FROM item WHERE type = ? ORDER BY last_read_at ASC LIMIT :limit
+--deleteLeastRecentlyUsed:
+--DELETE FROM item WHERE type = ? ORDER BY last_read_at ASC LIMIT :limit;
 
 deleteAll:
 DELETE FROM item;

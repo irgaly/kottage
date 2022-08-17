@@ -26,7 +26,8 @@ class KkvsLruStrategy(
 
     override suspend fun onItemCreate(key: String, itemCount: Long, now: Long) {
         if (maxEntryCount < itemCount) {
-            // delete cache to reduceCount
+            // reduce caches
+            operator.deleteLeastRecentlyUsed(calculatedReduceCount)
         }
     }
 }
