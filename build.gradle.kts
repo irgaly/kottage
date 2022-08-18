@@ -17,13 +17,15 @@ subprojects {
     tasks.withType<Test> {
         useJUnitPlatform()
     }
-
-    if (!path.endsWith(":test")) {
+    if (!path.startsWith(":sample") && !path.endsWith(":test")) {
         apply(plugin = "maven-publish")
         apply(plugin = "signing")
         group = "io.github.irgaly.kkvs"
         afterEvaluate {
             version = libs.versions.kkvs.get()
+        }
+        val emptyJavadocJar = tasks.create<Jar>("emptyJavadocJar") {
+            archiveClassifier.set("javadoc")
         }
         extensions.configure<PublishingExtension> {
             afterEvaluate {
@@ -31,14 +33,13 @@ subprojects {
                     // KotlinMultiplatformPlugin は afterEvaluate により Android Publication を生成する
                     // 2 回目の afterEvaluate 以降で Android Publication にアクセスできる
                     publications.withType<MavenPublication>().all {
+                        var javadocJar: Task? = emptyJavadocJar
                         var artifactSuffix = "-$name"
                         if (name == "kotlinMultiplatform") {
                             artifactSuffix = ""
-                            tasks.findByName("javadocJar")?.let {
-                                // dokka 適用プロジェクトであれば Metadata だけに javadoc を追加する
-                                artifact(it)
-                            }
+                            javadocJar = tasks.findByName("javadocJar") ?: emptyJavadocJar
                         }
+                        artifact(javadocJar)
                         artifactId = "${path.split(":").drop(1).joinToString("-")}$artifactSuffix"
                         pom {
                             name.set(artifactId)
