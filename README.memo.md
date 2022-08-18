@@ -19,6 +19,13 @@ Kotlin Simple Cache Storage for Kotlin Multiplatform
 
 ---
 
+TODO:
+
+* 任意の暗号化ロジックを差し込めるようにする
+* Evicted event は生成しないほうがよさそう？
+  * GC のタイミングで大量のイベントが発生するため
+* ある程度 item を追加したときに expired アイテムのクリーンアップをする
+
 機能
 
 * LRU KVS cache
