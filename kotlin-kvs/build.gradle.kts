@@ -1,7 +1,7 @@
 plugins {
-    kotlin("multiplatform")
-    kotlin("plugin.serialization")
+    id(libs.plugins.buildlogic.multiplatform.library.get().pluginId)
     id(libs.plugins.buildlogic.android.library.get().pluginId)
+    kotlin("plugin.serialization")
     id("maven-publish")
     id("signing")
     alias(libs.plugins.dokka)
@@ -12,40 +12,12 @@ android {
 }
 
 kotlin {
-    // Android AAR
-    android {
-        publishAllLibraryVariants()
-    }
-    // Java jar
-    jvm()
     // JS
     js {
         browser()
         // nodejs has no indexeddb support
         //nodejs()
     }
-    // iOS
-    ios()
-    // ios() - iosArm64() // Apple iOS on ARM64 platforms (Apple iPhone 5s and newer)
-    // ios() - iosX64() // Apple iOS simulator on x86_64 platforms
-    iosSimulatorArm64() // Apple iOS simulator on Apple Silicon platforms
-    // watchOS
-    watchos()
-    // watchos() - watchosArm64() // Apple watchOS on ARM64_32 platforms (Apple Watch Series 4 and newer)
-    // watchos() - watchosX64() // Apple watchOS 64-bit simulator (watchOS 7.0 and newer) on x86_64 platforms
-    watchosSimulatorArm64() // Apple watchOS simulator on Apple Silicon platforms
-    // tvOS
-    tvos()
-    // tvos() - tvosArm64() // Apple tvOS on ARM64 platforms (Apple TV 4th generation and newer)
-    // tvos() - tvosX64() // Apple tvOS simulator on x86_64 platforms
-    tvosSimulatorArm64() // Apple tvOS simulator on Apple Silicon platforms
-    // macOS
-    macosX64() // Apple macOS on x86_64 platforms
-    macosArm64() // Apple macOS on Apple Silicon platforms
-    // Linux
-    linuxX64() // Linux on x86_64 platforms
-    // Windows
-    mingwX64() // 64-bit Microsoft Windows
     sourceSets {
         commonMain {
             dependencies {
@@ -59,39 +31,25 @@ kotlin {
             }
         }
         val commonSqliteMain by creating {
-            // commonMain
-            // └ commonSqliteMain
             dependsOn(commonMain.get())
             dependencies {
                 implementation(projects.data.sqlite)
             }
         }
         val commonIndexeddbMain by creating {
-            // commonMain
-            // └ commonIndexeddbMain
             dependsOn(commonMain.get())
             dependencies {
                 implementation(projects.data.indexeddb)
             }
         }
         val androidMain by getting {
-            // commonMain
-            // └ commonSqliteMain
-            //   └ androidMain
             dependsOn(commonSqliteMain)
             dependencies {
-                implementation(projects.data.sqlite)
-                implementation(libs.sqldelight.driver.android)
             }
         }
         val jvmMain by getting {
-            // commonMain
-            // └ commonSqliteMain
-            //   └ jvmMain
             dependsOn(commonSqliteMain)
             dependencies {
-                implementation(projects.data.sqlite)
-                implementation(libs.sqldelight.driver.jvm)
             }
         }
         val jvmTest by getting {
@@ -100,90 +58,15 @@ kotlin {
             }
         }
         val jsMain by getting {
-            // commonMain
-            // └ commonIndexeddbMain
-            //   └ jsMain
             dependsOn(commonIndexeddbMain)
             dependencies {
-                implementation(projects.data.indexeddb)
-                implementation(libs.sqldelight.driver.js)
-                implementation(libs.kotlinx.coroutines.js)
             }
         }
-        val nativeMain by creating {
-            // commonMain
-            // └ commonSqliteMain
-            //   └ nativeMain
+        val nativeMain by getting {
             dependsOn(commonSqliteMain)
             dependencies {
                 implementation(projects.data.sqlite)
-                implementation(libs.sqldelight.driver.native)
             }
-        }
-        val darwinMain by creating {
-            // ios + macOS
-            // commonMain
-            // └ commonSqliteMain
-            //   └ nativeMain
-            //     └ darwinMain
-            dependsOn(nativeMain)
-        }
-        val linuxMain by creating {
-            // Linux
-            // commonMain
-            // └ commonSqliteMain
-            //   └ nativeMain
-            //     └ linuxMain
-            dependsOn(nativeMain)
-        }
-        val linuxX64Main by getting {
-            dependsOn(linuxMain)
-        }
-        val iosMain by getting {
-            // commonMain
-            // └ commonSqliteMain
-            //   └ nativeMain
-            //     └ darwinMain
-            //       └ iosMain
-            dependsOn(darwinMain)
-        }
-        val watchosMain by getting {
-            dependsOn(iosMain)
-        }
-        val tvosMain by getting {
-            dependsOn(iosMain)
-        }
-        val iosSimulatorArm64Main by getting {
-            dependsOn(iosMain)
-        }
-        val watchosSimulatorArm64Main by getting {
-            dependsOn(iosMain)
-        }
-        val tvosSimulatorArm64Main by getting {
-            dependsOn(iosMain)
-        }
-        val macosX64Main by getting {
-            // commonMain
-            // └ commonSqliteMain
-            //   └ nativeMain
-            //     └ darwinMain
-            //       └ macosX64Main
-            dependsOn(darwinMain)
-        }
-        val macosArm64Main by getting {
-            // commonMain
-            // └ commonSqliteMain
-            //   └ nativeMain
-            //     └ darwinMain
-            //       └ macosArm64Main
-            dependsOn(darwinMain)
-        }
-        val mingwX64Main by getting {
-            // commonMain
-            // └ commonSqliteMain
-            //   └ nativeMain
-            //     └ mingwX64Main
-            dependsOn(nativeMain)
         }
     }
 }

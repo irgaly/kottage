@@ -11,6 +11,7 @@ sqldelight = "1.5.3"
 
 [libraries]
 gradle-android = { module = "com.android.tools.build:gradle", version.ref = "gradle-android" }
+gradle-multiplatform = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlin-coroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlin-coroutines" }
@@ -44,5 +45,6 @@ kotest-multiplatform = { id = "io.kotest.multiplatform" }
 compose = { id = "org.jetbrains.compose", version = "1.1.0" }
 sqldelight = { id = "com.squareup.sqldelight", version.ref = "sqldelight" }
 buildlogic-android-library = { id = "build-logic.android.library" }
+buildlogic-multiplatform-library = { id = "build-logic.multiplatform.library" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "kotlin" }
 nexus-publish = { id = "io.github.gradle-nexus.publish-plugin", version = "1.1.0" }

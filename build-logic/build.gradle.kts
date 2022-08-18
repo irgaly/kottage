@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     implementation(libs.gradle.android)
+    implementation(libs.gradle.multiplatform)
 }
 
 gradlePlugin {
@@ -15,6 +16,10 @@ gradlePlugin {
         register("android.library") {
             id = libs.plugins.buildlogic.android.library.get().pluginId
             implementationClass = "net.irgaly.buildlogic.AndroidLibraryPlugin"
+        }
+        register("kotlin.multiplatform") {
+            id = libs.plugins.buildlogic.multiplatform.library.get().pluginId
+            implementationClass = "net.irgaly.buildlogic.MultiplatformLibraryPlugin"
         }
         register("dependency-graph") {
             id = "build-logic.dependency-graph"
