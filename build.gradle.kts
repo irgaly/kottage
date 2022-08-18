@@ -1,11 +1,9 @@
-import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     `kotlin-dsl` apply false
     kotlin("multiplatform") apply false
     id("com.android.application") apply false
-    alias(libs.plugins.dokka) apply false
     id("build-logic.dependency-graph")
     alias(libs.plugins.nexus.publish)
 }
@@ -23,16 +21,9 @@ subprojects {
     if (!path.endsWith(":test")) {
         apply(plugin = "maven-publish")
         apply(plugin = "signing")
-        apply(plugin = "org.jetbrains.dokka")
         group = "io.github.irgaly.kkvs"
         afterEvaluate {
             version = libs.versions.kkvs.get()
-        }
-        val dokkaHtml by tasks.getting(DokkaTask::class)
-        val javadocJar by tasks.registering(Jar::class) {
-            dependsOn(dokkaHtml)
-            from(dokkaHtml.outputDirectory)
-            archiveClassifier.set("javadoc")
         }
         extensions.configure<PublishingExtension> {
             afterEvaluate {
@@ -40,8 +31,14 @@ subprojects {
                     // KotlinMultiplatformPlugin は afterEvaluate により Android Publication を生成する
                     // 2 回目の afterEvaluate 以降で Android Publication にアクセスできる
                     publications.withType<MavenPublication>().all {
-                        val artifactSuffix = if (name == "kotlinMultiplatform") "" else "-$name"
-                        artifact(javadocJar)
+                        var artifactSuffix = "-$name"
+                        if (name == "kotlinMultiplatform") {
+                            artifactSuffix = ""
+                            tasks.findByName("javadocJar")?.let {
+                                // dokka 適用プロジェクトであれば Metadata だけに javadoc を追加する
+                                artifact(it)
+                            }
+                        }
                         artifactId = "${path.split(":").drop(1).joinToString("-")}$artifactSuffix"
                         pom {
                             name.set(artifactId)
