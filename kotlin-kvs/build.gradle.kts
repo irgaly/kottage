@@ -11,7 +11,7 @@ android {
 
 kotlin {
     // JS
-    js {
+    js(IR) {
         browser()
         // nodejs has no indexeddb support
         //nodejs()
