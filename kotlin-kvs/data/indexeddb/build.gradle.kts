@@ -11,7 +11,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(projects.core)
+                implementation(projects.kotlinKvs.core)
             }
         }
         commonTest {
@@ -20,7 +20,7 @@ kotlin {
         }
         val jvmTest by getting {
             dependencies {
-                api(projects.core.test)
+                api(projects.kotlinKvs.core.test)
             }
         }
         val jsMain by getting {

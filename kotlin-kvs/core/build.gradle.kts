@@ -26,7 +26,7 @@ kotlin {
         }
         val jvmTest by getting {
             dependencies {
-                api(projects.core.test)
+                api(projects.kotlinKvs.core.test)
             }
         }
     }

@@ -1,9 +1,11 @@
+import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     `kotlin-dsl` apply false
     kotlin("multiplatform") apply false
     id("com.android.application") apply false
+    alias(libs.plugins.dokka) apply false
     id("build-logic.dependency-graph")
     alias(libs.plugins.nexus.publish)
 }
@@ -12,11 +14,69 @@ subprojects {
     tasks.withType<KotlinCompile> {
         kotlinOptions {
             jvmTarget = "11"
-            freeCompilerArgs = listOf("-opt-in=kotlin.RequiresOptIn")
         }
     }
     tasks.withType<Test> {
         useJUnitPlatform()
+    }
+
+    if (!path.endsWith(":test")) {
+        apply(plugin = "maven-publish")
+        apply(plugin = "signing")
+        apply(plugin = "org.jetbrains.dokka")
+        group = "io.github.irgaly.kkvs"
+        afterEvaluate {
+            version = libs.versions.kkvs.get()
+        }
+        val dokkaHtml by tasks.getting(DokkaTask::class)
+        val javadocJar by tasks.registering(Jar::class) {
+            dependsOn(dokkaHtml)
+            from(dokkaHtml.outputDirectory)
+            archiveClassifier.set("javadoc")
+        }
+        extensions.configure<PublishingExtension> {
+            afterEvaluate {
+                afterEvaluate {
+                    // KotlinMultiplatformPlugin は afterEvaluate により Android Publication を生成する
+                    // 2 回目の afterEvaluate 以降で Android Publication にアクセスできる
+                    publications.withType<MavenPublication>().all {
+                        val artifactSuffix = if (name == "kotlinMultiplatform") "" else "-$name"
+                        artifact(javadocJar)
+                        artifactId = "${path.split(":").drop(1).joinToString("-")}$artifactSuffix"
+                        pom {
+                            name.set(artifactId)
+                            description.set("")
+                            url.set("https://github.com/irgaly/kotlin-kvs")
+                            developers {
+                                developer {
+                                    id.set("irgaly")
+                                    name.set("irgaly")
+                                    email.set("irgaly@gmail.com")
+                                }
+                            }
+                            licenses {
+                                license {
+                                    name.set("The Apache License, Version 2.0")
+                                    url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                                }
+                            }
+                            scm {
+                                connection.set("git@github.com:irgaly/kotlin-kvs.git")
+                                developerConnection.set("git@github.com:irgaly/kotlin-kvs.git")
+                                url.set("https://github.com/irgaly/kotlin-kvs")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        extensions.configure<SigningExtension> {
+            useInMemoryPgpKeys(
+                System.getenv("SIGNING_PGP_KEY"),
+                System.getenv("SIGNING_PGP_PASSWORD")
+            )
+            //sign(publishing.publications)
+        }
     }
 }
 

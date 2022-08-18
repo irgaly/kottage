@@ -54,6 +54,7 @@ fun VersionCatalog.version(name: String): String {
 /**
  * multiplatform library 共通設定
  */
+@Suppress("UNUSED_VARIABLE")
 fun Project.configureMultiplatformLibrary() {
     extensions.configure<KotlinMultiplatformExtension> {
         pluginManager.withPlugin("com.android.library") {
