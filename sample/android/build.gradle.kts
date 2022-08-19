@@ -4,9 +4,9 @@ plugins {
 }
 
 android {
-    namespace = "net.irgaly.kkvs.sample"
+    namespace = "io.github.irgaly.kkvs.sample"
     defaultConfig {
-        applicationId = "net.irgaly.kkvs.sample"
+        applicationId = "io.github.irgaly.kkvs.sample"
         versionName = libs.versions.kkvs.get()
     }
 }

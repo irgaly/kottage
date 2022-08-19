@@ -11,19 +11,19 @@ gradlePlugin {
     plugins {
         register("android.application") {
             id = "build-logic.android.application"
-            implementationClass = "net.irgaly.buildlogic.AndroidApplicationPlugin"
+            implementationClass = "io.github.irgaly.buildlogic.AndroidApplicationPlugin"
         }
         register("android.library") {
             id = libs.plugins.buildlogic.android.library.get().pluginId
-            implementationClass = "net.irgaly.buildlogic.AndroidLibraryPlugin"
+            implementationClass = "io.github.irgaly.buildlogic.AndroidLibraryPlugin"
         }
         register("kotlin.multiplatform") {
             id = libs.plugins.buildlogic.multiplatform.library.get().pluginId
-            implementationClass = "net.irgaly.buildlogic.MultiplatformLibraryPlugin"
+            implementationClass = "io.github.irgaly.buildlogic.MultiplatformLibraryPlugin"
         }
         register("dependency-graph") {
             id = "build-logic.dependency-graph"
-            implementationClass = "net.irgaly.buildlogic.ProjectDependencyGraphPlugin"
+            implementationClass = "io.github.irgaly.buildlogic.ProjectDependencyGraphPlugin"
         }
     }
 }

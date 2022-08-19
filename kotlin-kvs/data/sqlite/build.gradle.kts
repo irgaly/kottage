@@ -6,12 +6,12 @@ plugins {
 
 sqldelight {
     database("KkvsDatabase") {
-        packageName = "net.irgaly.kkvs.data.sqlite"
+        packageName = "io.github.irgaly.kkvs.data.sqlite"
     }
 }
 
 android {
-    namespace = "net.irgaly.kkvs.data.sqlite"
+    namespace = "io.github.irgaly.kkvs.data.sqlite"
 }
 
 kotlin {

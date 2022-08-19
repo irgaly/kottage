@@ -1,0 +1,21 @@
+import io.github.irgaly.kkvs.data.sqlite.entity.ItemEventType;
+CREATE TABLE item_event (
+  created_at INTEGER NOT NULL,
+  item_type TEXT NOT NULL,
+  item_key TEXT NOT NULL,
+  event_type TEXT AS ItemEventType NOT NULL
+);
+CREATE INDEX item_event_created_at ON item_event(created_at);
+CREATE INDEX item_event_item_type_created_at ON item_event(item_type, created_at);
+
+insert:
+INSERT INTO item_event VALUES ?;
+
+selectAfter:
+SELECT * FROM item_event WHERE created_at >= ? ORDER BY created_at ASC;
+
+selectItemTypeAfter:
+SELECT * FROM item_event WHERE item_type = ? AND created_at >= ? ORDER BY created_at ASC;
+
+deleteBefore:
+DELETE FROM item_event WHERE created_at < ?;

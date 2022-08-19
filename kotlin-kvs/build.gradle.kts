@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    namespace = "net.irgaly.kkvs"
+    namespace = "io.github.irgaly.kkvs"
 }
 
 kotlin {
