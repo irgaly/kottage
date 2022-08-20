@@ -6,7 +6,7 @@ import io.github.irgaly.kkvs.platform.KkvsPlatformCalendar
 /**
  * Runtime Environment
  */
-expect class KkvsEnvironment {
-    val context: Context
+data class KkvsEnvironment(
+    val context: Context,
     val calendar: KkvsPlatformCalendar
-}
+)

@@ -37,35 +37,19 @@ kotlin {
                 implementation(projects.kotlinKvs.data.sqlite)
             }
         }
-        val commonSqliteTest by creating {
-            dependsOn(commonSqliteMain)
-            dependsOn(commonTest.get())
-        }
         val commonIndexeddbMain by creating {
             dependsOn(commonMain.get())
             dependencies {
                 implementation(projects.kotlinKvs.data.indexeddb)
             }
         }
-        val commonIndexeddbTest by creating {
-            dependsOn(commonIndexeddbMain)
-            dependsOn(commonTest.get())
-        }
         val androidMain by getting {
             dependsOn(commonSqliteMain)
             dependencies {
             }
         }
-        val androidTest by getting {
-            dependsOn(commonSqliteTest)
-        }
         val jvmMain by getting {
             dependsOn(commonSqliteMain)
-            dependencies {
-            }
-        }
-        val jvmTest by getting {
-            dependsOn(commonSqliteTest)
             dependencies {
             }
         }
@@ -74,17 +58,11 @@ kotlin {
             dependencies {
             }
         }
-        val jsTest by getting {
-            dependsOn(commonIndexeddbTest)
-        }
         val nativeMain by getting {
             dependsOn(commonSqliteMain)
             dependencies {
                 implementation(projects.kotlinKvs.data.sqlite)
             }
-        }
-        val nativeTest by getting {
-            dependsOn(commonSqliteTest)
         }
     }
 }
