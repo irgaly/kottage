@@ -1,15 +1,13 @@
 plugins {
-    kotlin("multiplatform")
+    id(libs.plugins.buildlogic.multiplatform.library.get().pluginId)
 }
 
 kotlin {
-    jvm()
+    js(IR) {
+        browser()
+    }
     sourceSets {
         commonMain {
-            dependencies {
-            }
-        }
-        val jvmMain by getting {
             dependencies {
             }
         }

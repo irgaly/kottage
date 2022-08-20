@@ -96,44 +96,87 @@ fun Project.configureMultiplatformLibrary() {
         mingwX64() // 64-bit Microsoft Windows
         sourceSets {
             val commonMain by getting
+            val commonTest by getting
             val nativeMain by creating {
                 dependsOn(commonMain)
+            }
+            val nativeTest by creating {
+                dependsOn(nativeMain)
+                dependsOn(commonTest)
             }
             val darwinMain by creating {
                 dependsOn(nativeMain)
             }
+            val darwinTest by creating {
+                dependsOn(darwinMain)
+                dependsOn(nativeTest)
+            }
             val linuxMain by creating {
                 dependsOn(nativeMain)
+            }
+            val linuxTest by creating {
+                dependsOn(linuxMain)
+                dependsOn(nativeTest)
             }
             val linuxX64Main by getting {
                 dependsOn(linuxMain)
             }
+            val linuxX64Test by getting {
+                dependsOn(linuxTest)
+            }
             val iosMain by getting {
                 dependsOn(darwinMain)
+            }
+            val iosTest by getting {
+                dependsOn(darwinTest)
             }
             val watchosMain by getting {
                 dependsOn(iosMain)
             }
+            val watchosTest by getting {
+                dependsOn(iosTest)
+            }
             val tvosMain by getting {
                 dependsOn(iosMain)
+            }
+            val tvosTest by getting {
+                dependsOn(iosTest)
             }
             val iosSimulatorArm64Main by getting {
                 dependsOn(iosMain)
             }
+            val iosSimulatorArm64Test by getting {
+                dependsOn(iosTest)
+            }
             val watchosSimulatorArm64Main by getting {
                 dependsOn(iosMain)
+            }
+            val watchosSimulatorArm64Test by getting {
+                dependsOn(iosTest)
             }
             val tvosSimulatorArm64Main by getting {
                 dependsOn(iosMain)
             }
+            val tvosSimulatorArm64Test by getting {
+                dependsOn(iosTest)
+            }
             val macosX64Main by getting {
                 dependsOn(darwinMain)
+            }
+            val macosX64Test by getting {
+                dependsOn(darwinTest)
             }
             val macosArm64Main by getting {
                 dependsOn(darwinMain)
             }
+            val macosArm64Test by getting {
+                dependsOn(darwinTest)
+            }
             val mingwX64Main by getting {
                 dependsOn(nativeMain)
+            }
+            val mingwX64Test by getting {
+                dependsOn(nativeTest)
             }
         }
     }
