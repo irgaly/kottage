@@ -21,13 +21,15 @@ subprojects {
     }
     pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {
         extensions.configure<KotlinMultiplatformExtension> {
+            sourceSets {
+                val commonTest by getting {
+                    dependencies {
+                        implementation(libs.bundles.test.common)
+                    }
+                }
+            }
             afterEvaluate {
                 sourceSets {
-                    val commonTest by getting {
-                        dependencies {
-                            implementation(libs.bundles.test.common)
-                        }
-                    }
                     findByName("jvmTest")?.apply {
                         dependencies {
                             implementation(libs.test.kotest.runner)
