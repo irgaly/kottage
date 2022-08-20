@@ -1,5 +1,6 @@
 plugins {
     kotlin("multiplatform")
+    id(libs.plugins.kotest.multiplatform.get().pluginId)
 }
 
 kotlin {
@@ -20,7 +21,7 @@ kotlin {
         }
         val jvmTest by getting {
             dependencies {
-                api(projects.kotlinKvs.core.test)
+                implementation(projects.kotlinKvs.core.test)
             }
         }
         val jsMain by getting {

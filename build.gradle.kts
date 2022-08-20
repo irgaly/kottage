@@ -1,9 +1,11 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     `kotlin-dsl` apply false
     kotlin("multiplatform") apply false
     id("com.android.application") apply false
+    id(libs.plugins.kotest.multiplatform.get().pluginId) apply false
     id("build-logic.dependency-graph")
     alias(libs.plugins.nexus.publish)
 }
@@ -17,11 +19,31 @@ subprojects {
     tasks.withType<Test> {
         useJUnitPlatform()
     }
+    pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {
+        extensions.configure<KotlinMultiplatformExtension> {
+            afterEvaluate {
+                sourceSets {
+                    val commonTest by getting {
+                        dependencies {
+                            implementation(libs.bundles.test.common)
+                        }
+                    }
+                    findByName("jvmTest")?.apply {
+                        dependencies {
+                            implementation(libs.test.kotest.runner)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     if (!path.startsWith(":sample") && !path.endsWith(":test")) {
         apply(plugin = "maven-publish")
         apply(plugin = "signing")
         group = "io.github.irgaly.kkvs"
         afterEvaluate {
+            // afterEvaluate for accessing version catalogs
             version = libs.versions.kkvs.get()
         }
         val emptyJavadocJar = tasks.create<Jar>("emptyJavadocJar") {

@@ -52,6 +52,13 @@ fun VersionCatalog.version(name: String): String {
 }
 
 /**
+ * VersionCatalog pluginId の取得
+ */
+fun VersionCatalog.pluginId(name: String): String {
+    return findPlugin(name).get().get().pluginId
+}
+
+/**
  * multiplatform library 共通設定
  */
 @Suppress("UNUSED_VARIABLE")

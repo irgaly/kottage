@@ -37,7 +37,7 @@ napier = { module = "io.github.aakira:napier", version = "2.6.1" }
 [bundles]
 test-common = [
     "kotlin-reflect", "kotlinx-coroutines-test", "test-kotest-engine",
-    "test-kotest-assertions", "test-mockk"]
+    "test-kotest-assertions"]
 
 [plugins]
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization" }

@@ -8,6 +8,7 @@ class MultiplatformLibraryPlugin: Plugin<Project> {
         with(target) {
             with(pluginManager) {
                 apply("org.jetbrains.kotlin.multiplatform")
+                apply(libs.pluginId("kotest-multiplatform"))
             }
             configureMultiplatformLibrary()
         }

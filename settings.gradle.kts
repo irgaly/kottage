@@ -9,6 +9,7 @@ pluginManagement {
     plugins {
         id("com.android.application") version "7.2.1"
         id("com.android.library") version "7.2.1"
+        id("io.kotest.multiplatform") version "5.0.2"
         kotlin("android") version "1.7.10"
         kotlin("multiplatform") version "1.7.10"
         kotlin("jvm") version "1.7.10"
