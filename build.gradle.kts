@@ -50,6 +50,7 @@ subprojects {
         }
         val emptyJavadocJar = tasks.create<Jar>("emptyJavadocJar") {
             archiveClassifier.set("javadoc")
+            destinationDirectory.set(File(buildDir, "libs_emptyJavadoc"))
         }
         extensions.configure<PublishingExtension> {
             afterEvaluate {
