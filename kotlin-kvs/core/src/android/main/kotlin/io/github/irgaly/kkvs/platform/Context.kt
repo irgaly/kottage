@@ -1,3 +1,14 @@
 package io.github.irgaly.kkvs.platform
 
-actual data class Context(val context: android.content.Context)
+actual class Context {
+    lateinit var context: android.content.Context
+        private set
+
+    actual constructor() {
+        throw NotImplementedError("use context constructor on Android platform")
+    }
+
+    constructor(context: android.content.Context) {
+        this.context = context
+    }
+}

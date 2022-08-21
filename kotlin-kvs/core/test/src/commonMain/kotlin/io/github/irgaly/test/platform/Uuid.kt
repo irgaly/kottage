@@ -1,4 +1,4 @@
-package io.github.iragly.test.platform
+package io.github.irgaly.test.platform
 
 expect class Uuid {
     companion object {

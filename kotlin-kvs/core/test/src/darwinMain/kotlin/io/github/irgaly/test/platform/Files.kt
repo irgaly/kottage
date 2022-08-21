@@ -1,4 +1,4 @@
-package io.github.iragly.test.platform
+package io.github.irgaly.test.platform
 
 import kotlinx.cinterop.*
 import platform.Foundation.*
@@ -25,6 +25,23 @@ actual class Files {
                     throw Exception(error.toString())
                 }
                 checkNotNull(result)
+            }
+        }
+
+        actual fun deleteRecursively(directoryPath: String): Boolean {
+            return memScoped {
+                // https://developer.apple.com/documentation/foundation/nsfilemanager/1413590-removeitematurl
+                val manager = NSFileManager.defaultManager
+                val errorPtr = alloc<ObjCObjectVar<NSError?>>().ptr
+                val removed = manager.removeItemAtURL(
+                    URL = NSURL(fileURLWithPath = directoryPath),
+                    error = errorPtr
+                )
+                val error = errorPtr.pointed.value
+                if (error != null) {
+                    throw Exception(error.toString())
+                }
+                removed
             }
         }
     }

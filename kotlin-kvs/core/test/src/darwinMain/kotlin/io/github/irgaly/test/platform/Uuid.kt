@@ -1,7 +1,6 @@
-package io.github.iragly.test.platform
+package io.github.irgaly.test.platform
 
 import platform.Foundation.NSUUID
-
 
 actual class Uuid {
     actual companion object {

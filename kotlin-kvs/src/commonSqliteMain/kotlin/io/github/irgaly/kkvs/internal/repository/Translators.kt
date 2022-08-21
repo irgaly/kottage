@@ -6,7 +6,7 @@ import io.github.irgaly.kkvs.internal.model.ItemEventType
 
 internal fun io.github.irgaly.kkvs.data.sqlite.Item.toDomain(): Item {
     return Item(
-        key = key,
+        key = Item.fromEntityKey(key, type),
         type = type,
         stringValue = string_value,
         longValue = long_value,
@@ -20,7 +20,7 @@ internal fun io.github.irgaly.kkvs.data.sqlite.Item.toDomain(): Item {
 
 internal fun Item.toEntity(): io.github.irgaly.kkvs.data.sqlite.Item {
     return io.github.irgaly.kkvs.data.sqlite.Item(
-        key = key,
+        key = getEntityKey(),
         type = type,
         string_value = stringValue,
         long_value = longValue,
@@ -36,8 +36,17 @@ internal fun io.github.irgaly.kkvs.data.sqlite.Item_event.toDomain(): ItemEvent 
     return ItemEvent(
         createdAt = created_at,
         itemType = item_type,
-        itemKey = item_key,
+        itemKey = Item.fromEntityKey(item_key, item_type),
         eventType = event_type.toDomain()
+    )
+}
+
+internal fun ItemEvent.toEntity(): io.github.irgaly.kkvs.data.sqlite.Item_event {
+    return io.github.irgaly.kkvs.data.sqlite.Item_event(
+        created_at = createdAt,
+        item_type = itemType,
+        item_key = Item.toEntityKey(itemKey, itemType),
+        event_type = eventType.toEntity()
     )
 }
 

@@ -12,6 +12,20 @@ internal data class Item(
     val lastReadAt: Long,
     val expireAt: Long?
 ) {
+    companion object {
+        fun toEntityKey(key: String, type: String): String {
+            return "$type+$key"
+        }
+
+        fun fromEntityKey(entityKey: String, type: String): String {
+            return entityKey.removePrefix("$type+")
+        }
+    }
+
+    fun getEntityKey(): String {
+        return toEntityKey(key, type)
+    }
+
     fun isAvailable(now: Long): Boolean {
         return expireAt?.let { now < it } ?: true
     }

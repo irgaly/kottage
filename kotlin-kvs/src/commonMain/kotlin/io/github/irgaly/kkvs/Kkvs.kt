@@ -1,8 +1,8 @@
 package io.github.irgaly.kkvs
 
-import kotlinx.serialization.json.Json
 import io.github.irgaly.kkvs.internal.KkvsDatabaseManager
 import io.github.irgaly.kkvs.internal.KkvsStorageImpl
+import kotlinx.serialization.json.Json
 
 /**
  * Kotlin KVS

@@ -29,6 +29,7 @@ kotlin {
         commonTest {
             dependencies {
                 implementation(projects.kotlinKvs.core.test)
+                implementation(libs.klock)
             }
         }
         val commonSqliteMain by creating {

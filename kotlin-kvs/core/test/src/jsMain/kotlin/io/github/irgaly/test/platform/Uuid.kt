@@ -1,5 +1,4 @@
-package io.github.iragly.test.platform
-
+package io.github.irgaly.test.platform
 
 actual class Uuid {
     actual companion object {

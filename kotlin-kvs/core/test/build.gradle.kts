@@ -9,6 +9,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
+                implementation(libs.test.kotest.engine)
             }
         }
     }

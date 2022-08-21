@@ -1,19 +1,19 @@
 package io.github.irgaly.kkvs.internal.repository
 
 import com.squareup.sqldelight.db.use
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import io.github.irgaly.kkvs.data.sqlite.KkvsDatabase
 import io.github.irgaly.kkvs.data.sqlite.extension.executeAsExists
 import io.github.irgaly.kkvs.internal.model.Item
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 internal class KkvsSqliteItemRepository(
     private val database: KkvsDatabase,
     private val itemType: String
 ) : KkvsItemRepository {
     init {
-        check(itemType.contains("+")) {
+        require(!itemType.contains("+")) {
             "itemType should not contains \"+\": itemType = \"$itemType\""
         }
     }
@@ -26,24 +26,24 @@ internal class KkvsSqliteItemRepository(
     override suspend fun updateLastRead(key: String, lastReadAt: Long) =
         withContext(Dispatchers.Default) {
             database.itemQueries
-                .updateLastRead(lastReadAt, key)
+                .updateLastRead(lastReadAt, Item.toEntityKey(key, itemType))
         }
 
     override suspend fun updateExpireAt(key: String, expireAt: Long) =
         withContext(Dispatchers.Default) {
             database.itemQueries
-                .updateExpireAt(expireAt, key)
+                .updateExpireAt(expireAt, Item.toEntityKey(key, itemType))
         }
 
     override suspend fun exists(key: String): Boolean = withContext(Dispatchers.Default) {
         database.itemQueries
-            .selectKey(key(key))
+            .selectKey(Item.toEntityKey(key, itemType))
             .executeAsExists()
     }
 
     override suspend fun get(key: String): Item? = withContext(Dispatchers.Default) {
         database.itemQueries
-            .select(key(key))
+            .select(Item.toEntityKey(key, itemType))
             .executeAsOneOrNull()?.toDomain()
     }
 
@@ -61,7 +61,7 @@ internal class KkvsSqliteItemRepository(
                     runBlocking {
                         while (cursor.next()) {
                             val key = checkNotNull(cursor.getString(0))
-                            receiver(key)
+                            receiver(Item.fromEntityKey(key, itemType))
                         }
                     }
                 }
@@ -69,7 +69,7 @@ internal class KkvsSqliteItemRepository(
 
     override suspend fun delete(key: String) = withContext(Dispatchers.Default) {
         database.itemQueries
-            .delete(key(key))
+            .delete(Item.toEntityKey(key, itemType))
     }
 
     override suspend fun deleteLeastRecentlyUsed(limit: Long) = withContext(Dispatchers.Default) {
@@ -131,9 +131,5 @@ internal class KkvsSqliteItemRepository(
     override suspend fun deleteStats() = withContext(Dispatchers.Default) {
         database.item_statsQueries
             .delete(itemType)
-    }
-
-    private fun key(key: String): String {
-        return "${itemType}+${key}"
     }
 }
