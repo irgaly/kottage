@@ -1,4 +1,5 @@
 import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
     id(libs.plugins.buildlogic.multiplatform.library.get().pluginId)
@@ -63,6 +64,16 @@ kotlin {
             dependsOn(commonSqliteMain)
             dependencies {
                 implementation(projects.kotlinKvs.data.sqlite)
+            }
+        }
+    }
+    targets.withType<KotlinNativeTarget> {
+        if (listOf("ios", "macos", "tvos", "watchos").any { it in name }) {
+            binaries.all {
+                // fix test build: "Undefined symbols for architecture arm64:"
+                // https://github.com/cashapp/sqldelight/issues/3296
+                // https://github.com/cashapp/sqldelight/blob/ee8eb4390dedaaf735937896aef9f0ed56f3281e/drivers/native-driver/build.gradle
+                linkerOpts.add("-lsqlite3")
             }
         }
     }
