@@ -33,6 +33,8 @@ internal class FrameworkSQLiteOpenHelperFactory(
             configuration.callback,
             directoryPath,
             configuration.useNoBackupDirectory
-        )
+        ).apply {
+            setWriteAheadLoggingEnabled(true)
+        }
     }
 }

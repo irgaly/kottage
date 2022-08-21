@@ -1,0 +1,15 @@
+-- pragma get: support from sqldelight 2.0.0-alpha02
+--getUserVersion:
+--PRAGMA user_version;
+
+--getSynchronous:
+--PRAGMA synchronous;
+
+--getJournalMode:
+--PRAGMA journal_mode;
+
+--getAutoVacuum:
+--PRAGMA auto_vacuum;
+
+--getLockingMode:
+--PRAGMA locking_mode;

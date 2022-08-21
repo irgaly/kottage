@@ -12,6 +12,8 @@ internal expect class DatabaseConnection {
      * * this does not drop tables
      */
     suspend fun deleteAll()
+
+    suspend fun getDatabaseStatus(): String
 }
 
 internal expect fun createDatabaseConnection(

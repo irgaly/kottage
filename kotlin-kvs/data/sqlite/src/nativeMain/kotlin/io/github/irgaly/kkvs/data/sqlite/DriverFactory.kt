@@ -1,6 +1,8 @@
 package io.github.irgaly.kkvs.data.sqlite
 
 import co.touchlab.sqliter.DatabaseConfiguration
+import co.touchlab.sqliter.JournalMode
+import co.touchlab.sqliter.SynchronousFlag
 import com.squareup.sqldelight.db.SqlDriver
 import com.squareup.sqldelight.drivers.native.NativeSqliteDriver
 import com.squareup.sqldelight.drivers.native.wrapConnection
@@ -20,8 +22,10 @@ actual class DriverFactory actual constructor(private val context: Context) {
                     wrapConnection(connection) { schema.migrate(it, oldVersion, newVersion) }
                 },
                 inMemory = false,
+                journalMode = JournalMode.WAL,
                 extendedConfig = DatabaseConfiguration.Extended(
-                    basePath = directoryPath
+                    basePath = directoryPath,
+                    synchronousFlag = SynchronousFlag.NORMAL
                 )
             ),
         )

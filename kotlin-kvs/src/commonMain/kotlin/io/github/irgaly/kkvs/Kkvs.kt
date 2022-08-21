@@ -39,4 +39,8 @@ class Kkvs(
     suspend fun clear() {
         databaseManager.deleteAll()
     }
+
+    suspend fun getDatabaseStatus(): String {
+        return databaseManager.getDatabaseStatus()
+    }
 }

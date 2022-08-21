@@ -26,11 +26,15 @@ internal class KkvsDatabaseManager(
         repositoryFactory.createItemEventRepository()
     }
 
-    suspend fun <R> transactionWithResult(bodyWithReturn: suspend () -> R): R
-        = databaseConnection.transactionWithResult(bodyWithReturn)
-    suspend fun transaction(body: suspend () -> Unit)
-        = databaseConnection.transaction(body)
+    suspend fun <R> transactionWithResult(bodyWithReturn: suspend () -> R): R =
+        databaseConnection.transactionWithResult(bodyWithReturn)
+
+    suspend fun transaction(body: suspend () -> Unit) = databaseConnection.transaction(body)
     suspend fun deleteAll() {
         databaseConnection.deleteAll()
+    }
+
+    suspend fun getDatabaseStatus(): String {
+        return databaseConnection.getDatabaseStatus()
     }
 }
