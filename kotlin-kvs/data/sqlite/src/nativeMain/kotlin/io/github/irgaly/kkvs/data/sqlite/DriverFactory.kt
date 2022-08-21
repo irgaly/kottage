@@ -13,7 +13,7 @@ actual class DriverFactory actual constructor(private val context: Context) {
         val schema = KkvsDatabase.Schema
         return NativeSqliteDriver(
             DatabaseConfiguration(
-                name = fileName,
+                name = "$fileName.db",
                 version = schema.version,
                 create = { connection ->
                     wrapConnection(connection) { schema.create(it) }

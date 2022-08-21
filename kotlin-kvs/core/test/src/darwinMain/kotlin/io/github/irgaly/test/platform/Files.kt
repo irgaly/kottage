@@ -19,7 +19,7 @@ actual class Files {
                     appropriateForURL = manager.temporaryDirectory,
                     create = true,
                     error = errorPtr
-                )?.absoluteString
+                )?.path
                 val error = errorPtr.pointed.value
                 if (error != null) {
                     throw Exception(error.toString())
