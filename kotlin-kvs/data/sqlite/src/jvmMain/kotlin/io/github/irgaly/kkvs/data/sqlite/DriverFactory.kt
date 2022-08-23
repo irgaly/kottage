@@ -24,7 +24,27 @@ actual class DriverFactory actual constructor(private val context: Context) {
                 put("busy_timeout", "3000")
             }
         )
-        KkvsDatabase.Schema.create(driver)
+        // TODO: do async initialization (or lazy initialization)
+        migrateIfNeeded(driver)
         return driver
+    }
+
+    private fun migrateIfNeeded(driver: JdbcSqliteDriver) {
+        val oldVersion = driver.executeQuery(null, "PRAGMA user_version", 0).use { cursor ->
+            if (cursor.next()) {
+                cursor.getLong(0)?.toInt()
+            } else {
+                null
+            }
+        } ?: 0
+        val newVersion = KkvsDatabase.Schema.version
+        if (oldVersion == 0) {
+            KkvsDatabase.Schema.create(driver)
+            driver.execute(null, "PRAGMA user_version=$newVersion", 0)
+        } else if (oldVersion < newVersion) {
+            // migrate oldVersion -> newVersion
+            KkvsDatabase.Schema.migrate(driver, oldVersion, newVersion)
+            driver.execute(null, "PRAGMA user_version=$newVersion", 0)
+        }
     }
 }

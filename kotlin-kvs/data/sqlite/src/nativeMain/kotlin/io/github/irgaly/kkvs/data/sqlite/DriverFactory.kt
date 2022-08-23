@@ -34,7 +34,7 @@ actual class DriverFactory actual constructor(private val context: Context) {
                     basePath = directoryPath,
                     synchronousFlag = SynchronousFlag.NORMAL
                 )
-            ),
+            )
         )
     }
 }
