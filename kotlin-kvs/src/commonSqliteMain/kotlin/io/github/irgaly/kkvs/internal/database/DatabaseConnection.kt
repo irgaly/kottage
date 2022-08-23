@@ -45,30 +45,35 @@ internal actual data class DatabaseConnection(
             //val synchronous = database.pragmaQueries.getSynchronous()
             //val autoVacuum = database.pragmaQueries.getAutoVacuum()
             //val lockingMode = database.pragmaQueries.getLockingMode()
-            val userVersion = sqlDriver.executeQuery(null, "PRAGMA user_version", 0, null).use {
+            val userVersion = sqlDriver.executeQuery(null, "PRAGMA user_version", 0).use {
                 if (it.next()) {
                     it.getLong(0)
                 } else null
             }
             // Good: WAL + synchronous = NORMAL(1)
-            val journalMode = sqlDriver.executeQuery(null, "PRAGMA journal_mode", 0, null).use {
+            val journalMode = sqlDriver.executeQuery(null, "PRAGMA journal_mode", 0).use {
                 if (it.next()) {
                     it.getString(0)
                 } else null
             }
-            val synchronous = sqlDriver.executeQuery(null, "PRAGMA synchronous", 0, null).use {
+            val synchronous = sqlDriver.executeQuery(null, "PRAGMA synchronous", 0).use {
                 if (it.next()) {
                     it.getLong(0)
                 } else null
             }
-            val autoVacuum = sqlDriver.executeQuery(null, "PRAGMA auto_vacuum", 0, null).use {
+            val autoVacuum = sqlDriver.executeQuery(null, "PRAGMA auto_vacuum", 0).use {
                 if (it.next()) {
                     it.getLong(0)
                 } else null
             }
-            val lockingMode = sqlDriver.executeQuery(null, "PRAGMA locking_mode", 0, null).use {
+            val lockingMode = sqlDriver.executeQuery(null, "PRAGMA locking_mode", 0).use {
                 if (it.next()) {
                     it.getString(0)
+                } else null
+            }
+            val busyTimeout = sqlDriver.executeQuery(null, "PRAGMA busy_timeout", 0).use {
+                if (it.next()) {
+                    it.getLong(0)
                 } else null
             }
             """
@@ -77,6 +82,7 @@ internal actual data class DatabaseConnection(
                 synchronous = $synchronous
                 auto_vacuum = $autoVacuum
                 locking_mode = $lockingMode
+                busy_timeout = $busyTimeout
             """.trimIndent()
         }
     }
