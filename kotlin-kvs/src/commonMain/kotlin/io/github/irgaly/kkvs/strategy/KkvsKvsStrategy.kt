@@ -8,11 +8,11 @@ class KkvsKvsStrategy: KkvsStrategy {
         // do nothing
     }
 
-    override suspend fun onItemRead(key: String, now: Long) {
+    override fun onItemRead(key: String, now: Long) {
         // do nothing
     }
 
-    override suspend fun onPostItemCreate(key: String, itemCount: Long, now: Long) {
+    override fun onPostItemCreate(key: String, itemCount: Long, now: Long) {
         // do nothing
     }
 }

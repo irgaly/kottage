@@ -1,13 +1,14 @@
 package io.github.irgaly.kkvs.internal.database
 
 import io.github.irgaly.kkvs.KkvsEnvironment
+import kotlinx.coroutines.CoroutineDispatcher
 
 internal actual class DatabaseConnection {
-    actual suspend fun <R> transactionWithResult(bodyWithReturn: suspend () -> R): R {
+    actual suspend fun <R> transactionWithResult(bodyWithReturn: () -> R): R {
         TODO("Not yet implemented")
     }
 
-    actual suspend fun transaction(body: suspend () -> Unit) {
+    actual suspend fun transaction(body: () -> Unit) {
         TODO("Not yet implemented")
     }
 
@@ -23,7 +24,8 @@ internal actual class DatabaseConnection {
 internal actual fun createDatabaseConnection(
     fileName: String,
     directoryPath: String,
-    environment: KkvsEnvironment
+    environment: KkvsEnvironment,
+    dispatcher: CoroutineDispatcher
 ): DatabaseConnection {
     TODO()
 }

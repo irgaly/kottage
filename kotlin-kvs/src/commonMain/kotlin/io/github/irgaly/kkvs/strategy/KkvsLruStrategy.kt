@@ -18,11 +18,11 @@ class KkvsLruStrategy(
         this.operator = operator
     }
 
-    override suspend fun onItemRead(key: String, now: Long) {
+    override fun onItemRead(key: String, now: Long) {
         operator.updateItemLastRead(key, now)
     }
 
-    override suspend fun onPostItemCreate(key: String, itemCount: Long, now: Long) {
+    override fun onPostItemCreate(key: String, itemCount: Long, now: Long) {
         if (maxEntryCount < itemCount) {
             // reduce caches
             operator.deleteLeastRecentlyUsed(calculatedReduceCount)

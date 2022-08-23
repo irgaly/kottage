@@ -5,6 +5,13 @@ interface KkvsStrategy {
         operator: KkvsStrategyOperator
     )
 
-    suspend fun onItemRead(key: String, now: Long)
-    suspend fun onPostItemCreate(key: String, itemCount: Long, now: Long)
+    /**
+     * called in transaction
+     */
+    fun onItemRead(key: String, now: Long)
+
+    /**
+     * called in transaction
+     */
+    fun onPostItemCreate(key: String, itemCount: Long, now: Long)
 }

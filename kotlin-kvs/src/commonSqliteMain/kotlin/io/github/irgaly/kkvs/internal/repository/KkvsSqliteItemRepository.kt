@@ -4,9 +4,7 @@ import com.squareup.sqldelight.db.use
 import io.github.irgaly.kkvs.data.sqlite.KkvsDatabase
 import io.github.irgaly.kkvs.data.sqlite.extension.executeAsExists
 import io.github.irgaly.kkvs.internal.model.Item
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 
 internal class KkvsSqliteItemRepository(
     private val database: KkvsDatabase,
@@ -18,61 +16,58 @@ internal class KkvsSqliteItemRepository(
         }
     }
 
-    override suspend fun upsert(item: Item) = withContext(Dispatchers.Default) {
+    override fun upsert(item: Item) {
         database.itemQueries
             .replace(item.toEntity())
     }
 
-    override suspend fun updateLastRead(key: String, lastReadAt: Long) =
-        withContext(Dispatchers.Default) {
-            database.itemQueries
-                .updateLastRead(lastReadAt, Item.toEntityKey(key, itemType))
-        }
-
-    override suspend fun updateExpireAt(key: String, expireAt: Long) =
-        withContext(Dispatchers.Default) {
-            database.itemQueries
-                .updateExpireAt(expireAt, Item.toEntityKey(key, itemType))
-        }
-
-    override suspend fun exists(key: String): Boolean = withContext(Dispatchers.Default) {
+    override fun updateLastRead(key: String, lastReadAt: Long) {
         database.itemQueries
+            .updateLastRead(lastReadAt, Item.toEntityKey(key, itemType))
+    }
+
+    override fun updateExpireAt(key: String, expireAt: Long) {
+        database.itemQueries
+            .updateExpireAt(expireAt, Item.toEntityKey(key, itemType))
+    }
+
+    override fun exists(key: String): Boolean {
+        return database.itemQueries
             .selectKey(Item.toEntityKey(key, itemType))
             .executeAsExists()
     }
 
-    override suspend fun get(key: String): Item? = withContext(Dispatchers.Default) {
-        database.itemQueries
+    override fun get(key: String): Item? {
+        return database.itemQueries
             .select(Item.toEntityKey(key, itemType))
             .executeAsOneOrNull()?.toDomain()
     }
 
-    override suspend fun getCount(): Long = withContext(Dispatchers.Default) {
-        database.itemQueries
+    override fun getCount(): Long {
+        return database.itemQueries
             .countByType(itemType)
             .executeAsOne()
     }
 
-    override suspend fun getAllKeys(receiver: suspend (key: String) -> Unit) =
-        withContext(Dispatchers.Default) {
-            database.itemQueries
-                .selectAllKeys(itemType)
-                .execute().use { cursor ->
-                    runBlocking {
-                        while (cursor.next()) {
-                            val key = checkNotNull(cursor.getString(0))
-                            receiver(Item.fromEntityKey(key, itemType))
-                        }
+    override fun getAllKeys(receiver: (key: String) -> Unit) {
+        return database.itemQueries
+            .selectAllKeys(itemType)
+            .execute().use { cursor ->
+                runBlocking {
+                    while (cursor.next()) {
+                        val key = checkNotNull(cursor.getString(0))
+                        receiver(Item.fromEntityKey(key, itemType))
                     }
                 }
-        }
+            }
+    }
 
-    override suspend fun delete(key: String) = withContext(Dispatchers.Default) {
+    override fun delete(key: String) {
         database.itemQueries
             .delete(Item.toEntityKey(key, itemType))
     }
 
-    override suspend fun deleteLeastRecentlyUsed(limit: Long) = withContext(Dispatchers.Default) {
+    override fun deleteLeastRecentlyUsed(limit: Long) {
         database.itemQueries
             .selectLeastRecentlyUsedKeys(itemType, limit)
             .execute().use { cursor ->
@@ -84,7 +79,7 @@ internal class KkvsSqliteItemRepository(
             }
     }
 
-    override suspend fun deleteOlderItems(limit: Long) = withContext(Dispatchers.Default) {
+    override fun deleteOlderItems(limit: Long) {
         database.itemQueries
             .selectOlderCreatedKeys(itemType, limit)
             .execute().use { cursor ->
@@ -96,39 +91,39 @@ internal class KkvsSqliteItemRepository(
             }
     }
 
-    override suspend fun deleteAll() = withContext(Dispatchers.Default) {
+    override fun deleteAll() {
         database.itemQueries
             .deleteAllByType(itemType)
     }
 
-    override suspend fun getStatsCount(): Long = withContext(Dispatchers.Default) {
-        database.item_statsQueries
+    override fun getStatsCount(): Long {
+        return database.item_statsQueries
             .select(itemType)
             .executeAsOneOrNull()?.count ?: 0
     }
 
-    override suspend fun incrementStatsCount(count: Long) = withContext(Dispatchers.Default) {
+    override fun incrementStatsCount(count: Long) {
         database.item_statsQueries
             .insertIfNotExists(itemType)
         database.item_statsQueries
             .incrementCount(count, itemType)
     }
 
-    override suspend fun decrementStatsCount(count: Long) = withContext(Dispatchers.Default) {
+    override fun decrementStatsCount(count: Long) {
         database.item_statsQueries
             .insertIfNotExists(itemType)
         database.item_statsQueries
             .decrementCount(count, itemType)
     }
 
-    override suspend fun updateStatsCount(count: Long) = withContext(Dispatchers.Default) {
+    override fun updateStatsCount(count: Long) {
         database.item_statsQueries
             .insertIfNotExists(itemType)
         database.item_statsQueries
             .updateCount(count, itemType)
     }
 
-    override suspend fun deleteStats() = withContext(Dispatchers.Default) {
+    override fun deleteStats() {
         database.item_statsQueries
             .delete(itemType)
     }

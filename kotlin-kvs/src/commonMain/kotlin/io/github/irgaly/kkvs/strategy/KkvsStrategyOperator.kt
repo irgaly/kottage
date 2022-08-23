@@ -1,7 +1,7 @@
 package io.github.irgaly.kkvs.strategy
 
 interface KkvsStrategyOperator {
-    suspend fun updateItemLastRead(key: String, now: Long)
-    suspend fun deleteLeastRecentlyUsed(limit: Long)
-    suspend fun deleteOlderItems(limit: Long)
+    fun updateItemLastRead(key: String, now: Long)
+    fun deleteLeastRecentlyUsed(limit: Long)
+    fun deleteOlderItems(limit: Long)
 }

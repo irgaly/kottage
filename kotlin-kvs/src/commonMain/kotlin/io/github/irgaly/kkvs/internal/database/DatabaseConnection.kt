@@ -1,10 +1,20 @@
 package io.github.irgaly.kkvs.internal.database
 
 import io.github.irgaly.kkvs.KkvsEnvironment
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 
 internal expect class DatabaseConnection {
-    suspend fun <R> transactionWithResult(bodyWithReturn: suspend () -> R): R
-    suspend fun transaction(body: suspend () -> Unit)
+    /**
+     * Exclusive Transaction
+     */
+    suspend fun <R> transactionWithResult(bodyWithReturn: () -> R): R
+
+    /**
+     * Exclusive Transaction
+     */
+    suspend fun transaction(body: () -> Unit)
+
 
     /**
      * Delete all records from all tables
@@ -19,5 +29,6 @@ internal expect class DatabaseConnection {
 internal expect fun createDatabaseConnection(
     fileName: String,
     directoryPath: String,
-    environment: KkvsEnvironment
+    environment: KkvsEnvironment,
+    dispatcher: CoroutineDispatcher = Dispatchers.Default
 ): DatabaseConnection

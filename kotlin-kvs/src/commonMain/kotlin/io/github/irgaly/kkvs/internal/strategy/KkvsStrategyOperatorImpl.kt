@@ -11,17 +11,17 @@ internal class KkvsStrategyOperatorImpl(
         databaseManager.getItemRepository(itemType)
     }
 
-    override suspend fun updateItemLastRead(key: String, now: Long) {
+    override fun updateItemLastRead(key: String, now: Long) {
         itemRepository.updateLastRead(key, now)
     }
 
-    override suspend fun deleteLeastRecentlyUsed(limit: Long) {
+    override fun deleteLeastRecentlyUsed(limit: Long) {
         itemRepository.deleteLeastRecentlyUsed(limit)
         val count = itemRepository.getCount()
         itemRepository.updateStatsCount(count)
     }
 
-    override suspend fun deleteOlderItems(limit: Long) {
+    override fun deleteOlderItems(limit: Long) {
         itemRepository.deleteOlderItems(limit)
         val count = itemRepository.getCount()
         itemRepository.updateStatsCount(count)

@@ -2,6 +2,8 @@ package io.github.irgaly.kkvs
 
 import io.github.irgaly.kkvs.internal.KkvsDatabaseManager
 import io.github.irgaly.kkvs.internal.KkvsStorageImpl
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.json.Json
 
 /**
@@ -11,7 +13,8 @@ class Kkvs(
     val name: String,
     val directoryPath: String,
     val environment: KkvsEnvironment,
-    val json: Json = Json
+    val json: Json = Json,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
 ) {
     companion object {
         /**
@@ -23,7 +26,7 @@ class Kkvs(
     }
 
     private val databaseManager by lazy {
-        KkvsDatabaseManager(name, directoryPath, environment)
+        KkvsDatabaseManager(name, directoryPath, environment, dispatcher)
     }
 
     fun storage(name: String, options: KkvsStorageOptions): KkvsStorage {
@@ -32,7 +35,8 @@ class Kkvs(
             options.json ?: json,
             options,
             databaseManager,
-            environment.calendar
+            environment.calendar,
+            dispatcher
         )
     }
 

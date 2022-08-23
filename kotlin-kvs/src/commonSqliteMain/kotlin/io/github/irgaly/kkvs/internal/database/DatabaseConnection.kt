@@ -7,38 +7,45 @@ import io.github.irgaly.kkvs.KkvsEnvironment
 import io.github.irgaly.kkvs.data.sqlite.DriverFactory
 import io.github.irgaly.kkvs.data.sqlite.Item_event
 import io.github.irgaly.kkvs.data.sqlite.KkvsDatabase
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.withContext
 
+@OptIn(ExperimentalCoroutinesApi::class)
 internal actual data class DatabaseConnection(
     val sqlDriver: SqlDriver,
-    val database: KkvsDatabase
+    val database: KkvsDatabase,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
 ) {
-    actual suspend fun <R> transactionWithResult(bodyWithReturn: suspend () -> R): R =
-        withContext(Dispatchers.Default) {
+    actual suspend fun <R> transactionWithResult(bodyWithReturn: () -> R): R =
+        withContext(dispatcher) {
+            // SQLDelight Transaction = DEFERRED (default)
             database.transactionWithResult {
-                runBlocking {
-                    bodyWithReturn()
-                }
+                // restart transaction with EXCLUSIVE
+                sqlDriver.execute(null, "END", 0)
+                sqlDriver.execute(null, "BEGIN EXCLUSIVE", 0)
+                bodyWithReturn()
             }
         }
 
-    actual suspend fun transaction(body: suspend () -> Unit) = withContext(Dispatchers.Default) {
+    actual suspend fun transaction(body: () -> Unit) = withContext(dispatcher) {
+        // SQLDelight Transaction = DEFERRED (default)
         database.transaction {
-            runBlocking {
-                body()
-            }
+            // restart transaction with EXCLUSIVE
+            sqlDriver.execute(null, "END", 0)
+            sqlDriver.execute(null, "BEGIN EXCLUSIVE", 0)
+            body()
         }
     }
 
-    actual suspend fun deleteAll() = withContext(Dispatchers.Default) {
+    actual suspend fun deleteAll() = withContext(dispatcher) {
         database.transaction {
             database.itemQueries.deleteAll()
         }
     }
 
-    actual suspend fun getDatabaseStatus(): String = withContext(Dispatchers.Default) {
+    actual suspend fun getDatabaseStatus(): String = withContext(dispatcher) {
         database.transactionWithResult {
             //val userVersion = database.pragmaQueries.getUserVersion()
             //val journalMode = database.pragmaQueries.getJournalMode()
@@ -91,9 +98,10 @@ internal actual data class DatabaseConnection(
 internal actual fun createDatabaseConnection(
     fileName: String,
     directoryPath: String,
-    environment: KkvsEnvironment
+    environment: KkvsEnvironment,
+    dispatcher: CoroutineDispatcher
 ): DatabaseConnection {
     val driver = DriverFactory(environment.context).createDriver(fileName, directoryPath)
     val database = KkvsDatabase(driver, Item_event.Adapter(EnumColumnAdapter()))
-    return DatabaseConnection(driver, database)
+    return DatabaseConnection(driver, database, dispatcher)
 }
