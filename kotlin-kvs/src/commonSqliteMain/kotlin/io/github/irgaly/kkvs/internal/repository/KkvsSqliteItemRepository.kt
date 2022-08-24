@@ -53,11 +53,9 @@ internal class KkvsSqliteItemRepository(
         return database.itemQueries
             .selectAllKeys(itemType)
             .execute().use { cursor ->
-                runBlocking {
-                    while (cursor.next()) {
-                        val key = checkNotNull(cursor.getString(0))
-                        receiver(Item.fromEntityKey(key, itemType))
-                    }
+                while (cursor.next()) {
+                    val key = checkNotNull(cursor.getString(0))
+                    receiver(Item.fromEntityKey(key, itemType))
                 }
             }
     }
