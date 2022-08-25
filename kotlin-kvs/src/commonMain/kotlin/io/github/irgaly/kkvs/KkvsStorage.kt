@@ -48,7 +48,7 @@ interface KkvsStorage {
     /**
      * Clean Expired entries
      */
-    suspend fun clean()
+    suspend fun compact()
 
     /**
      * Delete all entries and events

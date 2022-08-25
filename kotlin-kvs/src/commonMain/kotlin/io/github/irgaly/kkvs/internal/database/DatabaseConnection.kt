@@ -23,6 +23,11 @@ internal expect class DatabaseConnection {
      */
     suspend fun deleteAll()
 
+    /**
+     * reduce database file
+     */
+    suspend fun compact()
+
     suspend fun getDatabaseStatus(): String
 }
 

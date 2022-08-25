@@ -224,7 +224,7 @@ internal class KkvsStorageImpl(
         }
     }
 
-    override suspend fun clean() = withContext(dispatcher) {
+    override suspend fun compact() = withContext(dispatcher) {
         TODO("Not yet implemented")
     }
 

@@ -45,6 +45,13 @@ internal actual data class DatabaseConnection(
         }
     }
 
+    actual suspend fun compact() = withContext(dispatcher) {
+        // reduce WAL file size to zero / https://www.sqlite.org/pragma.html#pragma_wal_checkpoint
+        sqlDriver.execute(null, "PRAGMA wal_checkpoint(TRUNCATE)", 0)
+        // reduce database file size and optimize b-tree / https://www.sqlite.org/matrix/lang_vacuum.html
+        sqlDriver.execute(null, "VACUUM", 0)
+    }
+
     actual suspend fun getDatabaseStatus(): String = withContext(dispatcher) {
         database.transactionWithResult {
             //val userVersion = database.pragmaQueries.getUserVersion()

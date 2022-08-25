@@ -40,6 +40,10 @@ class Kkvs(
         )
     }
 
+    suspend fun compact() {
+        databaseManager.compact()
+    }
+
     suspend fun clear() {
         databaseManager.deleteAll()
     }

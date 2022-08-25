@@ -37,6 +37,10 @@ internal class KkvsDatabaseManager(
         databaseConnection.deleteAll()
     }
 
+    suspend fun compact() {
+        databaseConnection.compact()
+    }
+
     suspend fun getDatabaseStatus(): String {
         return databaseConnection.getDatabaseStatus()
     }
