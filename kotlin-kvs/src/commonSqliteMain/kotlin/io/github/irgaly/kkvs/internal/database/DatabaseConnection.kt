@@ -70,7 +70,23 @@ internal actual data class DatabaseConnection(
                     it.getString(0)
                 } else null
             }
+            val walAutoCheckpoint =
+                sqlDriver.executeQuery(null, "PRAGMA wal_autocheckpoint", 0).use {
+                    if (it.next()) {
+                        it.getLong(0)
+                    } else null
+                }
             val synchronous = sqlDriver.executeQuery(null, "PRAGMA synchronous", 0).use {
+                if (it.next()) {
+                    it.getLong(0)
+                } else null
+            }
+            val tempStore = sqlDriver.executeQuery(null, "PRAGMA temp_store", 0).use {
+                if (it.next()) {
+                    it.getLong(0)
+                } else null
+            }
+            val memoryMapSize = sqlDriver.executeQuery(null, "PRAGMA mmap_size", 0).use {
                 if (it.next()) {
                     it.getLong(0)
                 } else null
@@ -80,9 +96,29 @@ internal actual data class DatabaseConnection(
                     it.getLong(0)
                 } else null
             }
+            val freelistCount = sqlDriver.executeQuery(null, "PRAGMA freelist_count", 0).use {
+                if (it.next()) {
+                    it.getLong(0)
+                } else null
+            }
             val lockingMode = sqlDriver.executeQuery(null, "PRAGMA locking_mode", 0).use {
                 if (it.next()) {
                     it.getString(0)
+                } else null
+            }
+            val maxPageCount = sqlDriver.executeQuery(null, "PRAGMA max_page_count", 0).use {
+                if (it.next()) {
+                    it.getLong(0)
+                } else null
+            }
+            val cacheSize = sqlDriver.executeQuery(null, "PRAGMA cache_size", 0).use {
+                if (it.next()) {
+                    it.getLong(0)
+                } else null
+            }
+            val pageSize = sqlDriver.executeQuery(null, "PRAGMA page_size", 0).use {
+                if (it.next()) {
+                    it.getLong(0)
                 } else null
             }
             val busyTimeout = sqlDriver.executeQuery(null, "PRAGMA busy_timeout", 0).use {
@@ -92,11 +128,18 @@ internal actual data class DatabaseConnection(
             }
             """
                 user_version = $userVersion
-                journal_mode = $journalMode
-                synchronous = $synchronous
-                auto_vacuum = $autoVacuum
-                locking_mode = $lockingMode
-                busy_timeout = $busyTimeout
+                journal_mode = $journalMode (DELETE | TRUNCATE | PERSIST | MEMORY | WAL | OFF)
+                wal_autocheckpoint = $walAutoCheckpoint (pages)
+                synchronous = $synchronous (0 = OFF, 1 = NORMAL, 2 = FULL, 3 = EXTRA)
+                temp_store = $tempStore (0 = DEFAULT, 1 = FILE, 2 = MEMORY)
+                mmap_size = $memoryMapSize (bytes)
+                auto_vacuum = $autoVacuum (0 = NONE, 1 = FULL, 2 = INCREMENTAL)
+                freelist_count = $freelistCount (pages)
+                locking_mode = $lockingMode (NORMAL | EXCLUSIVE)
+                max_page_count = $maxPageCount (pages)
+                cache_size = $cacheSize (negative = KiB, positive = pages)
+                page_size = $pageSize (bytes)
+                busy_timeout = $busyTimeout (milliseconds)
             """.trimIndent()
         }
     }
