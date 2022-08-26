@@ -8,6 +8,12 @@ import java.util.*
 actual class DriverFactory actual constructor(private val context: Context) {
     actual fun createDriver(fileName: String, directoryPath: String): SqlDriver {
         // SQLDelight + SQLiter + JDBC:
+        // * journal_size_limit = -1 (default)
+        //   * 524288 bytes = 512 KB に設定
+        // * secure_delete = 0 (default)
+        //   * そのまま
+        // * cache_size = -2000 (KB, default)
+        //   * そのまま
         // * sqlite_busy_timeout = 3000 (default)
         //   * https://github.com/xerial/sqlite-jdbc/blob/14d59032fb5dc691e48877ecde783719b7657fba/src/main/java/org/sqlite/SQLiteConfig.java
         // * threading mode = multi-thread
@@ -20,6 +26,7 @@ actual class DriverFactory actual constructor(private val context: Context) {
             "jdbc:sqlite:${directoryPath}/$fileName.db",
             Properties().apply {
                 put("journal_mode", "WAL")
+                put("journal_size_limit", "524288")
                 put("synchronous", "NORMAL")
                 put("busy_timeout", "3000")
             }
