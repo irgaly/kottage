@@ -70,17 +70,18 @@ internal actual data class DatabaseConnection(
             //val synchronous = database.pragmaQueries.getSynchronous()
             //val autoVacuum = database.pragmaQueries.getAutoVacuum()
             //val lockingMode = database.pragmaQueries.getLockingMode()
-            val userVersion = sqlDriver.executeQuery(null, "PRAGMA user_version", 0).use {
-                if (it.next()) {
-                    it.getLong(0)
-                } else null
-            }
             // Good: WAL + synchronous = NORMAL(1)
             val journalMode = sqlDriver.executeQuery(null, "PRAGMA journal_mode", 0).use {
                 if (it.next()) {
                     it.getString(0)
                 } else null
             }
+            val journalSizeLimit =
+                sqlDriver.executeQuery(null, "PRAGMA journal_size_limit", 0).use {
+                    if (it.next()) {
+                        it.getLong(0)
+                    } else null
+                }
             val walAutoCheckpoint =
                 sqlDriver.executeQuery(null, "PRAGMA wal_autocheckpoint", 0).use {
                     if (it.next()) {
@@ -103,11 +104,6 @@ internal actual data class DatabaseConnection(
                 } else null
             }
             val autoVacuum = sqlDriver.executeQuery(null, "PRAGMA auto_vacuum", 0).use {
-                if (it.next()) {
-                    it.getLong(0)
-                } else null
-            }
-            val freelistCount = sqlDriver.executeQuery(null, "PRAGMA freelist_count", 0).use {
                 if (it.next()) {
                     it.getLong(0)
                 } else null
@@ -137,20 +133,39 @@ internal actual data class DatabaseConnection(
                     it.getLong(0)
                 } else null
             }
+            val secureDelete = sqlDriver.executeQuery(null, "PRAGMA secure_delete", 0).use {
+                if (it.next()) {
+                    it.getString(0)
+                } else null
+            }
+            val userVersion = sqlDriver.executeQuery(null, "PRAGMA user_version", 0).use {
+                if (it.next()) {
+                    it.getLong(0)
+                } else null
+            }
+            val freelistCount = sqlDriver.executeQuery(null, "PRAGMA freelist_count", 0).use {
+                if (it.next()) {
+                    it.getLong(0)
+                } else null
+            }
             """
-                user_version = $userVersion
+                --- configs:
                 journal_mode = $journalMode (DELETE | TRUNCATE | PERSIST | MEMORY | WAL | OFF)
+                journal_size_limit = $journalSizeLimit (bytes, negative = no limit, 0 = truncate to minimum)
                 wal_autocheckpoint = $walAutoCheckpoint (pages)
                 synchronous = $synchronous (0 = OFF, 1 = NORMAL, 2 = FULL, 3 = EXTRA)
                 temp_store = $tempStore (0 = DEFAULT, 1 = FILE, 2 = MEMORY)
                 mmap_size = $memoryMapSize (bytes)
                 auto_vacuum = $autoVacuum (0 = NONE, 1 = FULL, 2 = INCREMENTAL)
-                freelist_count = $freelistCount (pages)
                 locking_mode = $lockingMode (NORMAL | EXCLUSIVE)
                 max_page_count = $maxPageCount (pages)
                 cache_size = $cacheSize (negative = KiB, positive = pages)
                 page_size = $pageSize (bytes)
                 busy_timeout = $busyTimeout (milliseconds)
+                secure_delete = $secureDelete (0 = OFF, 1 = ON, 2 = FAST)
+                --- stats:
+                user_version = $userVersion
+                freelist_count = $freelistCount (pages)
             """.trimIndent()
         }
     }
