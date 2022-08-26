@@ -51,4 +51,8 @@ class Kkvs(
     suspend fun getDatabaseStatus(): String {
         return databaseManager.getDatabaseStatus()
     }
+
+    suspend fun export(file: String, directoryPath: String) {
+        databaseManager.backupTo(file, directoryPath)
+    }
 }

@@ -4,6 +4,7 @@ import io.github.irgaly.kkvs.KkvsEnvironment
 import io.github.irgaly.kkvs.internal.database.createDatabaseConnection
 import io.github.irgaly.kkvs.internal.repository.KkvsItemRepository
 import io.github.irgaly.kkvs.internal.repository.KkvsRepositoryFactory
+import io.github.irgaly.kkvs.platform.Files
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 
@@ -14,6 +15,11 @@ internal class KkvsDatabaseManager(
     dispatcher: CoroutineDispatcher = Dispatchers.Default
 ) {
     private val databaseConnection by lazy {
+        if (!Files.exists(directoryPath)) {
+            // TODO: async directory creation
+            // FIX: mkdirs in createDatabaseConnection()
+            Files.mkdirs(directoryPath)
+        }
         createDatabaseConnection(fileName, directoryPath, environment, dispatcher)
     }
 
@@ -43,5 +49,9 @@ internal class KkvsDatabaseManager(
 
     suspend fun getDatabaseStatus(): String {
         return databaseConnection.getDatabaseStatus()
+    }
+
+    suspend fun backupTo(file: String, directoryPath: String) {
+        databaseConnection.backupTo(file, directoryPath)
     }
 }

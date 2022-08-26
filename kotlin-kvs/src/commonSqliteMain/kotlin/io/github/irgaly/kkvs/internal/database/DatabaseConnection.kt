@@ -7,6 +7,7 @@ import io.github.irgaly.kkvs.KkvsEnvironment
 import io.github.irgaly.kkvs.data.sqlite.DriverFactory
 import io.github.irgaly.kkvs.data.sqlite.Item_event
 import io.github.irgaly.kkvs.data.sqlite.KkvsDatabase
+import io.github.irgaly.kkvs.platform.Files
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -47,9 +48,19 @@ internal actual data class DatabaseConnection(
 
     actual suspend fun compact() = withContext(dispatcher) {
         // reduce WAL file size to zero / https://www.sqlite.org/pragma.html#pragma_wal_checkpoint
-        sqlDriver.execute(null, "PRAGMA wal_checkpoint(TRUNCATE)", 0)
+        // TODO: JDBC -> .execute(), Native -> executeQuery() で実行する
+        sqlDriver.executeQuery(null, "PRAGMA wal_checkpoint(TRUNCATE)", 0)
         // reduce database file size and optimize b-tree / https://www.sqlite.org/matrix/lang_vacuum.html
         sqlDriver.execute(null, "VACUUM", 0)
+    }
+
+    actual suspend fun backupTo(file: String, directoryPath: String) = withContext(dispatcher) {
+        if (!Files.exists(directoryPath)) {
+            Files.mkdirs(directoryPath)
+        }
+        val destination = "$directoryPath/$file"
+        // .delete は sqlite3 コマンドのためSQL経由では使えない
+        sqlDriver.execute(null, "VACUUM INTO '${destination.replace("'", "''")}'", 0)
     }
 
     actual suspend fun getDatabaseStatus(): String = withContext(dispatcher) {

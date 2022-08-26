@@ -27,7 +27,7 @@ internal expect class DatabaseConnection {
      * reduce database file
      */
     suspend fun compact()
-
+    suspend fun backupTo(file: String, directoryPath: String)
     suspend fun getDatabaseStatus(): String
 }
 

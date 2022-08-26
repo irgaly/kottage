@@ -19,6 +19,14 @@ internal actual class DatabaseConnection {
     actual suspend fun getDatabaseStatus(): String {
         TODO("Not yet implemented")
     }
+
+    actual suspend fun backupTo(file: String, directoryPath: String) {
+        TODO("Not yet implemented")
+    }
+
+    actual suspend fun compact() {
+        TODO("Not yet implemented")
+    }
 }
 
 internal actual fun createDatabaseConnection(
