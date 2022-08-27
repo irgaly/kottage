@@ -15,5 +15,5 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.material)
     implementation(libs.kotlinx.serialization)
-    implementation(project(":kotlin-kvs"))
+    implementation(projects.kottage)
 }

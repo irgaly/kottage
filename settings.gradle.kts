@@ -22,13 +22,13 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "kkvs"
+rootProject.name = "kottage"
 include(
-    ":kotlin-kvs",
-    ":kotlin-kvs:data:sqlite",
-    ":kotlin-kvs:data:indexeddb",
-    ":kotlin-kvs:core",
-    ":kotlin-kvs:core:test",
+    ":kottage",
+    ":kottage:data:sqlite",
+    ":kottage:data:indexeddb",
+    ":kottage:core",
+    ":kottage:core:test",
     ":sample:android"
 )
 includeBuild("build-logic")

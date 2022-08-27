@@ -18,7 +18,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(projects.kotlinKvs.core)
+                implementation(projects.kottage.core)
             }
         }
         commonTest {
@@ -37,7 +37,7 @@ kotlin {
         }
         val jvmTest by getting {
             dependencies {
-                implementation(projects.kotlinKvs.core.test)
+                implementation(projects.kottage.core.test)
             }
         }
         val nativeMain by getting {

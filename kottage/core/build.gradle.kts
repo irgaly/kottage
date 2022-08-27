@@ -27,7 +27,7 @@ kotlin {
         }
         val jvmTest by getting {
             dependencies {
-                implementation(projects.kotlinKvs.core.test)
+                implementation(projects.kottage.core.test)
             }
         }
     }

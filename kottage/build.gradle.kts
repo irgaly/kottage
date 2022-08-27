@@ -22,27 +22,27 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(projects.kotlinKvs.core)
+                implementation(projects.kottage.core)
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.serialization)
             }
         }
         commonTest {
             dependencies {
-                implementation(projects.kotlinKvs.core.test)
+                implementation(projects.kottage.core.test)
                 implementation(libs.klock)
             }
         }
         val commonSqliteMain by creating {
             dependsOn(commonMain.get())
             dependencies {
-                implementation(projects.kotlinKvs.data.sqlite)
+                implementation(projects.kottage.data.sqlite)
             }
         }
         val commonIndexeddbMain by creating {
             dependsOn(commonMain.get())
             dependencies {
-                implementation(projects.kotlinKvs.data.indexeddb)
+                implementation(projects.kottage.data.indexeddb)
             }
         }
         val androidMain by getting {
@@ -63,7 +63,7 @@ kotlin {
         val nativeMain by getting {
             dependsOn(commonSqliteMain)
             dependencies {
-                implementation(projects.kotlinKvs.data.sqlite)
+                implementation(projects.kottage.data.sqlite)
             }
         }
     }
