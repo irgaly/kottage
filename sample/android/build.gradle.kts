@@ -4,10 +4,10 @@ plugins {
 }
 
 android {
-    namespace = "io.github.irgaly.kkvs.sample"
+    namespace = "io.github.irgaly.kottage.sample"
     defaultConfig {
-        applicationId = "io.github.irgaly.kkvs.sample"
-        versionName = libs.versions.kkvs.get()
+        applicationId = "io.github.irgaly.kottage.sample"
+        versionName = libs.versions.kottage.get()
     }
 }
 

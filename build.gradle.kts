@@ -43,10 +43,10 @@ subprojects {
     if (!path.startsWith(":sample") && !path.endsWith(":test")) {
         apply(plugin = "maven-publish")
         apply(plugin = "signing")
-        group = "io.github.irgaly.kkvs"
+        group = "io.github.irgaly.kottage"
         afterEvaluate {
             // afterEvaluate for accessing version catalogs
-            version = libs.versions.kkvs.get()
+            version = libs.versions.kottage.get()
         }
         val emptyJavadocJar = tasks.create<Jar>("emptyJavadocJar") {
             archiveClassifier.set("javadoc")

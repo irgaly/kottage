@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.irgaly.kkvs.core"
+    namespace = "io.github.irgaly.kottage.core"
 }
 
 kotlin {
