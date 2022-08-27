@@ -1,9 +1,9 @@
 package io.github.irgaly.kottage.internal.repository
 
-import io.github.irgaly.kottage.data.sqlite.KkvsDatabase
+import io.github.irgaly.kottage.data.sqlite.KottageDatabase
 import io.github.irgaly.kottage.internal.model.ItemEvent
 
-internal class KkvsSqliteItemEventRepository(private val database: KkvsDatabase) :
+internal class KkvsSqliteItemEventRepository(private val database: KottageDatabase) :
     KkvsItemEventRepository {
     override fun create(itemEvent: ItemEvent) {
         database.item_eventQueries

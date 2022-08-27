@@ -24,11 +24,11 @@ actual class DriverFactory actual constructor(private val context: Context) {
         //     * 単発クエリはどのスレッドからでも呼び出し可能
         //     * Transaction 開始~終了の間では同一スレッドである必要がある
         return AndroidSqliteDriver(
-            KkvsDatabase.Schema,
+            KottageDatabase.Schema,
             context.context,
             "$fileName.db",
             FrameworkSQLiteOpenHelperFactory(directoryPath),
-            object : AndroidSqliteDriver.Callback(KkvsDatabase.Schema) {
+            object : AndroidSqliteDriver.Callback(KottageDatabase.Schema) {
                 override fun onOpen(db: SupportSQLiteDatabase) {
                     db.execSQL("PRAGMA journal_size_limit = 524288")
                     db.execSQL("PRAGMA secure_delete = 0")

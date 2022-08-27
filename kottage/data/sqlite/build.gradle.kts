@@ -5,7 +5,7 @@ plugins {
 }
 
 sqldelight {
-    database("KkvsDatabase") {
+    database("KottageDatabase") {
         packageName = "io.github.irgaly.kottage.data.sqlite"
     }
 }

@@ -6,7 +6,7 @@ import com.squareup.sqldelight.db.use
 import io.github.irgaly.kottage.KkvsEnvironment
 import io.github.irgaly.kottage.data.sqlite.DriverFactory
 import io.github.irgaly.kottage.data.sqlite.Item_event
-import io.github.irgaly.kottage.data.sqlite.KkvsDatabase
+import io.github.irgaly.kottage.data.sqlite.KottageDatabase
 import io.github.irgaly.kottage.data.sqlite.extension.executeWalCheckpointTruncate
 import io.github.irgaly.kottage.platform.Files
 import kotlinx.coroutines.CoroutineDispatcher
@@ -17,7 +17,7 @@ import kotlinx.coroutines.withContext
 @OptIn(ExperimentalCoroutinesApi::class)
 internal actual data class DatabaseConnection(
     val sqlDriver: SqlDriver,
-    val database: KkvsDatabase,
+    val database: KottageDatabase,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default
 ) {
     actual suspend fun <R> transactionWithResult(bodyWithReturn: () -> R): R =
@@ -178,6 +178,6 @@ internal actual fun createDatabaseConnection(
     dispatcher: CoroutineDispatcher
 ): DatabaseConnection {
     val driver = DriverFactory(environment.context).createDriver(fileName, directoryPath)
-    val database = KkvsDatabase(driver, Item_event.Adapter(EnumColumnAdapter()))
+    val database = KottageDatabase(driver, Item_event.Adapter(EnumColumnAdapter()))
     return DatabaseConnection(driver, database, dispatcher)
 }

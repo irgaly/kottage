@@ -1,13 +1,12 @@
 package io.github.irgaly.kottage.internal.repository
 
 import com.squareup.sqldelight.db.use
-import io.github.irgaly.kottage.data.sqlite.KkvsDatabase
+import io.github.irgaly.kottage.data.sqlite.KottageDatabase
 import io.github.irgaly.kottage.data.sqlite.extension.executeAsExists
 import io.github.irgaly.kottage.internal.model.Item
-import kotlinx.coroutines.runBlocking
 
 internal class KkvsSqliteItemRepository(
-    private val database: KkvsDatabase,
+    private val database: KottageDatabase,
     private val itemType: String
 ) : KkvsItemRepository {
     init {

@@ -23,7 +23,7 @@ actual class DriverFactory actual constructor(private val context: Context) {
         //   * SQLiter supports single connection by concurrency access with lock
         //     * https://github.com/touchlab/SQLiter/blob/main/sqliter-driver/src/nativeCommonMain/kotlin/co/touchlab/sqliter/native/NativeDatabaseManager.kt
         //     * https://github.com/touchlab/SQLiter/blob/main/sqliter-driver/src/nativeCommonMain/kotlin/co/touchlab/sqliter/concurrency/ConcurrentDatabaseConnection.kt
-        val schema = KkvsDatabase.Schema
+        val schema = KottageDatabase.Schema
         return NativeSqliteDriver(
             DatabaseConfiguration(
                 name = "$fileName.db",
