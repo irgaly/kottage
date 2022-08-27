@@ -20,12 +20,7 @@ class KottageTest : DescribeSpec({
                 tempDirectory,
                 KottageEnvironment(Context(), calendar)
             )
-            val storage = kottage.storage(
-                "storage1",
-                kottageStorage {
-                }
-            )
-            println(kottage.getDatabaseStatus())
+            val storage = kottage.storage("storage1")
             it("put, get で値を保持できている") {
                 storage.put("key", "test")
                 val value: String = storage.get("key")
@@ -41,11 +36,7 @@ class KottageTest : DescribeSpec({
                             tempDirectory,
                             KottageEnvironment(Context(), calendar)
                         )
-                        val storage = kottage.storage(
-                            "storage1",
-                            kottageStorage {
-                            }
-                        )
+                        val storage = kottage.storage("storage1")
                         storage.put("key$id", "value$id")
                         val value = storage.get<String>("key$id")
                         value shouldBe "value$id"
