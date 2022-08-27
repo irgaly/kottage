@@ -1,6 +1,4 @@
-# Kotlin-KVS
-
-Kotlin Simple Cache Storage for Kotlin Multiplatform
+# Kottage
 
 調べること:
 
@@ -52,18 +50,18 @@ TODO:
 ```kotlin
 
 // Create Instance
-val kkvs = Kkvs("kkvs-name", dir, json) // SQLite ファイル名, ディレクトリ名
-val storage: KkvsStorage = kkvs.storage("storage-name", kkvsStorage {
-  // kkvs.cache() だとキャッシュ専用のストレージを得る
-  strategy = KkvsLruStrategy(
+val kottage = Kottage("kottage-name", dir, json) // SQLite ファイル名, ディレクトリ名
+val storage: KottageStorage = kottage.storage("storage-name", kottageStorage {
+  // kottage.cache() だとキャッシュ専用のストレージを得る
+  strategy = KottageLruStrategy(
     maxEntryCount = 1024 // counts
   )
-  strategy = KkvsFifoStrategy(
+  strategy = KottageFifoStrategy(
     maxEntryCount = 1024 // counts
   )
-  strategy = KkvsKvsStrategy() // 追い出しなし
+  strategy = KottageKvsStrategy() // 追い出しなし
   defaultExpireTime = 1.month // nullable
-  autoClean = true
+  autoCompact = true
   withLastHit = true // 有効期限切れのエントリーを返すか
   json = Json
 })
@@ -74,8 +72,8 @@ storage.put("key", "cache", 1000.seconds) // expire time
 storage.put("key", "cache", storage.defaultExpireTime)
 
 // Read Cache
-val value: KkvsEntry<String> = storage.read<String>("key") // Meta 要素あり
-val value: KkvsEntry<ByteArray> = storage.read<ByteArray>("key")
+val value: KottageEntry<String> = storage.read<String>("key") // Meta 要素あり
+val value: KottageEntry<ByteArray> = storage.read<ByteArray>("key")
 val value: String? = storage.getOrNull("key") // 値のみ
 val contains: Boolean = storage.contains("key")
 
@@ -89,12 +87,12 @@ list.add()
 storage.remove("key")
 
 // Clean Cache
-storage.clean()
+storage.compact()
 
 // Delete Storage
 storage.clear()
 
-// Delete Kkvs
-kkvs.clear()
+// Delete Kottage
+Kottage.clear()
 
 ```

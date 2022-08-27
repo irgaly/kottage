@@ -1,1 +1,3 @@
-Kotlin Simple Cache Storage for Kotlim Multiplatform
+# Kottage
+
+Kotlin KVS Cache Storage for Kotlin Multiplatform
