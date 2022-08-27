@@ -2,7 +2,7 @@ package io.github.irgaly.kottage.internal.repository
 
 import io.github.irgaly.kottage.internal.model.Item
 
-internal interface KkvsItemRepository {
+internal interface KottageItemRepository {
     fun upsert(item: Item)
     fun updateLastRead(key: String, lastReadAt: Long)
     fun updateExpireAt(key: String, expireAt: Long)

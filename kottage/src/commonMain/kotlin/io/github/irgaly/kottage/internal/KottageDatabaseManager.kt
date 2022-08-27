@@ -1,17 +1,17 @@
 package io.github.irgaly.kottage.internal
 
-import io.github.irgaly.kottage.KkvsEnvironment
+import io.github.irgaly.kottage.KottageEnvironment
 import io.github.irgaly.kottage.internal.database.createDatabaseConnection
-import io.github.irgaly.kottage.internal.repository.KkvsItemRepository
-import io.github.irgaly.kottage.internal.repository.KkvsRepositoryFactory
+import io.github.irgaly.kottage.internal.repository.KottageItemRepository
+import io.github.irgaly.kottage.internal.repository.KottageRepositoryFactory
 import io.github.irgaly.kottage.platform.Files
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 
-internal class KkvsDatabaseManager(
+internal class KottageDatabaseManager(
     fileName: String,
     directoryPath: String,
-    environment: KkvsEnvironment,
+    environment: KottageEnvironment,
     dispatcher: CoroutineDispatcher = Dispatchers.Default
 ) {
     private val databaseConnection by lazy {
@@ -24,10 +24,10 @@ internal class KkvsDatabaseManager(
     }
 
     private val repositoryFactory by lazy {
-        KkvsRepositoryFactory(databaseConnection)
+        KottageRepositoryFactory(databaseConnection)
     }
 
-    fun getItemRepository(itemType: String): KkvsItemRepository {
+    fun getItemRepository(itemType: String): KottageItemRepository {
         return repositoryFactory.createItemRepository(itemType)
     }
 

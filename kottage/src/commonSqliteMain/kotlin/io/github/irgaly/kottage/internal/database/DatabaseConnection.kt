@@ -3,7 +3,7 @@ package io.github.irgaly.kottage.internal.database
 import com.squareup.sqldelight.EnumColumnAdapter
 import com.squareup.sqldelight.db.SqlDriver
 import com.squareup.sqldelight.db.use
-import io.github.irgaly.kottage.KkvsEnvironment
+import io.github.irgaly.kottage.KottageEnvironment
 import io.github.irgaly.kottage.data.sqlite.DriverFactory
 import io.github.irgaly.kottage.data.sqlite.Item_event
 import io.github.irgaly.kottage.data.sqlite.KottageDatabase
@@ -174,7 +174,7 @@ internal actual data class DatabaseConnection(
 internal actual fun createDatabaseConnection(
     fileName: String,
     directoryPath: String,
-    environment: KkvsEnvironment,
+    environment: KottageEnvironment,
     dispatcher: CoroutineDispatcher
 ): DatabaseConnection {
     val driver = DriverFactory(environment.context).createDriver(fileName, directoryPath)

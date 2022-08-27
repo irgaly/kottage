@@ -6,7 +6,7 @@ import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 import kotlin.time.Duration
 
-interface KkvsStorage {
+interface KottageStorage {
     val defaultExpireTime: Duration?
 
     @Throws(
@@ -29,7 +29,7 @@ interface KkvsStorage {
         NoSuchElementException::class,
         CancellationException::class,
     )
-    suspend fun <T : Any> read(key: String, type: KType): KkvsEntry<T>
+    suspend fun <T : Any> read(key: String, type: KType): KottageEntry<T>
     suspend fun contains(key: String): Boolean
 
     @Throws(
@@ -56,14 +56,14 @@ interface KkvsStorage {
     suspend fun clear()
 }
 
-suspend inline fun <reified T : Any> KkvsStorage.get(key: String): T {
+suspend inline fun <reified T : Any> KottageStorage.get(key: String): T {
     return get(key, typeOf<T>())
 }
 
-suspend inline fun <reified T : Any> KkvsStorage.put(key: String, value: T) {
+suspend inline fun <reified T : Any> KottageStorage.put(key: String, value: T) {
     put(key, value, typeOf<T>())
 }
 
-suspend inline fun <reified T : Any> KkvsStorage.read(key: String): KkvsEntry<T> {
+suspend inline fun <reified T : Any> KottageStorage.read(key: String): KottageEntry<T> {
     return read(key, typeOf<T>())
 }

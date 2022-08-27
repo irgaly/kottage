@@ -5,7 +5,7 @@ import com.soywiz.klock.DateTimeTz
 
 data class TestCalendar(
     var now: DateTimeTz
-): KkvsPlatformCalendar {
+) : KottagePlatformCalendar {
     override fun nowUtcEpochTimeMillis(): Long {
         return now.utc.unixMillisLong
     }

@@ -1,18 +1,18 @@
 package io.github.irgaly.kottage
 
-import io.github.irgaly.kottage.internal.KkvsDatabaseManager
-import io.github.irgaly.kottage.internal.KkvsStorageImpl
+import io.github.irgaly.kottage.internal.KottageDatabaseManager
+import io.github.irgaly.kottage.internal.KottageStorageImpl
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.json.Json
 
 /**
- * Kotlin KVS
+ * Kotlin KVS Kottage
  */
-class Kkvs(
+class Kottage(
     val name: String,
     val directoryPath: String,
-    val environment: KkvsEnvironment,
+    val environment: KottageEnvironment,
     val json: Json = Json,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default
 ) {
@@ -26,11 +26,11 @@ class Kkvs(
     }
 
     private val databaseManager by lazy {
-        KkvsDatabaseManager(name, directoryPath, environment, dispatcher)
+        KottageDatabaseManager(name, directoryPath, environment, dispatcher)
     }
 
-    fun storage(name: String, options: KkvsStorageOptions): KkvsStorage {
-        return KkvsStorageImpl(
+    fun storage(name: String, options: KottageStorageOptions): KottageStorage {
+        return KottageStorageImpl(
             name,
             options.json ?: json,
             options,

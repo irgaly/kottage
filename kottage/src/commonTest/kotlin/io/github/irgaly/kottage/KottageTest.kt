@@ -9,41 +9,41 @@ import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class KkvsTest: DescribeSpec({
+class KottageTest : DescribeSpec({
     val tempDirectory = tempdir()
     val calendar = TestCalendar(DateTime(2022, 1, 1).utc)
     println("tempDirectory = $tempDirectory")
-    describe("Kkvs") {
+    describe("Kottage") {
         context("storage モード") {
-            val kkvs = Kkvs(
+            val kottage = Kottage(
                 "test",
                 tempDirectory,
-                KkvsEnvironment(Context(), calendar)
+                KottageEnvironment(Context(), calendar)
             )
-            val storage = kkvs.storage(
+            val storage = kottage.storage(
                 "storage1",
-                kkvsStorage {
+                kottageStorage {
                 }
             )
-            println(kkvs.getDatabaseStatus())
+            println(kottage.getDatabaseStatus())
             it("put, get で値を保持できている") {
                 storage.put("key", "test")
                 val value: String = storage.get("key")
                 value shouldBe "test"
             }
         }
-        context("独立 Kkvs インスタンス") {
+        context("独立 Kottage インスタンス") {
             it("並列書き込み: 100") {
                 repeat(100) { id ->
                     launch(Dispatchers.Default) {
-                        val kkvs = Kkvs(
+                        val kottage = Kottage(
                             "test",
                             tempDirectory,
-                            KkvsEnvironment(Context(), calendar)
+                            KottageEnvironment(Context(), calendar)
                         )
-                        val storage = kkvs.storage(
+                        val storage = kottage.storage(
                             "storage1",
-                            kkvsStorage {
+                            kottageStorage {
                             }
                         )
                         storage.put("key$id", "value$id")

@@ -1,5 +1,5 @@
 package io.github.irgaly.kottage.platform
 
-interface KkvsPlatformCalendar {
+interface KottagePlatformCalendar {
     fun nowUtcEpochTimeMillis(): Long
 }

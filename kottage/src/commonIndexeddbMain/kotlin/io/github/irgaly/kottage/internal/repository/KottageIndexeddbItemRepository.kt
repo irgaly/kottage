@@ -5,10 +5,10 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-internal class KkvsIndexeddbItemRepository(
+internal class KottageIndexeddbItemRepository(
     private val itemType: String,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default
-) : KkvsItemRepository {
+) : KottageItemRepository {
     override fun upsert(item: Item) {
         TODO("Not yet implemented")
     }

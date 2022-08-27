@@ -1,15 +1,15 @@
 package io.github.irgaly.kottage.internal
 
-import io.github.irgaly.kottage.KkvsEntry
-import io.github.irgaly.kottage.KkvsStorage
-import io.github.irgaly.kottage.KkvsStorageOptions
+import io.github.irgaly.kottage.KottageEntry
+import io.github.irgaly.kottage.KottageStorage
+import io.github.irgaly.kottage.KottageStorageOptions
 import io.github.irgaly.kottage.internal.encoder.Encoder
 import io.github.irgaly.kottage.internal.model.Item
 import io.github.irgaly.kottage.internal.model.ItemEvent
 import io.github.irgaly.kottage.internal.model.ItemEventType
-import io.github.irgaly.kottage.internal.strategy.KkvsStrategyOperatorImpl
-import io.github.irgaly.kottage.platform.KkvsPlatformCalendar
-import io.github.irgaly.kottage.strategy.KkvsStrategy
+import io.github.irgaly.kottage.internal.strategy.KottageStrategyOperatorImpl
+import io.github.irgaly.kottage.platform.KottagePlatformCalendar
+import io.github.irgaly.kottage.strategy.KottageStrategy
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -17,17 +17,17 @@ import kotlinx.serialization.json.Json
 import kotlin.reflect.KType
 import kotlin.time.Duration
 
-internal class KkvsStorageImpl(
+internal class KottageStorageImpl(
     val name: String,
     json: Json,
-    val options: KkvsStorageOptions,
-    val databaseManager: KkvsDatabaseManager,
-    val calendar: KkvsPlatformCalendar,
+    val options: KottageStorageOptions,
+    val databaseManager: KottageDatabaseManager,
+    val calendar: KottagePlatformCalendar,
     val dispatcher: CoroutineDispatcher = Dispatchers.Default
-) : KkvsStorage {
+) : KottageStorage {
     private val encoder = Encoder(json)
 
-    private val strategy: KkvsStrategy = options.strategy
+    private val strategy: KottageStrategy = options.strategy
 
     private val itemRepository by lazy {
         databaseManager.getItemRepository(name)
@@ -39,7 +39,7 @@ internal class KkvsStorageImpl(
 
     init {
         strategy.initialize(
-            KkvsStrategyOperatorImpl(
+            KottageStrategyOperatorImpl(
                 databaseManager,
                 name
             )
@@ -103,7 +103,7 @@ internal class KkvsStorageImpl(
             item?.let { encoder.decode(it, type) }
         }
 
-    override suspend fun <T : Any> read(key: String, type: KType): KkvsEntry<T> =
+    override suspend fun <T : Any> read(key: String, type: KType): KottageEntry<T> =
         withContext(dispatcher) {
             val now = calendar.nowUtcEpochTimeMillis()
             val item = databaseManager.transactionWithResult {
@@ -128,7 +128,7 @@ internal class KkvsStorageImpl(
                 }
                 item
             } ?: throw NoSuchElementException("key = $key, storage name = $name")
-            KkvsEntry(
+            KottageEntry(
                 item,
                 type,
                 encoder

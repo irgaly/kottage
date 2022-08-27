@@ -1,12 +1,12 @@
 package io.github.irgaly.kottage.internal.strategy
 
-import io.github.irgaly.kottage.internal.KkvsDatabaseManager
-import io.github.irgaly.kottage.strategy.KkvsStrategyOperator
+import io.github.irgaly.kottage.internal.KottageDatabaseManager
+import io.github.irgaly.kottage.strategy.KottageStrategyOperator
 
-internal class KkvsStrategyOperatorImpl(
-    private val databaseManager: KkvsDatabaseManager,
+internal class KottageStrategyOperatorImpl(
+    private val databaseManager: KottageDatabaseManager,
     val itemType: String
-): KkvsStrategyOperator {
+) : KottageStrategyOperator {
     private val itemRepository by lazy {
         databaseManager.getItemRepository(itemType)
     }

@@ -2,7 +2,7 @@ package io.github.irgaly.kottage.internal.repository
 
 import io.github.irgaly.kottage.internal.model.ItemEvent
 
-internal class KkvsIndexeddbItemEventRepository : KkvsItemEventRepository {
+internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository {
     override fun create(itemEvent: ItemEvent) {
         TODO("Not yet implemented")
     }

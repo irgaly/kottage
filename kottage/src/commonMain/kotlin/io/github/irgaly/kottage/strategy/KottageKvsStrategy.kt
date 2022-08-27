@@ -3,8 +3,8 @@ package io.github.irgaly.kottage.strategy
 /**
  * No Eviction Strategy
  */
-class KkvsKvsStrategy: KkvsStrategy {
-    override fun initialize(operator: KkvsStrategyOperator) {
+class KottageKvsStrategy : KottageStrategy {
+    override fun initialize(operator: KottageStrategyOperator) {
         // do nothing
     }
 

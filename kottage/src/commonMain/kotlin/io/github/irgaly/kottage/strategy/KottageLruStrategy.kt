@@ -6,15 +6,15 @@ package io.github.irgaly.kottage.strategy
  * @param maxEntryCount decrease item if the item count exceeded this value
  * @param reduceCount the target count to remove, default 25% of maxEntryCount
  */
-class KkvsLruStrategy(
+class KottageLruStrategy(
     private val maxEntryCount: Long,
     private val reduceCount: Long? = null
-) : KkvsStrategy {
-    private lateinit var operator: KkvsStrategyOperator
+) : KottageStrategy {
+    private lateinit var operator: KottageStrategyOperator
     private val calculatedReduceCount: Long =
         (maxEntryCount * 0.25).toLong().coerceAtLeast(1)
 
-    override fun initialize(operator: KkvsStrategyOperator) {
+    override fun initialize(operator: KottageStrategyOperator) {
         this.operator = operator
     }
 

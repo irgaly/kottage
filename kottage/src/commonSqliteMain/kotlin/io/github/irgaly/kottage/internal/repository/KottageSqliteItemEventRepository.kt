@@ -3,8 +3,8 @@ package io.github.irgaly.kottage.internal.repository
 import io.github.irgaly.kottage.data.sqlite.KottageDatabase
 import io.github.irgaly.kottage.internal.model.ItemEvent
 
-internal class KkvsSqliteItemEventRepository(private val database: KottageDatabase) :
-    KkvsItemEventRepository {
+internal class KottageSqliteItemEventRepository(private val database: KottageDatabase) :
+    KottageItemEventRepository {
     override fun create(itemEvent: ItemEvent) {
         database.item_eventQueries
             .insert(itemEvent.toEntity())

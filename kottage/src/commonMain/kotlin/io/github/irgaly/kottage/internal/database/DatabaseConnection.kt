@@ -1,6 +1,6 @@
 package io.github.irgaly.kottage.internal.database
 
-import io.github.irgaly.kottage.KkvsEnvironment
+import io.github.irgaly.kottage.KottageEnvironment
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 
@@ -34,6 +34,6 @@ internal expect class DatabaseConnection {
 internal expect fun createDatabaseConnection(
     fileName: String,
     directoryPath: String,
-    environment: KkvsEnvironment,
+    environment: KottageEnvironment,
     dispatcher: CoroutineDispatcher = Dispatchers.Default
 ): DatabaseConnection

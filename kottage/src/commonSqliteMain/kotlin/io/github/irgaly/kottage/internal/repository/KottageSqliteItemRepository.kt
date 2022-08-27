@@ -5,10 +5,10 @@ import io.github.irgaly.kottage.data.sqlite.KottageDatabase
 import io.github.irgaly.kottage.data.sqlite.extension.executeAsExists
 import io.github.irgaly.kottage.internal.model.Item
 
-internal class KkvsSqliteItemRepository(
+internal class KottageSqliteItemRepository(
     private val database: KottageDatabase,
     private val itemType: String
-) : KkvsItemRepository {
+) : KottageItemRepository {
     init {
         require(!itemType.contains("+")) {
             "itemType should not contains \"+\": itemType = \"$itemType\""

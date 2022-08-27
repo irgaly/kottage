@@ -2,14 +2,14 @@ package io.github.irgaly.kottage
 
 import io.github.irgaly.kottage.internal.model.ItemEventType
 
-enum class KkvsEventType {
+enum class KottageEventType {
     Create,
     Update,
     Delete,
     Expired;
 
     companion object {
-        internal fun from(itemEventType: ItemEventType): KkvsEventType {
+        internal fun from(itemEventType: ItemEventType): KottageEventType {
             return when (itemEventType) {
                 ItemEventType.Create -> Create
                 ItemEventType.Update -> Update

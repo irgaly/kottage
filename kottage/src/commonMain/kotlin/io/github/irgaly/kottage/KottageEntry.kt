@@ -5,7 +5,7 @@ import io.github.irgaly.kottage.internal.encoder.Encoder
 import io.github.irgaly.kottage.internal.model.Item
 import kotlin.reflect.KType
 
-class KkvsEntry<T : Any> internal constructor(
+class KottageEntry<T : Any> internal constructor(
     private val item: Item,
     private val type: KType,
     private val encoder: Encoder

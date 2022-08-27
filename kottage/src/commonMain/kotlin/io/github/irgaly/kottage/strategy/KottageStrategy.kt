@@ -1,8 +1,8 @@
 package io.github.irgaly.kottage.strategy
 
-interface KkvsStrategy {
+interface KottageStrategy {
     fun initialize(
-        operator: KkvsStrategyOperator
+        operator: KottageStrategyOperator
     )
 
     /**

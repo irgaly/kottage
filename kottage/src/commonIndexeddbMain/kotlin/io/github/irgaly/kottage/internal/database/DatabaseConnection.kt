@@ -1,6 +1,6 @@
 package io.github.irgaly.kottage.internal.database
 
-import io.github.irgaly.kottage.KkvsEnvironment
+import io.github.irgaly.kottage.KottageEnvironment
 import kotlinx.coroutines.CoroutineDispatcher
 
 internal actual class DatabaseConnection {
@@ -32,7 +32,7 @@ internal actual class DatabaseConnection {
 internal actual fun createDatabaseConnection(
     fileName: String,
     directoryPath: String,
-    environment: KkvsEnvironment,
+    environment: KottageEnvironment,
     dispatcher: CoroutineDispatcher
 ): DatabaseConnection {
     TODO()
