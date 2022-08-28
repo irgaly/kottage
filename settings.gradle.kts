@@ -22,7 +22,7 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "kottage"
+rootProject.name = "kottage-project"
 include(
     ":kottage",
     ":kottage:data:sqlite",
