@@ -1,0 +1,61 @@
+# コミットごとに Unit Test 実行
+name: Build, Test
+
+on: push
+
+jobs:
+  build-test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - id: get-month
+        run: echo "::set-output name=month::$(TZ=Asia/Tokyo date +%m)"
+      - uses: actions/cache@v3
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches/jars-*
+            ~/.gradle/caches/transforms-*
+            ~/.gradle/caches/modules-*
+          key: gradle-dependencies-${{ steps.get-month.outputs.month }}-${{ hashFiles('gradle/libs.versions.toml', '**/*.gradle.kts', 'build-logic/**/*.{kt,kts}') }}
+          restore-keys: gradle-dependencies-${{ steps.get-month.outputs.month }}-
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.konan
+            ~/.gradle/native
+          key: ${{ runner.os }}-kotlin-native-${{ steps.get-month.outputs.month }}-${{ hashFiles('gradle/libs.versions.toml', '**/*.gradle.kts') }}
+          restore-keys: ${{ runner.os }}-kotlin-native-${{ steps.get-month.outputs.month }}-
+      - uses: actions/cache@v3
+        with:
+          path:
+            ~/.gradle/caches/build-cache-*
+            ~/.gradle/caches/[0-9]*.*
+            .gradle
+          key: ${{ runner.os }}-gradle-build-${{ steps.get-month.outputs.month }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-gradle-build-${{ steps.get-month.outputs.month }}-
+      - name: JVM Test Build
+        run: |
+          ./gradlew jvmTestClasses
+      - name: JVM Test
+        run: |
+          ./gradlew jvmTest
+      - name: Native macOS X64 Test Build
+        run: |
+          ./gradlew linkDebugTestMacosX64
+      - name: Native macOS X64 Test
+        run: |
+          ./gradlew macosX64Test
+      - uses: EnricoMi/publish-unit-test-result-action/composite@v2
+        if: always()
+        with:
+          junit_files: "**/build/test-results/*/*.xml"
+          comment_mode: off
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results
+          path: "**/build/reports/tests/*"
