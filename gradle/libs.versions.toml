@@ -32,7 +32,6 @@ sqldelight-driver-native = { module = "com.squareup.sqldelight:native-driver", v
 sqldelight-driver-js = { module = "com.squareup.sqldelight:sqljs-driver", version.ref = "sqldelight" }
 klock = { module = "com.soywiz.korlibs.klock:klock", version = "2.7.0" }
 kodein-di = { module = "org.kodein.di:kodein-di", version = "7.14.0" }
-napier = { module = "io.github.aakira:napier", version = "2.6.1" }
 
 [bundles]
 test-common = [
