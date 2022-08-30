@@ -1,20 +1,26 @@
 package io.github.irgaly.kottage.internal.encoder
 
+import io.github.irgaly.kottage.internal.model.Item
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
-import io.github.irgaly.kottage.internal.model.Item
 import kotlin.reflect.KType
 
 internal class Encoder(private val json: Json) {
+    /**
+     * @throws ClassCastException when type of value is different from type:KType
+     * @throws SerializationException when serialization endcoding is failed
+     */
     @Throws(ClassCastException::class, SerializationException::class)
-    fun <T: Any> encode(
+    fun <T : Any> encode(
         value: T,
         type: KType,
-        block: (stringValue: String?,
-                longValue: Long?,
-                doubleValue: Double?,
-                bytesValue: ByteArray?) -> Item
+        block: (
+            stringValue: String?,
+            longValue: Long?,
+            doubleValue: Double?,
+            bytesValue: ByteArray?
+        ) -> Item
     ): Item {
         val kClass = type.classifier
         var stringValue: String? = null
@@ -56,8 +62,12 @@ internal class Encoder(private val json: Json) {
         return block(stringValue, longValue, doubleValue, bytesValue)
     }
 
+    /**
+     * @throws ClassCastException when stored value's type is mismatch
+     * @throws SerializationException when serialization decoding is failed
+     */
     @Throws(ClassCastException::class, SerializationException::class)
-    fun <T: Any> decode(item: Item, type: KType): T {
+    fun <T : Any> decode(item: Item, type: KType): T {
         val kClass = type.classifier
         @Suppress("UNCHECKED_CAST", "IMPLICIT_CAST_TO_ANY")
         return when {
