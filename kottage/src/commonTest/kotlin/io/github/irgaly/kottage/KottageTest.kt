@@ -5,12 +5,14 @@ import io.github.irgaly.kottage.platform.Context
 import io.github.irgaly.kottage.platform.TestCalendar
 import io.github.irgaly.test.extension.tempdir
 import io.kotest.assertions.throwables.shouldNotThrowAny
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldNotBeEmpty
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 
 class KottageTest : DescribeSpec({
     val tempDirectory = tempdir()
@@ -64,18 +66,28 @@ class KottageTest : DescribeSpec({
             val storage = kottage.storage("storage1")
             it("put, get で値を保持できている") {
                 storage.put("key", "test")
-                val value: String = storage.get("key")
-                value shouldBe "test"
+                storage.get<String>("key") shouldBe "test"
             }
         }
         context("独立 Kottage インスタンス") {
             it("並列書き込み: 100") {
+                val initialKottage = Kottage(
+                    "test100",
+                    tempDirectory,
+                    KottageEnvironment(Context(), calendar)
+                )
+                // SQLite Table 作成
+                initialKottage.storage("storage1").put("test", "test")
                 repeat(100) { id ->
                     launch(Dispatchers.Default) {
-                        val storage = kottage.storage("storage1")
+                        val kottage2 = Kottage(
+                            "test100",
+                            tempDirectory,
+                            KottageEnvironment(Context(), calendar)
+                        )
+                        val storage = kottage2.storage("storage1")
                         storage.put("key$id", "value$id")
-                        val value = storage.get<String>("key$id")
-                        value shouldBe "value$id"
+                        storage.get<String>("key$id") shouldBe "value$id"
                     }
                 }
             }
@@ -85,14 +97,10 @@ class KottageTest : DescribeSpec({
             it("Double, Float") {
                 storage.put("double", 0.0)
                 storage.put("float", 0f)
-                val doubleDoubleValue = storage.get<Double>("double")
-                val doubleFloatValue = storage.get<Float>("double")
-                val floatFloatValue = storage.get<Float>("float")
-                val floatDoubleValue = storage.get<Double>("float")
-                doubleDoubleValue shouldBe 0.0
-                doubleFloatValue shouldBe 0f
-                floatFloatValue shouldBe 0f
-                floatDoubleValue shouldBe 0.0
+                storage.get<Double>("double") shouldBe 0.0
+                storage.get<Float>("double") shouldBe 0f
+                storage.get<Float>("float") shouldBe 0f
+                storage.get<Double>("float") shouldBe 0.0
             }
             it("Long, Int, Short, Byte, Boolean") {
                 storage.put("long", 0L)
@@ -128,6 +136,27 @@ class KottageTest : DescribeSpec({
                 storage.put("list", listOf("test"))
                 storage.get<List<String>>("list") shouldBe listOf("test")
                 storage.get<String>("list") shouldBe "[\"test\"]"
+            }
+            it("型不一致でエラー") {
+                @Serializable
+                data class Data(val data: Int)
+
+                @Serializable
+                data class Data2(val data2: Int)
+                storage.put("long_to_string", 0)
+                storage.put("serializable_error", Data(0))
+                shouldThrow<ClassCastException> {
+                    storage.get<String>("long_to_string")
+                }
+                shouldThrow<SerializationException> {
+                    storage.get<Data2>("serializable_error")
+                }
+            }
+            it("key が存在しない") {
+                shouldThrow<NoSuchElementException> {
+                    storage.get<String>("unknown_key")
+                }
+                storage.getOrNull<String>("unknown_key") shouldBe null
             }
         }
     }
