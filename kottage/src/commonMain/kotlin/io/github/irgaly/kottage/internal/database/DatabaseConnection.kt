@@ -31,6 +31,10 @@ internal expect class DatabaseConnection {
     suspend fun getDatabaseStatus(): String
 }
 
+/**
+ * @throws IllegalArgumentException invalid fileName: contains file separator
+ */
+@Throws(IllegalArgumentException::class)
 internal expect fun createDatabaseConnection(
     fileName: String,
     directoryPath: String,

@@ -9,5 +9,7 @@ actual class Files {
         actual fun mkdirs(directoryPath: String): Boolean {
             TODO()
         }
+
+        actual val separator: String = "\\"
     }
 }

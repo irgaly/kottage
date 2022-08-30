@@ -2,6 +2,7 @@ package io.github.irgaly.kottage
 
 import com.soywiz.klock.DateTime
 import io.github.irgaly.kottage.platform.Context
+import io.github.irgaly.kottage.platform.Files
 import io.github.irgaly.kottage.platform.TestCalendar
 import io.github.irgaly.test.extension.tempdir
 import io.kotest.assertions.throwables.shouldNotThrowAny
@@ -43,10 +44,51 @@ class KottageTest : DescribeSpec({
             it("export() で存在しないディレクトリにバックアップを作成できる") {
                 kottage.export("backup.db", "$tempDirectory/backup")
             }
-            // TODO:
-            // シングルクォート、ダブルクォーテーション
-            // バックスラッシュ、スペース、: の扱いを確認する
-            // ファイル名に /, \, シングルクォート、ダブルクォーテーションの扱いを確認する
+            it("export() で特殊なファイル名を扱える") {
+                val invalidFile = "test_/_:_\\_"
+                kottage.export(
+                    "export_${
+                        "_'_\"_/_\\_ _あ_😄_:_;_".replace(Files.separator, "-")
+                    }.db", "$tempDirectory/${"_'_\"_/_\\_ _あ_😄_:_".replace(Files.separator, "-")}"
+                )
+            }
+            it("export() で separator を含むファイル名はエラー") {
+                shouldThrow<IllegalArgumentException> {
+                    kottage.export("export_/_:_\\_.db", tempDirectory)
+                }
+            }
+            it("特殊文字を含むパスを扱える") {
+                shouldNotThrowAny {
+                    Kottage(
+                        "test",
+                        "$tempDirectory/${
+                            "_'_\"_/_\\_ _あ_😄_:_".replace(
+                                Files.separator,
+                                "-"
+                            )
+                        }",
+                        KottageEnvironment(Context(), calendar)
+                    ).storage("test").put("test", "test")
+                }
+            }
+            it("特殊文字を含むファイル名を扱える") {
+                shouldNotThrowAny {
+                    Kottage(
+                        "test_'_\"_/_\\_ _あ_😄_:_".replace(Files.separator, "-"),
+                        tempDirectory,
+                        KottageEnvironment(Context(), calendar)
+                    ).storage("test").put("test", "test")
+                }
+            }
+            it("separator を含むファイル名でエラー") {
+                shouldThrow<IllegalArgumentException> {
+                    Kottage(
+                        "test_/_:_\\_",
+                        tempDirectory,
+                        KottageEnvironment(Context(), calendar)
+                    )
+                }
+            }
         }
         context("Connection") {
             val directory = "$tempDirectory/subdirectory"

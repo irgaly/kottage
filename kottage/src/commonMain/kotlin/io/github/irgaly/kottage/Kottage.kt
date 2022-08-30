@@ -2,6 +2,7 @@ package io.github.irgaly.kottage
 
 import io.github.irgaly.kottage.internal.KottageDatabaseManager
 import io.github.irgaly.kottage.internal.KottageStorageImpl
+import io.github.irgaly.kottage.platform.Files
 import io.github.irgaly.kottage.strategy.KottageFifoStrategy
 import io.github.irgaly.kottage.strategy.KottageKvsStrategy
 import kotlinx.coroutines.CoroutineDispatcher
@@ -11,6 +12,8 @@ import kotlin.time.Duration.Companion.days
 
 /**
  * Kotlin KVS Kottage
+ *
+ * @throws IllegalArgumentException name contains file separator
  */
 class Kottage(
     val name: String,
@@ -30,6 +33,10 @@ class Kottage(
 
     private val databaseManager by lazy {
         KottageDatabaseManager(name, directoryPath, environment, dispatcher)
+    }
+
+    init {
+        require(!name.contains(Files.separator)) { "name contains separator: $name" }
     }
 
     fun storage(

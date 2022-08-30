@@ -29,5 +29,7 @@ actual class Files {
                 created
             }
         }
+
+        actual val separator: String = "/"
     }
 }

@@ -47,11 +47,11 @@ actual class DriverFactory actual constructor(private val context: Context) {
         val newVersion = KottageDatabase.Schema.version
         if (oldVersion == 0) {
             KottageDatabase.Schema.create(driver)
-            driver.execute(null, "PRAGMA user_version=$newVersion", 0)
+            driver.execute(null, "PRAGMA user_version = $newVersion", 0)
         } else if (oldVersion < newVersion) {
             // migrate oldVersion -> newVersion
             KottageDatabase.Schema.migrate(driver, oldVersion, newVersion)
-            driver.execute(null, "PRAGMA user_version=$newVersion", 0)
+            driver.execute(null, "PRAGMA user_version = $newVersion", 0)
         }
     }
 }

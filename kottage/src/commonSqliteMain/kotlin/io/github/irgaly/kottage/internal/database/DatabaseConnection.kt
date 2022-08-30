@@ -55,12 +55,15 @@ internal actual data class DatabaseConnection(
     }
 
     actual suspend fun backupTo(file: String, directoryPath: String) = withContext(dispatcher) {
+        require(!file.contains(Files.separator)) { "file contains separator: $file" }
         if (!Files.exists(directoryPath)) {
             Files.mkdirs(directoryPath)
         }
         val destination = "$directoryPath/$file"
-        // .delete は sqlite3 コマンドのためSQL経由では使えない
-        sqlDriver.execute(null, "VACUUM INTO '${destination.replace("'", "''")}'", 0)
+        // .backup は sqlite3 コマンドのためSQL経由では使えない
+        sqlDriver.execute(null, "VACUUM INTO ?", 1) {
+            bindString(1, destination)
+        }
     }
 
     actual suspend fun getDatabaseStatus(): String = withContext(dispatcher) {
@@ -177,6 +180,7 @@ internal actual fun createDatabaseConnection(
     environment: KottageEnvironment,
     dispatcher: CoroutineDispatcher
 ): DatabaseConnection {
+    require(!fileName.contains(Files.separator)) { "fileName contains separator: $fileName" }
     val driver = DriverFactory(environment.context).createDriver(fileName, directoryPath)
     val database = KottageDatabase(driver, Item_event.Adapter(EnumColumnAdapter()))
     return DatabaseConnection(driver, database, dispatcher)

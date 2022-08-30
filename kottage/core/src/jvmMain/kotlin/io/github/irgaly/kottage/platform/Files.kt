@@ -11,5 +11,7 @@ actual class Files {
         actual fun mkdirs(directoryPath: String): Boolean {
             return File(directoryPath).mkdirs()
         }
+
+        actual val separator: String = File.separator
     }
 }
