@@ -13,6 +13,7 @@ import io.github.irgaly.kottage.strategy.KottageStrategy
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlin.reflect.KType
 import kotlin.time.Duration
@@ -48,34 +49,20 @@ internal class KottageStorageImpl(
 
     override val defaultExpireTime: Duration? get() = options.defaultExpireTime
 
-    override suspend fun <T : Any> get(key: String, type: KType): T = withContext(dispatcher) {
-        val now = calendar.nowUtcEpochTimeMillis()
-        val item = databaseManager.transactionWithResult {
-            var item = itemRepository.get(key)
-            if (item != null) {
-                if (item.isAvailable(now)) {
-                    strategy.onItemRead(key, now)
-                } else {
-                    // delete cache
-                    item = null
-                    itemRepository.delete(key)
-                    itemRepository.decrementStatsCount(1)
-                    itemEventRepository.create(
-                        ItemEvent(
-                            createdAt = now,
-                            itemType = name,
-                            itemKey = key,
-                            eventType = ItemEventType.Expired
-                        )
-                    )
-                }
-            }
-            item
-        } ?: throw NoSuchElementException("key = $key, storage name = $name")
-        encoder.decode(item, type)
+    override suspend fun <T : Any> get(key: String, type: KType): T {
+        return getOrNullInternal(key, type)
+            ?: throw NoSuchElementException("key = $key, storage name = $name")
     }
 
-    override suspend fun <T : Any> getOrNull(key: String, type: KType): T? =
+    override suspend fun <T : Any> getOrNull(key: String, type: KType): T? {
+        return getOrNullInternal(key, type)
+    }
+
+    /**
+     * @throws ClassCastException when decode failed
+     * @throws SerializationException when json decode failed
+     */
+    private suspend fun <T : Any> getOrNullInternal(key: String, type: KType): T? =
         withContext(dispatcher) {
             val now = calendar.nowUtcEpochTimeMillis()
             val item = databaseManager.transactionWithResult {
@@ -103,7 +90,19 @@ internal class KottageStorageImpl(
             item?.let { encoder.decode(it, type) }
         }
 
-    override suspend fun <T : Any> read(key: String, type: KType): KottageEntry<T> =
+    override suspend fun <T : Any> getEntry(key: String, type: KType): KottageEntry<T> {
+        return getEntryOrNullInternal(key, type)
+            ?: throw NoSuchElementException("key = $key, storage name = $name")
+    }
+
+    override suspend fun <T : Any> getEntryOrNull(key: String, type: KType): KottageEntry<T>? {
+        return getEntryOrNullInternal(key, type)
+    }
+
+    private suspend fun <T : Any> getEntryOrNullInternal(
+        key: String,
+        type: KType
+    ): KottageEntry<T>? =
         withContext(dispatcher) {
             val now = calendar.nowUtcEpochTimeMillis()
             val item = databaseManager.transactionWithResult {
@@ -127,12 +126,14 @@ internal class KottageStorageImpl(
                     }
                 }
                 item
-            } ?: throw NoSuchElementException("key = $key, storage name = $name")
-            KottageEntry(
-                item,
-                type,
-                encoder
-            )
+            }
+            item?.let {
+                KottageEntry(
+                    it,
+                    type,
+                    encoder
+                )
+            }
         }
 
     override suspend fun contains(key: String): Boolean = withContext(dispatcher) {

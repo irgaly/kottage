@@ -40,7 +40,10 @@ interface KottageStorage {
         NoSuchElementException::class,
         CancellationException::class,
     )
-    suspend fun <T : Any> read(key: String, type: KType): KottageEntry<T>
+    suspend fun <T : Any> getEntry(key: String, type: KType): KottageEntry<T>
+
+    @Throws(CancellationException::class)
+    suspend fun <T : Any> getEntryOrNull(key: String, type: KType): KottageEntry<T>?
 
     @Throws(CancellationException::class)
     suspend fun contains(key: String): Boolean
@@ -114,6 +117,11 @@ suspend inline fun <reified T : Any> KottageStorage.put(key: String, value: T) {
     NoSuchElementException::class,
     CancellationException::class,
 )
-suspend inline fun <reified T : Any> KottageStorage.read(key: String): KottageEntry<T> {
-    return read(key, typeOf<T>())
+suspend inline fun <reified T : Any> KottageStorage.getEntry(key: String): KottageEntry<T> {
+    return getEntry(key, typeOf<T>())
+}
+
+@Throws(CancellationException::class)
+suspend inline fun <reified T : Any> KottageStorage.getEntryOrNull(key: String): KottageEntry<T>? {
+    return getEntryOrNull(key, typeOf<T>())
 }
