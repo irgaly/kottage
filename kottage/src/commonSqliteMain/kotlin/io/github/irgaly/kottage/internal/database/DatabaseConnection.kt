@@ -11,10 +11,8 @@ import io.github.irgaly.kottage.data.sqlite.extension.executeWalCheckpointTrunca
 import io.github.irgaly.kottage.platform.Files
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.withContext
 
-@OptIn(ExperimentalCoroutinesApi::class)
 internal actual data class DatabaseConnection(
     val sqlDriver: SqlDriver,
     val database: KottageDatabase,
@@ -44,6 +42,10 @@ internal actual data class DatabaseConnection(
     actual suspend fun deleteAll() = withContext(dispatcher) {
         database.transaction {
             database.itemQueries.deleteAll()
+            database.item_statsQueries.deleteAll()
+            database.item_eventQueries.deleteAll()
+            database.item_listQueries.deleteAll()
+            database.item_list_statsQueries.deleteAll()
         }
     }
 

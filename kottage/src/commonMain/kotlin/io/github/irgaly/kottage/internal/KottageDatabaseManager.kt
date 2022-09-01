@@ -2,7 +2,6 @@ package io.github.irgaly.kottage.internal
 
 import io.github.irgaly.kottage.KottageEnvironment
 import io.github.irgaly.kottage.internal.database.createDatabaseConnection
-import io.github.irgaly.kottage.internal.repository.KottageItemRepository
 import io.github.irgaly.kottage.internal.repository.KottageRepositoryFactory
 import io.github.irgaly.kottage.platform.Files
 import kotlinx.coroutines.CoroutineDispatcher
@@ -11,8 +10,8 @@ import kotlinx.coroutines.Dispatchers
 internal class KottageDatabaseManager(
     fileName: String,
     directoryPath: String,
-    environment: KottageEnvironment,
-    dispatcher: CoroutineDispatcher = Dispatchers.Default
+    private val environment: KottageEnvironment,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
 ) {
     private val databaseConnection by lazy {
         if (!Files.exists(directoryPath)) {
@@ -23,16 +22,26 @@ internal class KottageDatabaseManager(
         createDatabaseConnection(fileName, directoryPath, environment, dispatcher)
     }
 
+    private val calendar get() = environment.calendar
+
     private val repositoryFactory by lazy {
         KottageRepositoryFactory(databaseConnection)
     }
 
-    fun getItemRepository(itemType: String): KottageItemRepository {
-        return repositoryFactory.createItemRepository(itemType)
+    private val operator by lazy {
+        KottageOperator(null, databaseConnection)
+    }
+
+    val itemRepository by lazy {
+        repositoryFactory.createItemRepository()
     }
 
     val itemEventRepository by lazy {
         repositoryFactory.createItemEventRepository()
+    }
+
+    fun createOperator(itemType: String): KottageOperator {
+        return KottageOperator(itemType, databaseConnection)
     }
 
     suspend fun <R> transactionWithResult(bodyWithReturn: () -> R): R =
@@ -44,6 +53,10 @@ internal class KottageDatabaseManager(
     }
 
     suspend fun compact() {
+        val now = calendar.nowUtcEpochTimeMillis()
+        databaseConnection.transaction {
+            operator.compactAllType(now)
+        }
         databaseConnection.compact()
     }
 

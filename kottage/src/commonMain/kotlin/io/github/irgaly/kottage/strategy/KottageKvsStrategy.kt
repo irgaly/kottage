@@ -8,11 +8,11 @@ class KottageKvsStrategy : KottageStrategy {
         // do nothing
     }
 
-    override fun onItemRead(key: String, now: Long) {
+    override fun onItemRead(key: String, itemType: String, now: Long) {
         // do nothing
     }
 
-    override fun onPostItemCreate(key: String, itemCount: Long, now: Long) {
+    override fun onPostItemCreate(key: String, itemType: String, itemCount: Long, now: Long) {
         // do nothing
     }
 }

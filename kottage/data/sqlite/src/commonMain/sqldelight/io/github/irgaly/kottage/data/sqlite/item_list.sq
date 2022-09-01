@@ -5,3 +5,6 @@ CREATE TABLE item_list (
   prev_key TEXT,
   next_key TEXT
 );
+
+deleteAll:
+DELETE FROM item_list;

@@ -18,14 +18,19 @@ class KottageFifoStrategy(
         this.operator = operator
     }
 
-    override fun onItemRead(key: String, now: Long) {
+    override fun onItemRead(key: String, itemType: String, now: Long) {
         // do nothing
     }
 
-    override fun onPostItemCreate(key: String, itemCount: Long, now: Long) {
+    override fun onPostItemCreate(key: String, itemType: String, itemCount: Long, now: Long) {
         if (maxEntryCount < itemCount) {
+            // expire caches
+            val expiredItemsCount = operator.deleteExpiredItems(itemType, now)
             // reduce caches
-            operator.deleteOlderItems(calculatedReduceCount)
+            val reduceCount = calculatedReduceCount - expiredItemsCount
+            if (0 < reduceCount) {
+                operator.deleteOlderItems(itemType, reduceCount)
+            }
         }
     }
 }

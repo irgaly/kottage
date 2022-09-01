@@ -20,3 +20,6 @@ UPDATE item_stats SET count = ? WHERE item_type = ?;
 
 delete:
 DELETE FROM item_stats WHERE item_type = ?;
+
+deleteAll:
+DELETE FROM item_stats;

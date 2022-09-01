@@ -14,10 +14,13 @@ internal data class Item(
 ) {
     companion object {
         fun toEntityKey(key: String, type: String): String {
+            require(!type.contains("+")) {
+                "itemType should not contains \"+\": type = \"$type\""
+            }
             return "$type+$key"
         }
 
-        fun fromEntityKey(entityKey: String, type: String): String {
+        fun keyFromEntityKey(entityKey: String, type: String): String {
             return entityKey.removePrefix("$type+")
         }
     }

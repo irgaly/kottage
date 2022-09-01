@@ -8,10 +8,10 @@ interface KottageStrategy {
     /**
      * called in transaction
      */
-    fun onItemRead(key: String, now: Long)
+    fun onItemRead(key: String, itemType: String, now: Long)
 
     /**
      * called in transaction
      */
-    fun onPostItemCreate(key: String, itemCount: Long, now: Long)
+    fun onPostItemCreate(key: String, itemType: String, itemCount: Long, now: Long)
 }

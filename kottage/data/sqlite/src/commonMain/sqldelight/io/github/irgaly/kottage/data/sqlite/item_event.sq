@@ -19,3 +19,6 @@ SELECT * FROM item_event WHERE item_type = ? AND created_at >= ? ORDER BY create
 
 deleteBefore:
 DELETE FROM item_event WHERE created_at < ?;
+
+deleteAll:
+DELETE FROM item_event;

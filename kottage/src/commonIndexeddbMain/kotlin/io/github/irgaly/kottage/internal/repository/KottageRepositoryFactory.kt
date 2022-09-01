@@ -6,8 +6,8 @@ internal actual class KottageRepositoryFactory actual constructor(
     databaseConnection: DatabaseConnection
 ) {
 
-    actual fun createItemRepository(itemType: String): KottageItemRepository {
-        return KottageIndexeddbItemRepository(itemType)
+    actual fun createItemRepository(): KottageItemRepository {
+        return KottageIndexeddbItemRepository()
     }
 
     actual fun createItemEventRepository(): KottageItemEventRepository {

@@ -4,19 +4,25 @@ import io.github.irgaly.kottage.internal.model.Item
 
 internal interface KottageItemRepository {
     fun upsert(item: Item)
-    fun updateLastRead(key: String, lastReadAt: Long)
-    fun updateExpireAt(key: String, expireAt: Long)
-    fun exists(key: String): Boolean
-    fun get(key: String): Item?
-    fun getCount(): Long
-    fun getAllKeys(receiver: (key: String) -> Unit)
-    fun delete(key: String)
-    fun deleteLeastRecentlyUsed(limit: Long)
-    fun deleteOlderItems(limit: Long)
-    fun deleteAll()
-    fun getStatsCount(): Long
-    fun incrementStatsCount(count: Long)
-    fun decrementStatsCount(count: Long)
-    fun updateStatsCount(count: Long)
-    fun deleteStats()
+    fun updateLastRead(key: String, itemType: String, lastReadAt: Long)
+    fun updateExpireAt(key: String, itemType: String, expireAt: Long)
+    fun exists(key: String, itemType: String): Boolean
+    fun get(key: String, itemType: String): Item?
+    fun getCount(itemType: String): Long
+    fun getAllKeys(itemType: String, receiver: (key: String) -> Unit)
+    fun getExpiredKeys(
+        now: Long,
+        itemType: String? = null,
+        receiver: (key: String, itemType: String) -> Unit
+    )
+
+    fun delete(key: String, itemType: String)
+    fun deleteLeastRecentlyUsed(itemType: String, limit: Long)
+    fun deleteOlderItems(itemType: String, limit: Long)
+    fun deleteAll(itemType: String)
+    fun getStatsCount(itemType: String): Long
+    fun incrementStatsCount(itemType: String, count: Long)
+    fun decrementStatsCount(itemType: String, count: Long)
+    fun updateStatsCount(itemType: String, count: Long)
+    fun deleteStats(itemType: String)
 }

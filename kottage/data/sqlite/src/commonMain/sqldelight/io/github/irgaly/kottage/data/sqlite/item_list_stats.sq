@@ -5,3 +5,6 @@ CREATE TABLE item_list_stats (
   last_item_list_key TEXT NOT NULL,
   expire_at INTEGER
 );
+
+deleteAll:
+DELETE FROM item_list_stats;

@@ -18,14 +18,19 @@ class KottageLruStrategy(
         this.operator = operator
     }
 
-    override fun onItemRead(key: String, now: Long) {
-        operator.updateItemLastRead(key, now)
+    override fun onItemRead(key: String, itemType: String, now: Long) {
+        operator.updateItemLastRead(key, itemType, now)
     }
 
-    override fun onPostItemCreate(key: String, itemCount: Long, now: Long) {
+    override fun onPostItemCreate(key: String, itemType: String, itemCount: Long, now: Long) {
         if (maxEntryCount < itemCount) {
+            // expire caches
+            val expiredItemsCount = operator.deleteExpiredItems(itemType, now)
             // reduce caches
-            operator.deleteLeastRecentlyUsed(calculatedReduceCount)
+            val reduceCount = calculatedReduceCount - expiredItemsCount
+            if (0 < reduceCount) {
+                operator.deleteLeastRecentlyUsed(itemType, reduceCount)
+            }
         }
     }
 }

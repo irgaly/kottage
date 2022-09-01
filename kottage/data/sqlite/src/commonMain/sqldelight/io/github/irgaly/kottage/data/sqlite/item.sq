@@ -32,6 +32,12 @@ SELECT key FROM item WHERE key = ?;
 selectAllKeys:
 SELECT key FROM item WHERE type = ? ORDER BY created_at ASC;
 
+selectExpiredKeys:
+SELECT key FROM item WHERE type = ? AND expire_at <= ? ORDER BY expire_at ASC;
+
+selectAllTypeExpiredKeys:
+SELECT key, type FROM item WHERE expire_at <= ? ORDER BY expire_at ASC;
+
 selectOlderCreatedKeys:
 SELECT key FROM item WHERE type = ? ORDER BY created_at ASC LIMIT :limit;
 

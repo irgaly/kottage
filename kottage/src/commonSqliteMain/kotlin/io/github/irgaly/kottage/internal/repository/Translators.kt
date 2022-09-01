@@ -6,7 +6,7 @@ import io.github.irgaly.kottage.internal.model.ItemEventType
 
 internal fun io.github.irgaly.kottage.data.sqlite.Item.toDomain(): Item {
     return Item(
-        key = Item.fromEntityKey(key, type),
+        key = Item.keyFromEntityKey(key, type),
         type = type,
         stringValue = string_value,
         longValue = long_value,
@@ -36,7 +36,7 @@ internal fun io.github.irgaly.kottage.data.sqlite.Item_event.toDomain(): ItemEve
     return ItemEvent(
         createdAt = created_at,
         itemType = item_type,
-        itemKey = Item.fromEntityKey(item_key, item_type),
+        itemKey = Item.keyFromEntityKey(item_key, item_type),
         eventType = event_type.toDomain()
     )
 }
