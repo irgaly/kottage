@@ -8,9 +8,13 @@ import com.squareup.sqldelight.db.SqlDriver
 import com.squareup.sqldelight.drivers.native.NativeSqliteDriver
 import com.squareup.sqldelight.drivers.native.wrapConnection
 import io.github.irgaly.kottage.platform.Context
+import kotlinx.coroutines.CoroutineDispatcher
 
-actual class DriverFactory actual constructor(private val context: Context) {
-    actual fun createDriver(fileName: String, directoryPath: String): SqlDriver {
+actual class DriverFactory actual constructor(
+    private val context: Context,
+    private val dispatcher: CoroutineDispatcher
+) {
+    actual suspend fun createDriver(fileName: String, directoryPath: String): SqlDriver {
         // SQLiter:
         // * journal_size_limit = 32768 (default)
         //   * 524288 bytes = 512 KB に設定

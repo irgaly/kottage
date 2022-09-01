@@ -3,10 +3,15 @@ package io.github.irgaly.kottage.data.sqlite
 import com.squareup.sqldelight.db.SqlDriver
 import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
 import io.github.irgaly.kottage.platform.Context
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.withContext
 import java.util.*
 
-actual class DriverFactory actual constructor(private val context: Context) {
-    actual fun createDriver(fileName: String, directoryPath: String): SqlDriver {
+actual class DriverFactory actual constructor(
+    private val context: Context,
+    private val dispatcher: CoroutineDispatcher
+) {
+    actual suspend fun createDriver(fileName: String, directoryPath: String): SqlDriver {
         // SQLDelight + SQLiter + JDBC:
         // * journal_size_limit = -1 (default)
         //   * 524288 bytes = 512 KB に設定
@@ -31,27 +36,26 @@ actual class DriverFactory actual constructor(private val context: Context) {
                 put("busy_timeout", "3000")
             }
         )
-        // TODO: do async initialization (or lazy initialization)
         migrateIfNeeded(driver)
         return driver
     }
 
-    private fun migrateIfNeeded(driver: JdbcSqliteDriver) {
-        val oldVersion = driver.executeQuery(null, "PRAGMA user_version", 0).use { cursor ->
-            if (cursor.next()) {
-                cursor.getLong(0)?.toInt()
-            } else {
-                null
+    private suspend fun migrateIfNeeded(driver: JdbcSqliteDriver) {
+        withContext(dispatcher) {
+            val oldVersion = driver.executeQuery(null, "PRAGMA user_version", 0).use { cursor ->
+                if (cursor.next()) {
+                    cursor.getLong(0)?.toInt()
+                } else null
+            } ?: 0
+            val newVersion = KottageDatabase.Schema.version
+            if (oldVersion == 0) {
+                KottageDatabase.Schema.create(driver)
+                driver.execute(null, "PRAGMA user_version = $newVersion", 0)
+            } else if (oldVersion < newVersion) {
+                // migrate oldVersion -> newVersion
+                KottageDatabase.Schema.migrate(driver, oldVersion, newVersion)
+                driver.execute(null, "PRAGMA user_version = $newVersion", 0)
             }
-        } ?: 0
-        val newVersion = KottageDatabase.Schema.version
-        if (oldVersion == 0) {
-            KottageDatabase.Schema.create(driver)
-            driver.execute(null, "PRAGMA user_version = $newVersion", 0)
-        } else if (oldVersion < newVersion) {
-            // migrate oldVersion -> newVersion
-            KottageDatabase.Schema.migrate(driver, oldVersion, newVersion)
-            driver.execute(null, "PRAGMA user_version = $newVersion", 0)
         }
     }
 }

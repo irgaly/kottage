@@ -3,9 +3,7 @@ package io.github.irgaly.kottage.internal
 import io.github.irgaly.kottage.KottageEnvironment
 import io.github.irgaly.kottage.internal.database.createDatabaseConnection
 import io.github.irgaly.kottage.internal.repository.KottageRepositoryFactory
-import io.github.irgaly.kottage.platform.Files
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 
 internal class KottageDatabaseManager(
     fileName: String,
@@ -14,11 +12,6 @@ internal class KottageDatabaseManager(
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default
 ) {
     private val databaseConnection by lazy {
-        if (!Files.exists(directoryPath)) {
-            // TODO: async directory creation
-            // FIX: mkdirs in createDatabaseConnection()
-            Files.mkdirs(directoryPath)
-        }
         createDatabaseConnection(fileName, directoryPath, environment, dispatcher)
     }
 
@@ -28,20 +21,22 @@ internal class KottageDatabaseManager(
         KottageRepositoryFactory(databaseConnection)
     }
 
-    private val operator by lazy {
-        KottageOperator(null, databaseConnection)
-    }
-
-    val itemRepository by lazy {
+    @OptIn(DelicateCoroutinesApi::class)
+    val itemRepository = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
         repositoryFactory.createItemRepository()
     }
 
-    val itemEventRepository by lazy {
+    @OptIn(DelicateCoroutinesApi::class)
+    val itemEventRepository = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
         repositoryFactory.createItemEventRepository()
     }
 
-    fun createOperator(itemType: String): KottageOperator {
-        return KottageOperator(itemType, databaseConnection)
+    @OptIn(DelicateCoroutinesApi::class)
+    val operator = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
+        KottageOperator(
+            itemRepository.await(),
+            itemEventRepository.await()
+        )
     }
 
     suspend fun <R> transactionWithResult(bodyWithReturn: () -> R): R =
@@ -53,6 +48,7 @@ internal class KottageDatabaseManager(
     }
 
     suspend fun compact() {
+        val operator = operator.await()
         val now = calendar.nowUtcEpochTimeMillis()
         databaseConnection.transaction {
             operator.compactAllType(now)

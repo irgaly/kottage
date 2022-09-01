@@ -1,49 +1,37 @@
 package io.github.irgaly.kottage.internal
 
-import io.github.irgaly.kottage.internal.database.DatabaseConnection
 import io.github.irgaly.kottage.internal.model.Item
 import io.github.irgaly.kottage.internal.model.ItemEvent
 import io.github.irgaly.kottage.internal.model.ItemEventType
-import io.github.irgaly.kottage.internal.repository.KottageRepositoryFactory
+import io.github.irgaly.kottage.internal.repository.KottageItemEventRepository
+import io.github.irgaly.kottage.internal.repository.KottageItemRepository
 import io.github.irgaly.kottage.strategy.KottageStrategyOperator
 
 /**
  * Data Operation Logic
  */
 internal class KottageOperator(
-    val itemType: String?,
-    databaseConnection: DatabaseConnection
+    private val itemRepository: KottageItemRepository,
+    private val itemEventRepository: KottageItemEventRepository
 ): KottageStrategyOperator {
-    private val repositoryFactory by lazy {
-        KottageRepositoryFactory(databaseConnection)
-    }
-
-    private val itemRepository by lazy {
-        repositoryFactory.createItemRepository()
-    }
-
-    private val itemEventRepository by lazy {
-        repositoryFactory.createItemEventRepository()
-    }
-
     fun getOrNull(key: String, itemType: String, now: Long): Item? {
-            var item = itemRepository.get(key, itemType)
-            if (item?.isExpired(now) == true) {
-                // delete cache
-                item = null
-                itemRepository.delete(key, itemType)
-                itemRepository.decrementStatsCount(itemType, 1)
-                itemEventRepository.create(
-                    ItemEvent(
-                        createdAt = now,
-                        itemType = itemType,
-                        itemKey = key,
-                        eventType = ItemEventType.Expired
-                    )
+        var item = itemRepository.get(key, itemType)
+        if (item?.isExpired(now) == true) {
+            // delete cache
+            item = null
+            itemRepository.delete(key, itemType)
+            itemRepository.decrementStatsCount(itemType, 1)
+            itemEventRepository.create(
+                ItemEvent(
+                    createdAt = now,
+                    itemType = itemType,
+                    itemKey = key,
+                    eventType = ItemEventType.Expired
                 )
-            }
-            return item
+            )
         }
+        return item
+    }
 
     /**
      * Delete expired items

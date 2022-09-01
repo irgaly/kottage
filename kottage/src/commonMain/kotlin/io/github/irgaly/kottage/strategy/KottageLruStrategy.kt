@@ -10,19 +10,25 @@ class KottageLruStrategy(
     private val maxEntryCount: Long,
     private val reduceCount: Long? = null
 ) : KottageStrategy {
-    private lateinit var operator: KottageStrategyOperator
     private val calculatedReduceCount: Long =
         (maxEntryCount * 0.25).toLong().coerceAtLeast(1)
 
-    override fun initialize(operator: KottageStrategyOperator) {
-        this.operator = operator
-    }
-
-    override fun onItemRead(key: String, itemType: String, now: Long) {
+    override fun onItemRead(
+        key: String,
+        itemType: String,
+        now: Long,
+        operator: KottageStrategyOperator
+    ) {
         operator.updateItemLastRead(key, itemType, now)
     }
 
-    override fun onPostItemCreate(key: String, itemType: String, itemCount: Long, now: Long) {
+    override fun onPostItemCreate(
+        key: String,
+        itemType: String,
+        itemCount: Long,
+        now: Long,
+        operator: KottageStrategyOperator
+    ) {
         if (maxEntryCount < itemCount) {
             // expire caches
             val expiredItemsCount = operator.deleteExpiredItems(itemType, now)

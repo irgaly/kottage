@@ -29,21 +29,9 @@ internal class KottageStorageImpl(
 
     private val strategy: KottageStrategy = options.strategy
 
-    private val operator by lazy {
-        databaseManager.createOperator(name)
-    }
-
-    private val itemRepository by lazy {
-        databaseManager.itemRepository
-    }
-
-    private val itemEventRepository by lazy {
-        databaseManager.itemEventRepository
-    }
-
-    init {
-        strategy.initialize(operator)
-    }
+    private suspend fun itemRepository() = databaseManager.itemRepository.await()
+    private suspend fun itemEventRepository() = databaseManager.itemEventRepository.await()
+    private suspend fun operator() = databaseManager.operator.await()
 
     override val defaultExpireTime: Duration? get() = options.defaultExpireTime
 
@@ -62,10 +50,11 @@ internal class KottageStorageImpl(
      */
     private suspend fun <T : Any> getOrNullInternal(key: String, type: KType): T? =
         withContext(dispatcher) {
+            val operator = operator()
             val now = calendar.nowUtcEpochTimeMillis()
             databaseManager.transactionWithResult {
                 operator.getOrNull(key, name, now)?.also {
-                    strategy.onItemRead(key, name, now)
+                    strategy.onItemRead(key, name, now, operator)
                 }
             }?.let { encoder.decode(it, type) }
         }
@@ -83,10 +72,11 @@ internal class KottageStorageImpl(
         key: String,
         type: KType
     ): KottageEntry<T>? = withContext(dispatcher) {
+        val operator = operator()
         val now = calendar.nowUtcEpochTimeMillis()
         databaseManager.transactionWithResult {
             operator.getOrNull(key, name, now)?.also {
-                strategy.onItemRead(key, name, now)
+                strategy.onItemRead(key, name, now, operator)
             }
         }?.let {
             KottageEntry(it, type, encoder)
@@ -95,12 +85,15 @@ internal class KottageStorageImpl(
 
     override suspend fun contains(key: String): Boolean = withContext(dispatcher) {
         val now = calendar.nowUtcEpochTimeMillis()
-        val item = itemRepository.get(key, name)
+        val item = itemRepository().get(key, name)
         (item?.isAvailable(now) ?: false)
     }
 
     override suspend fun <T : Any> put(key: String, value: T, type: KType) =
         withContext(dispatcher) {
+            val itemRepository = itemRepository()
+            val itemEventRepository = itemEventRepository()
+            val operator = operator()
             val now = calendar.nowUtcEpochTimeMillis()
             val item = encoder.encode(
                 value,
@@ -139,12 +132,14 @@ internal class KottageStorageImpl(
                 )
                 if (isCreate) {
                     val count = itemRepository.getStatsCount(name)
-                    strategy.onPostItemCreate(key, name, count, now)
+                    strategy.onPostItemCreate(key, name, count, now, operator)
                 }
             }
         }
 
     override suspend fun remove(key: String): Boolean = withContext(dispatcher) {
+        val itemRepository = itemRepository()
+        val itemEventRepository = itemEventRepository()
         val now = calendar.nowUtcEpochTimeMillis()
         databaseManager.transactionWithResult {
             val exists = itemRepository.exists(key, name)
@@ -165,6 +160,8 @@ internal class KottageStorageImpl(
     }
 
     override suspend fun removeAll(key: String) = withContext(dispatcher) {
+        val itemRepository = itemRepository()
+        val itemEventRepository = itemEventRepository()
         val now = calendar.nowUtcEpochTimeMillis()
         databaseManager.transaction {
             itemRepository.getAllKeys(name) { key ->
@@ -183,6 +180,7 @@ internal class KottageStorageImpl(
     }
 
     override suspend fun compact() = withContext(dispatcher) {
+        val operator = operator()
         val now = calendar.nowUtcEpochTimeMillis()
         databaseManager.transaction {
             operator.compact(name, now)
@@ -190,6 +188,7 @@ internal class KottageStorageImpl(
     }
 
     override suspend fun clear() = withContext(dispatcher) {
+        val itemRepository = itemRepository()
         databaseManager.transaction {
             itemRepository.deleteAll(name)
             itemRepository.deleteStats(name)

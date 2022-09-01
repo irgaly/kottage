@@ -19,6 +19,7 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(projects.kottage.core)
+                implementation(libs.kotlinx.coroutines.core)
             }
         }
         commonTest {

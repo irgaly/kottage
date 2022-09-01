@@ -5,9 +5,13 @@ import com.squareup.sqldelight.android.AndroidSqliteDriver
 import com.squareup.sqldelight.db.SqlDriver
 import io.github.irgaly.kottage.data.sqlite.internal.FrameworkSQLiteOpenHelperFactory
 import io.github.irgaly.kottage.platform.Context
+import kotlinx.coroutines.CoroutineDispatcher
 
-actual class DriverFactory actual constructor(private val context: Context) {
-    actual fun createDriver(fileName: String, directoryPath: String): SqlDriver {
+actual class DriverFactory actual constructor(
+    private val context: Context,
+    private val dispatcher: CoroutineDispatcher
+) {
+    actual suspend fun createDriver(fileName: String, directoryPath: String): SqlDriver {
         // SQLiteOpenHelper:
         // * journal_size_limit = ? (default)
         //   * 524288 bytes = 512 KB に設定

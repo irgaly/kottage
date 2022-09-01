@@ -6,11 +6,11 @@ internal actual class KottageRepositoryFactory actual constructor(
     databaseConnection: DatabaseConnection
 ) {
 
-    actual fun createItemRepository(): KottageItemRepository {
+    actual suspend fun createItemRepository(): KottageItemRepository {
         return KottageIndexeddbItemRepository()
     }
 
-    actual fun createItemEventRepository(): KottageItemEventRepository {
+    actual suspend fun createItemEventRepository(): KottageItemEventRepository {
         return KottageIndexeddbItemEventRepository()
     }
 }

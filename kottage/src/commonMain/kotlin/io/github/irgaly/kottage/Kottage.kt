@@ -15,6 +15,7 @@ import kotlin.time.Duration.Companion.days
  *
  * @throws IllegalArgumentException name contains file separator
  */
+@Suppress("MemberVisibilityCanBePrivate", "unused")
 class Kottage(
     val name: String,
     val directoryPath: String,
@@ -26,8 +27,13 @@ class Kottage(
         /**
          * Get Sqlite database file path for delete or backup a file.
          */
-        fun getDatabaseFilePath(name: String, directoryPath: String): String {
-            return "${directoryPath}/${name}.db"
+        fun getDatabaseFiles(name: String, directoryPath: String): DatabaseFiles {
+            val databaseFile = "${directoryPath}/${name}.db"
+            return DatabaseFiles(
+                databaseFile = databaseFile,
+                walFile = "$databaseFile-wal",
+                shmFile = "$databaseFile-shm"
+            )
         }
     }
 
@@ -99,4 +105,19 @@ class Kottage(
     suspend fun export(file: String, directoryPath: String) {
         databaseManager.backupTo(file, directoryPath)
     }
+
+    data class DatabaseFiles(
+        /**
+         * SQLite DB file: "${name}.db"
+         */
+        val databaseFile: String,
+        /**
+         * SQLite DB WAL file: "${databaseFile}-wal"
+         */
+        val walFile: String,
+        /**
+         * SQLite DB SHM file: "${databaseFile}-shm"
+         */
+        val shmFile: String
+    )
 }
