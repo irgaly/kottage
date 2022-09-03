@@ -183,7 +183,7 @@ internal class KottageStorageImpl(
         val operator = operator()
         val now = calendar.nowUtcEpochTimeMillis()
         databaseManager.transaction {
-            operator.compact(name, now)
+            operator.evictCache(now, name)
         }
     }
 

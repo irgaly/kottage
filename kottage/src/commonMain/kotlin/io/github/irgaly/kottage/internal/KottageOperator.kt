@@ -37,19 +37,15 @@ internal class KottageOperator(
      * Delete expired items
      * This should be called in transaction
      */
-    fun compact(itemType: String, now: Long) {
-        itemRepository.getExpiredKeys(now, itemType) { key, _ ->
-            deleteExpiredItem(key, itemType, now)
-        }
-    }
-
-    /**
-     * Delete expired items with all itemType
-     * This should be called in transaction
-     */
-    fun compactAllType(now: Long) {
-        itemRepository.getExpiredKeys(now) { key, itemType ->
-            deleteExpiredItem(key, itemType, now)
+    fun evictCache(now: Long, itemType: String? = null) {
+        if (itemType != null) {
+            itemRepository.getExpiredKeys(now, itemType) { key, _ ->
+                deleteExpiredItem(key, itemType, now)
+            }
+        } else {
+            itemRepository.getExpiredKeys(now) { key, itemType ->
+                deleteExpiredItem(key, itemType, now)
+            }
         }
     }
 
