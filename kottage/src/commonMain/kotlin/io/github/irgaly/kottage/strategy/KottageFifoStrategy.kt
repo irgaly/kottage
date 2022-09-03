@@ -33,7 +33,7 @@ class KottageFifoStrategy(
             // expire caches
             val expiredItemsCount = operator.deleteExpiredItems(itemType, now)
             // reduce caches
-            val reduceCount = calculatedReduceCount - expiredItemsCount
+            val reduceCount = (reduceCount ?: calculatedReduceCount) - expiredItemsCount
             if (0 < reduceCount) {
                 operator.deleteOlderItems(itemType, reduceCount)
             }

@@ -2,8 +2,11 @@ package io.github.irgaly.kottage
 
 import com.soywiz.klock.DateTime
 import com.soywiz.klock.days
+import com.soywiz.klock.milliseconds
 import io.github.irgaly.kottage.platform.Context
 import io.github.irgaly.kottage.platform.TestCalendar
+import io.github.irgaly.kottage.strategy.KottageFifoStrategy
+import io.github.irgaly.kottage.strategy.KottageLruStrategy
 import io.github.irgaly.test.extension.duration
 import io.github.irgaly.test.extension.tempdir
 import io.kotest.assertions.throwables.shouldThrow
@@ -40,6 +43,51 @@ class KottageCacheTest : DescribeSpec({
                 shouldThrow<NoSuchElementException> {
                     cache.getEntry<String>("expire1")
                 }
+            }
+        }
+        context("FIFO Strategy") {
+            val cache = kottage.cache("cache2") {
+                strategy = KottageFifoStrategy(4, 2)
+            }
+            it("maxEntryCount を超えたら reduceCount だけ削除される") {
+                cache.put("1", "")
+                calendar.now += 1.milliseconds
+                cache.put("2", "")
+                calendar.now += 1.milliseconds
+                cache.put("3", "")
+                calendar.now += 1.milliseconds
+                cache.put("4", "")
+                calendar.now += 1.milliseconds
+                cache.put("5", "")
+                cache.exists("1") shouldBe false
+                cache.exists("2") shouldBe false
+                cache.exists("3") shouldBe true
+                cache.exists("4") shouldBe true
+                cache.exists("5") shouldBe true
+            }
+        }
+        context("LRU Strategy") {
+            val cache = kottage.cache("cache3") {
+                strategy = KottageLruStrategy(4, 2)
+            }
+            it("maxEntryCount を超えたら reduceCount だけ削除される") {
+                cache.put("1", "")
+                calendar.now += 1.milliseconds
+                cache.put("2", "")
+                calendar.now += 1.milliseconds
+                cache.put("3", "")
+                calendar.now += 1.milliseconds
+                cache.put("4", "")
+                calendar.now += 1.milliseconds
+                // "2" へアクセス
+                cache.get<String>("2")
+                calendar.now += 1.milliseconds
+                cache.put("5", "")
+                cache.exists("1") shouldBe false
+                cache.exists("2") shouldBe true
+                cache.exists("3") shouldBe false
+                cache.exists("4") shouldBe true
+                cache.exists("5") shouldBe true
             }
         }
     }
