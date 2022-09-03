@@ -45,7 +45,6 @@ class KottageTest : DescribeSpec({
                 kottage.export("backup.db", "$tempDirectory/backup")
             }
             it("export() で特殊なファイル名を扱える") {
-                val invalidFile = "test_/_:_\\_"
                 kottage.export(
                     "export_${
                         "_'_\"_/_\\_ _あ_😄_:_;_".replace(Files.separator, "-")

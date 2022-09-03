@@ -83,7 +83,7 @@ internal class KottageStorageImpl(
         }
     }
 
-    override suspend fun contains(key: String): Boolean = withContext(dispatcher) {
+    override suspend fun exists(key: String): Boolean = withContext(dispatcher) {
         val now = calendar.nowUtcEpochTimeMillis()
         val item = itemRepository().get(key, name)
         (item?.isAvailable(now) ?: false)

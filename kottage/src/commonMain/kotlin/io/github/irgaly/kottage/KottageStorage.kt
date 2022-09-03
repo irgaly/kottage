@@ -46,7 +46,7 @@ interface KottageStorage {
     suspend fun <T : Any> getEntryOrNull(key: String, type: KType): KottageEntry<T>?
 
     @Throws(CancellationException::class)
-    suspend fun contains(key: String): Boolean
+    suspend fun exists(key: String): Boolean
 
     /**
      * @throws SerializationException when json encoding failed

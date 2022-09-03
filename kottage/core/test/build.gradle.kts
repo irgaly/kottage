@@ -10,6 +10,7 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(libs.test.kotest.engine)
+                implementation(libs.klock)
             }
         }
     }
