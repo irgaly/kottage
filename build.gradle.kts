@@ -98,7 +98,7 @@ subprojects {
                 System.getenv("SIGNING_PGP_KEY"),
                 System.getenv("SIGNING_PGP_PASSWORD")
             )
-            //sign(publishing.publications)
+            sign(extensions.getByType<PublishingExtension>().publications)
         }
     }
 }

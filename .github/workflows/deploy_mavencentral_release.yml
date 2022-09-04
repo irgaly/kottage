@@ -1,0 +1,54 @@
+# v*.*.* tag -> deploy to Maven Central
+name: Deploy to Maven Central Release
+
+on:
+  push:
+    tags:
+      - v[0-9]+.[0-9]+.[0-9]+*
+
+jobs:
+  deploy-mavencentral:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - id: get-month
+        run: echo "::set-output name=month::$(TZ=Asia/Tokyo date +%m)"
+      - uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: actions/cache@v3
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches/jars-*
+            ~/.gradle/caches/transforms-*
+            ~/.gradle/caches/modules-*
+          key: gradle-dependencies-${{ steps.get-month.outputs.month }}-${{ hashFiles('gradle/libs.versions.toml', '**/*.gradle.kts', 'build-logic/**/*.{kt,kts}') }}
+          restore-keys: gradle-dependencies-${{ steps.get-month.outputs.month }}-
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.konan
+            ~/.gradle/native
+          key: ${{ runner.os }}-kotlin-native-${{ steps.get-month.outputs.month }}-${{ hashFiles('gradle/libs.versions.toml', '**/*.gradle.kts') }}
+          restore-keys: ${{ runner.os }}-kotlin-native-${{ steps.get-month.outputs.month }}-
+      - uses: actions/cache@v3
+        with:
+          path:
+            ~/.gradle/caches/build-cache-*
+            ~/.gradle/caches/[0-9]*.*
+            .gradle
+          key: ${{ runner.os }}-gradle-build-${{ steps.get-month.outputs.month }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-gradle-build-${{ steps.get-month.outputs.month }}-
+      - name: Deploy to Maven Central
+        env:
+          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME_TOKEN }}
+          ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD_TOKEN }}
+          SIGNING_PGP_KEY: ${{ secrets.SIGNING_PGP_KEY }}
+          SIGNING_PGP_PASSWORD: ${{ secrets.SIGNING_PGP_PASSWORD }}
+        run: |
+          ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
