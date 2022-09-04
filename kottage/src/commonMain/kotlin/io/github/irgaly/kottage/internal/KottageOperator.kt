@@ -5,15 +5,32 @@ import io.github.irgaly.kottage.internal.model.ItemEvent
 import io.github.irgaly.kottage.internal.model.ItemEventType
 import io.github.irgaly.kottage.internal.repository.KottageItemEventRepository
 import io.github.irgaly.kottage.internal.repository.KottageItemRepository
+import io.github.irgaly.kottage.internal.repository.KottageStatsRepository
 import io.github.irgaly.kottage.strategy.KottageStrategyOperator
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Data Operation Logic
  */
 internal class KottageOperator(
     private val itemRepository: KottageItemRepository,
-    private val itemEventRepository: KottageItemEventRepository
+    private val itemEventRepository: KottageItemEventRepository,
+    private val statsRepository: KottageStatsRepository
 ): KottageStrategyOperator {
+    /**
+     * This should be called in transaction
+     */
+    fun getAutoCompactionNeeded(now: Long, duration: Duration?): Boolean {
+        return if (duration != null) {
+            val lastCompaction = statsRepository.getLastEvictAt()
+            (duration <= (now - lastCompaction).milliseconds)
+        } else false
+    }
+
+    /**
+     * This should be called in transaction
+     */
     fun getOrNull(key: String, itemType: String, now: Long): Item? {
         var item = itemRepository.get(key, itemType)
         if (item?.isExpired(now) == true) {

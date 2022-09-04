@@ -12,4 +12,8 @@ internal actual class KottageRepositoryFactory actual constructor(
     actual suspend fun createItemEventRepository(): KottageItemEventRepository {
         return KottageSqliteItemEventRepository(databaseConnection.database.await())
     }
+
+    actual suspend fun createStatsRepository(): KottageStatsRepository {
+        return KottageSqliteStatsRepository(databaseConnection.database.await())
+    }
 }

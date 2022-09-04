@@ -45,6 +45,34 @@ class KottageCacheTest : DescribeSpec({
                 }
             }
         }
+        context("Auto Compaction") {
+            val compactionKottage = Kottage(
+                "compaction",
+                tempDirectory,
+                KottageEnvironment(Context(), calendar)
+            ) {
+                autoCompactionDuration = 1.days.duration
+            }
+            val cache = compactionKottage.cache("cache1") {
+                defaultExpireTime = 2.days.duration
+            }
+            it("autoCompactionDuration 経過で cache が自動削除される") {
+                calendar.setUtc(DateTime(2022, 1, 1))
+                cache.put("a", "") // this triggers initial compaction
+                calendar.now += 1.milliseconds
+                cache.put("b", "")
+                calendar.setUtc(DateTime(2022, 1, 2))
+                cache.put("c", "") // this triggers first compaction
+                calendar.setUtc(DateTime(2022, 1, 3))
+                cache.put("d", "") // this triggers second compaction
+                // reset time for existing check
+                calendar.setUtc(DateTime(2022, 1, 1))
+                cache.exists("a") shouldBe false
+                cache.exists("b") shouldBe true
+                cache.exists("c") shouldBe true
+                cache.exists("d") shouldBe true
+            }
+        }
         context("FIFO Strategy") {
             val cache = kottage.cache("cache2") {
                 strategy = KottageFifoStrategy(4, 2)

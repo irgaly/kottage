@@ -13,4 +13,8 @@ internal actual class KottageRepositoryFactory actual constructor(
     actual suspend fun createItemEventRepository(): KottageItemEventRepository {
         return KottageIndexeddbItemEventRepository()
     }
+
+    actual suspend fun createStatsRepository(): KottageStatsRepository {
+        return KottageIndexeddbStatsRepository()
+    }
 }

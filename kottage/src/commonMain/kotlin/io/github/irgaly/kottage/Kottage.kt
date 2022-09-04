@@ -21,7 +21,8 @@ class Kottage(
     val directoryPath: String,
     val environment: KottageEnvironment,
     val json: Json = Json,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
+    val optionsBuilder: (KottageOptions.Builder.() -> Unit)? = null
 ) {
     companion object {
         /**
@@ -41,8 +42,15 @@ class Kottage(
         KottageDatabaseManager(name, directoryPath, environment, dispatcher)
     }
 
+    private val options: KottageOptions
+
     init {
         require(!name.contains(Files.separator)) { "name contains separator: $name" }
+        options = KottageOptions.Builder(
+            autoCompactionDuration = 14.days
+        ).apply {
+            optionsBuilder?.invoke(this)
+        }.build()
     }
 
     fun storage(
@@ -52,7 +60,6 @@ class Kottage(
         val options = KottageStorageOptions.Builder(
             strategy = KottageKvsStrategy(),
             defaultExpireTime = null,
-            autoClean = false
         ).apply {
             optionsBuilder?.invoke(this)
         }.build()
@@ -60,8 +67,10 @@ class Kottage(
             name,
             options.json ?: json,
             options,
+            this.options,
             databaseManager,
             environment.calendar,
+            { databaseManager.compact() },
             dispatcher
         )
     }
@@ -73,7 +82,6 @@ class Kottage(
         val options = KottageStorageOptions.Builder(
             strategy = KottageFifoStrategy(1000),
             defaultExpireTime = 30.days,
-            autoClean = true
         ).apply {
             optionsBuilder?.invoke(this)
         }.build()
@@ -81,13 +89,16 @@ class Kottage(
             name,
             options.json ?: json,
             options,
+            this.options,
             databaseManager,
             environment.calendar,
+            { databaseManager.compact() },
             dispatcher
         )
     }
 
     /**
+     * Evict expired caches and
      * Optimize Database to minimum size.
      */
     suspend fun compact() {

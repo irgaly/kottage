@@ -63,6 +63,7 @@ internal actual data class DatabaseConnection(
                 database.item_eventQueries.deleteAll()
                 database.item_listQueries.deleteAll()
                 database.item_list_statsQueries.deleteAll()
+                database.statsQueries.deleteAll()
             }
         }
     }

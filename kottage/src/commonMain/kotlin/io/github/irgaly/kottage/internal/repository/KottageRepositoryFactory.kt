@@ -7,4 +7,5 @@ internal expect class KottageRepositoryFactory(
 ) {
     suspend fun createItemRepository(): KottageItemRepository
     suspend fun createItemEventRepository(): KottageItemEventRepository
+    suspend fun createStatsRepository(): KottageStatsRepository
 }

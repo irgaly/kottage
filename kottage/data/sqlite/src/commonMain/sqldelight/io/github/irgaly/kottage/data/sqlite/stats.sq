@@ -1,0 +1,16 @@
+CREATE TABLE stats (
+  key TEXT PRIMARY KEY,
+  last_evict_at INTEGER NOT NULL
+);
+
+insertIfNotExists:
+INSERT OR IGNORE INTO stats VALUES(?, 0);
+
+selectLastEvictAt:
+SELECT last_evict_at FROM stats WHERE key = ?;
+
+updateLastEvictAt:
+UPDATE stats SET last_evict_at = ? WHERE key = ?;
+
+deleteAll:
+DELETE FROM stats;

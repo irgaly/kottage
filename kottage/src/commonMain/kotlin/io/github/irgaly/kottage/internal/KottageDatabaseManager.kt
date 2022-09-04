@@ -32,10 +32,16 @@ internal class KottageDatabaseManager(
     }
 
     @OptIn(DelicateCoroutinesApi::class)
+    val statsRepository = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
+        repositoryFactory.createStatsRepository()
+    }
+
+    @OptIn(DelicateCoroutinesApi::class)
     val operator = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
         KottageOperator(
             itemRepository.await(),
-            itemEventRepository.await()
+            itemEventRepository.await(),
+            statsRepository.await()
         )
     }
 
@@ -48,10 +54,12 @@ internal class KottageDatabaseManager(
     }
 
     suspend fun compact() {
+        val statsRepository = statsRepository.await()
         val operator = operator.await()
         val now = calendar.nowUtcEpochTimeMillis()
         databaseConnection.transaction {
             operator.evictCache(now)
+            statsRepository.updateLastEvictAt(now)
         }
         databaseConnection.compact()
     }

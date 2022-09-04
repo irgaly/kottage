@@ -1,6 +1,7 @@
 package io.github.irgaly.kottage.internal
 
 import io.github.irgaly.kottage.KottageEntry
+import io.github.irgaly.kottage.KottageOptions
 import io.github.irgaly.kottage.KottageStorage
 import io.github.irgaly.kottage.KottageStorageOptions
 import io.github.irgaly.kottage.internal.encoder.Encoder
@@ -21,8 +22,10 @@ internal class KottageStorageImpl(
     private val name: String,
     json: Json,
     private val options: KottageStorageOptions,
+    private val kottageOptions: KottageOptions,
     private val databaseManager: KottageDatabaseManager,
     private val calendar: KottageCalendar,
+    private val onCompactionRequired: suspend () -> Unit,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : KottageStorage {
     private val encoder = Encoder(json)
@@ -31,6 +34,7 @@ internal class KottageStorageImpl(
 
     private suspend fun itemRepository() = databaseManager.itemRepository.await()
     private suspend fun itemEventRepository() = databaseManager.itemEventRepository.await()
+    private suspend fun statsRepository() = databaseManager.statsRepository.await()
     private suspend fun operator() = databaseManager.operator.await()
 
     override val defaultExpireTime: Duration? get() = options.defaultExpireTime
@@ -52,11 +56,18 @@ internal class KottageStorageImpl(
         withContext(dispatcher) {
             val operator = operator()
             val now = calendar.nowUtcEpochTimeMillis()
-            databaseManager.transactionWithResult {
+            var compactionRequired = false
+            val item = databaseManager.transactionWithResult {
+                compactionRequired =
+                    operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
                 operator.getOrNull(key, name, now)?.also {
                     strategy.onItemRead(key, name, now, operator)
                 }
-            }?.let { encoder.decode(it, type) }
+            }
+            if (compactionRequired) {
+                onCompactionRequired()
+            }
+            item?.let { encoder.decode(it, type) }
         }
 
     override suspend fun <T : Any> getEntry(key: String, type: KType): KottageEntry<T> {
@@ -74,13 +85,18 @@ internal class KottageStorageImpl(
     ): KottageEntry<T>? = withContext(dispatcher) {
         val operator = operator()
         val now = calendar.nowUtcEpochTimeMillis()
-        databaseManager.transactionWithResult {
+        var compactionRequired = false
+        val item = databaseManager.transactionWithResult {
+            compactionRequired =
+                operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
             operator.getOrNull(key, name, now)?.also {
                 strategy.onItemRead(key, name, now, operator)
             }
-        }?.let {
-            KottageEntry(it, type, encoder)
         }
+        if (compactionRequired) {
+            onCompactionRequired()
+        }
+        item?.let { KottageEntry(it, type, encoder) }
     }
 
     override suspend fun exists(key: String): Boolean = withContext(dispatcher) {
@@ -116,6 +132,7 @@ internal class KottageStorageImpl(
                     }
                 )
             }
+            var compactionRequired = false
             databaseManager.transaction {
                 val isCreate = !itemRepository.exists(key, name)
                 itemRepository.upsert(item)
@@ -134,14 +151,21 @@ internal class KottageStorageImpl(
                     val count = itemRepository.getStatsCount(name)
                     strategy.onPostItemCreate(key, name, count, now, operator)
                 }
+                compactionRequired =
+                    operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
+            }
+            if (compactionRequired) {
+                onCompactionRequired()
             }
         }
 
     override suspend fun remove(key: String): Boolean = withContext(dispatcher) {
         val itemRepository = itemRepository()
         val itemEventRepository = itemEventRepository()
+        val operator = operator()
         val now = calendar.nowUtcEpochTimeMillis()
-        databaseManager.transactionWithResult {
+        var compactionRequired = false
+        val exists = databaseManager.transactionWithResult {
             val exists = itemRepository.exists(key, name)
             if (exists) {
                 itemRepository.delete(key, name)
@@ -155,8 +179,14 @@ internal class KottageStorageImpl(
                     )
                 )
             }
+            compactionRequired =
+                operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
             exists
         }
+        if (compactionRequired) {
+            onCompactionRequired()
+        }
+        exists
     }
 
     override suspend fun removeAll(key: String) = withContext(dispatcher) {
