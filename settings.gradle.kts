@@ -26,7 +26,7 @@ rootProject.name = "kottage-project"
 include(
     ":kottage",
     ":kottage:data:sqlite",
-    ":kottage:data:indexeddb",
+    //":kottage:data:indexeddb",
     ":kottage:core",
     ":kottage:core:test",
     ":sample:android"
