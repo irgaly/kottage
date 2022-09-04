@@ -15,12 +15,17 @@ actual class DriverFactory actual constructor(
         // SQLiteOpenHelper:
         // * journal_size_limit = ? (default)
         //   * 524288 bytes = 512 KB に設定
+        // * wal_autocheckpoint = 100 (default)
+        //   * 1000 pages に設定
+        // * auto_vacuum = 1 (devault)
+        //   * 0 = NONE に設定
         // * secure_delete = ? (default)
         //   * 0 = OFF に設定
         // * cache_size = ? (default)
         //   * -2000 (KB) = 2MB に設定
         // * sqlite_busy_timeout = 2500 ms (default)
         //   * https://android.googlesource.com/platform/frameworks/base.git/+/refs/heads/master/core/jni/android_database_SQLiteConnection.cpp#59
+        //   * 3000 ms に設定
         // * threading mode = multi-thread
         //   * https://android.googlesource.com/platform/frameworks/base/+/master/core/jni/android_database_SQLiteGlobal.cpp
         //   * SQLiteDatabase で ThreadLocal Connection
@@ -34,12 +39,14 @@ actual class DriverFactory actual constructor(
             FrameworkSQLiteOpenHelperFactory(directoryPath),
             object : AndroidSqliteDriver.Callback(KottageDatabase.Schema) {
                 override fun onOpen(db: SupportSQLiteDatabase) {
-                    db.execSQL("PRAGMA journal_size_limit = 524288")
-                    db.execSQL("PRAGMA secure_delete = 0")
-                    db.execSQL("PRAGMA cache_size = -2000")
-                    db.execSQL("PRAGMA synchronous = NORMAL")
-                    db.execSQL("PRAGMA busy_timeout = 3000")
                     super.onOpen(db)
+                    db.query("PRAGMA journal_size_limit = 524288")
+                    db.query("PRAGMA wal_autocheckpoint = 1000")
+                    db.query("PRAGMA auto_vacuum = NONE")
+                    db.query("PRAGMA secure_delete = 0")
+                    db.query("PRAGMA cache_size = -2000")
+                    db.query("PRAGMA synchronous = NORMAL")
+                    db.query("PRAGMA busy_timeout = 3000")
                 }
             }
         )

@@ -57,7 +57,7 @@ internal class FrameworkSQLiteOpenHelper @JvmOverloads constructor(
                 if (mDelegate == null) {
                     val dbRef = arrayOfNulls<FrameworkSQLiteDatabase>(1)
                     mDelegate =
-                        if (directoryPath != null && mName != null) {
+                        (if (directoryPath != null && mName != null) {
                             val file = File(directoryPath, mName)
                             OpenHelper(mContext, file.absolutePath, dbRef, mCallback)
                         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && mName != null && mUseNoBackupDirectory) {
@@ -68,7 +68,7 @@ internal class FrameworkSQLiteOpenHelper @JvmOverloads constructor(
                             OpenHelper(mContext, file.absolutePath, dbRef, mCallback)
                         } else {
                             OpenHelper(mContext, mName, dbRef, mCallback)
-                        }.apply {
+                        }).apply {
                             setWriteAheadLoggingEnabled(mWriteAheadLoggingEnabled)
                         }
                 }
