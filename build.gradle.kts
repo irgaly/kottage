@@ -68,7 +68,7 @@ subprojects {
                         artifactId = "${path.split(":").drop(1).joinToString("-")}$artifactSuffix"
                         pom {
                             name.set(artifactId)
-                            description.set("")
+                            description.set("Kotlin KVS Storage for Kotlin Multiplatform.")
                             url.set("https://github.com/irgaly/kotlin-kvs")
                             developers {
                                 developer {
