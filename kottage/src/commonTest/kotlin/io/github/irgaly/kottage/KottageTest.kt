@@ -1,8 +1,8 @@
 package io.github.irgaly.kottage
 
 import com.soywiz.klock.DateTime
-import io.github.irgaly.kottage.platform.Context
 import io.github.irgaly.kottage.platform.Files
+import io.github.irgaly.kottage.platform.KottageContext
 import io.github.irgaly.kottage.platform.TestCalendar
 import io.github.irgaly.test.extension.tempdir
 import io.kotest.assertions.throwables.shouldNotThrowAny
@@ -22,7 +22,7 @@ class KottageTest : DescribeSpec({
         val kottage = Kottage(
             "test",
             tempDirectory,
-            KottageEnvironment(Context(), calendar)
+            KottageEnvironment(KottageContext(), calendar)
         )
         context("debug 機能") {
             it("tempDirectory 表示") {
@@ -66,7 +66,7 @@ class KottageTest : DescribeSpec({
                                 "-"
                             )
                         }",
-                        KottageEnvironment(Context(), calendar)
+                        KottageEnvironment(KottageContext(), calendar)
                     ).storage("test").put("test", "test")
                 }
             }
@@ -75,7 +75,7 @@ class KottageTest : DescribeSpec({
                     Kottage(
                         "test_'_\"_/_\\_ _あ_😄_:_".replace(Files.separator, "-"),
                         tempDirectory,
-                        KottageEnvironment(Context(), calendar)
+                        KottageEnvironment(KottageContext(), calendar)
                     ).storage("test").put("test", "test")
                 }
             }
@@ -84,7 +84,7 @@ class KottageTest : DescribeSpec({
                     Kottage(
                         "test_/_:_\\_",
                         tempDirectory,
-                        KottageEnvironment(Context(), calendar)
+                        KottageEnvironment(KottageContext(), calendar)
                     )
                 }
             }
@@ -94,7 +94,7 @@ class KottageTest : DescribeSpec({
             val subdirectoryKottage = Kottage(
                 "test",
                 directory,
-                KottageEnvironment(Context(), calendar)
+                KottageEnvironment(KottageContext(), calendar)
             )
             val storage = subdirectoryKottage.storage("storage1")
             it("ディレクトリが存在しなくてもファイルを作成できる") {
@@ -115,7 +115,7 @@ class KottageTest : DescribeSpec({
                 val initialKottage = Kottage(
                     "test100",
                     tempDirectory,
-                    KottageEnvironment(Context(), calendar)
+                    KottageEnvironment(KottageContext(), calendar)
                 )
                 // SQLite Table 作成
                 initialKottage.storage("storage1").put("test", "test")
@@ -124,7 +124,7 @@ class KottageTest : DescribeSpec({
                         val kottage2 = Kottage(
                             "test100",
                             tempDirectory,
-                            KottageEnvironment(Context(), calendar)
+                            KottageEnvironment(KottageContext(), calendar)
                         )
                         val storage = kottage2.storage("storage1")
                         storage.put("key$id", "value$id")

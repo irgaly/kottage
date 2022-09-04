@@ -3,7 +3,7 @@ package io.github.irgaly.kottage
 import com.soywiz.klock.DateTime
 import com.soywiz.klock.days
 import com.soywiz.klock.milliseconds
-import io.github.irgaly.kottage.platform.Context
+import io.github.irgaly.kottage.platform.KottageContext
 import io.github.irgaly.kottage.platform.TestCalendar
 import io.github.irgaly.kottage.strategy.KottageFifoStrategy
 import io.github.irgaly.kottage.strategy.KottageLruStrategy
@@ -20,7 +20,7 @@ class KottageCacheTest : DescribeSpec({
         val kottage = Kottage(
             "test",
             tempDirectory,
-            KottageEnvironment(Context(), calendar)
+            KottageEnvironment(KottageContext(), calendar)
         )
         context("debug 機能") {
             it("tempDirectory 表示") {
@@ -49,7 +49,7 @@ class KottageCacheTest : DescribeSpec({
             val compactionKottage = Kottage(
                 "compaction",
                 tempDirectory,
-                KottageEnvironment(Context(), calendar)
+                KottageEnvironment(KottageContext(), calendar)
             ) {
                 autoCompactionDuration = 1.days.duration
             }

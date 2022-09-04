@@ -213,7 +213,7 @@ internal actual fun createDatabaseConnection(
             Files.mkdirs(directoryPath)
         }
         DriverFactory(
-            environment.context,
+            environment.context.context,
             dispatcher
         ).createDriver(fileName, directoryPath)
     }, { sqlDriver ->
