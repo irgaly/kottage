@@ -60,8 +60,8 @@ internal class KottageOperator(
                 deleteExpiredItem(key, itemType, now)
             }
         } else {
-            itemRepository.getExpiredKeys(now) { key, itemType ->
-                deleteExpiredItem(key, itemType, now)
+            itemRepository.getExpiredKeys(now) { key, expiredItemType ->
+                deleteExpiredItem(key, expiredItemType, now)
             }
         }
     }
