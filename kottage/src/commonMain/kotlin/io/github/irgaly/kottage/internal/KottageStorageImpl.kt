@@ -55,7 +55,7 @@ internal class KottageStorageImpl(
     private suspend fun <T : Any> getOrNullInternal(key: String, type: KType): T? =
         withContext(dispatcher) {
             val operator = operator()
-            val now = calendar.nowUtcEpochTimeMillis()
+            val now = calendar.nowUnixTimeMillis()
             var compactionRequired = false
             val item = databaseManager.transactionWithResult {
                 compactionRequired =
@@ -84,7 +84,7 @@ internal class KottageStorageImpl(
         type: KType
     ): KottageEntry<T>? = withContext(dispatcher) {
         val operator = operator()
-        val now = calendar.nowUtcEpochTimeMillis()
+        val now = calendar.nowUnixTimeMillis()
         var compactionRequired = false
         val item = databaseManager.transactionWithResult {
             compactionRequired =
@@ -100,7 +100,7 @@ internal class KottageStorageImpl(
     }
 
     override suspend fun exists(key: String): Boolean = withContext(dispatcher) {
-        val now = calendar.nowUtcEpochTimeMillis()
+        val now = calendar.nowUnixTimeMillis()
         val item = itemRepository().get(key, name)
         (item?.isAvailable(now) ?: false)
     }
@@ -110,7 +110,7 @@ internal class KottageStorageImpl(
             val itemRepository = itemRepository()
             val itemEventRepository = itemEventRepository()
             val operator = operator()
-            val now = calendar.nowUtcEpochTimeMillis()
+            val now = calendar.nowUnixTimeMillis()
             val item = encoder.encode(
                 value,
                 type
@@ -163,7 +163,7 @@ internal class KottageStorageImpl(
         val itemRepository = itemRepository()
         val itemEventRepository = itemEventRepository()
         val operator = operator()
-        val now = calendar.nowUtcEpochTimeMillis()
+        val now = calendar.nowUnixTimeMillis()
         var compactionRequired = false
         val exists = databaseManager.transactionWithResult {
             val exists = itemRepository.exists(key, name)
@@ -192,7 +192,7 @@ internal class KottageStorageImpl(
     override suspend fun removeAll(key: String) = withContext(dispatcher) {
         val itemRepository = itemRepository()
         val itemEventRepository = itemEventRepository()
-        val now = calendar.nowUtcEpochTimeMillis()
+        val now = calendar.nowUnixTimeMillis()
         databaseManager.transaction {
             itemRepository.getAllKeys(name) { key ->
                 itemEventRepository.create(
@@ -211,7 +211,7 @@ internal class KottageStorageImpl(
 
     override suspend fun compact() = withContext(dispatcher) {
         val operator = operator()
-        val now = calendar.nowUtcEpochTimeMillis()
+        val now = calendar.nowUnixTimeMillis()
         databaseManager.transaction {
             operator.evictCache(now, name)
         }
