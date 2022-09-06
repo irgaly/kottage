@@ -1,8 +1,6 @@
 package io.github.irgaly.kottage.internal
 
 import io.github.irgaly.kottage.internal.model.Item
-import io.github.irgaly.kottage.internal.model.ItemEvent
-import io.github.irgaly.kottage.internal.model.ItemEventType
 import io.github.irgaly.kottage.internal.repository.KottageItemEventRepository
 import io.github.irgaly.kottage.internal.repository.KottageItemRepository
 import io.github.irgaly.kottage.internal.repository.KottageStatsRepository
@@ -38,14 +36,6 @@ internal class KottageOperator(
             item = null
             itemRepository.delete(key, itemType)
             itemRepository.decrementStatsCount(itemType, 1)
-            itemEventRepository.create(
-                ItemEvent(
-                    createdAt = now,
-                    itemType = itemType,
-                    itemKey = key,
-                    eventType = ItemEventType.Expired
-                )
-            )
         }
         return item
     }
@@ -95,18 +85,9 @@ internal class KottageOperator(
      * Delete expired items
      *
      * * delete item
-     * * add expired event
      */
     private fun deleteExpiredItem(key: String, itemType: String, now: Long) {
         itemRepository.delete(key, itemType)
         itemRepository.decrementStatsCount(itemType, 1)
-        itemEventRepository.create(
-            ItemEvent(
-                createdAt = now,
-                itemType = itemType,
-                itemKey = key,
-                eventType = ItemEventType.Expired
-            )
-        )
     }
 }
