@@ -8,6 +8,7 @@ import io.github.irgaly.kottage.internal.encoder.Encoder
 import io.github.irgaly.kottage.internal.model.Item
 import io.github.irgaly.kottage.internal.model.ItemEvent
 import io.github.irgaly.kottage.internal.model.ItemEventType
+import io.github.irgaly.kottage.platform.Id
 import io.github.irgaly.kottage.platform.KottageCalendar
 import io.github.irgaly.kottage.strategy.KottageStrategy
 import kotlinx.coroutines.CoroutineDispatcher
@@ -141,6 +142,7 @@ internal class KottageStorageImpl(
                 }
                 itemEventRepository.create(
                     ItemEvent(
+                        id = Id.generateUuidV4Short(),
                         createdAt = now,
                         itemType = name,
                         itemKey = key,
@@ -172,6 +174,7 @@ internal class KottageStorageImpl(
                 itemRepository.decrementStatsCount(name, 1)
                 itemEventRepository.create(
                     ItemEvent(
+                        id = Id.generateUuidV4Short(),
                         createdAt = now,
                         itemType = name,
                         itemKey = key,
@@ -197,6 +200,7 @@ internal class KottageStorageImpl(
             itemRepository.getAllKeys(name) { key ->
                 itemEventRepository.create(
                     ItemEvent(
+                        id = Id.generateUuidV4Short(),
                         createdAt = now,
                         itemType = name,
                         itemKey = key,

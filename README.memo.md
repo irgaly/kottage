@@ -62,8 +62,7 @@ val storage: KottageStorage = kottage.storage("storage-name", kottageStorage {
   )
   strategy = KottageKvsStrategy() // 追い出しなし
   defaultExpireTime = 1.month // nullable
-  autoCompact = true
-  withLastHit = true // 有効期限切れのエントリーを返すか
+  maxEventEntryCount = 1000
   json = Json
 })
 

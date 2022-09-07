@@ -34,6 +34,7 @@ internal fun Item.toEntity(): io.github.irgaly.kottage.data.sqlite.Item {
 
 internal fun io.github.irgaly.kottage.data.sqlite.Item_event.toDomain(): ItemEvent {
     return ItemEvent(
+        id = id,
         createdAt = created_at,
         itemType = item_type,
         itemKey = Item.keyFromEntityKey(item_key, item_type),
@@ -43,6 +44,7 @@ internal fun io.github.irgaly.kottage.data.sqlite.Item_event.toDomain(): ItemEve
 
 internal fun ItemEvent.toEntity(): io.github.irgaly.kottage.data.sqlite.Item_event {
     return io.github.irgaly.kottage.data.sqlite.Item_event(
+        id = id,
         created_at = createdAt,
         item_type = itemType,
         item_key = Item.toEntityKey(itemKey, itemType),
