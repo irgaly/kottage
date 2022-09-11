@@ -21,7 +21,7 @@ actual class DriverFactory actual constructor(
         //   * そのまま
         // * sqlite_busy_timeout = 3000 (default)
         //   * https://github.com/xerial/sqlite-jdbc/blob/14d59032fb5dc691e48877ecde783719b7657fba/src/main/java/org/sqlite/SQLiteConfig.java
-        // * threading mode = multi-thread
+        // * threading mode = serialized (SQLITE_THREADSAFE=1)
         //   * https://github.com/xerial/sqlite-jdbc/issues/199
         //   * ThreadedConnectionManager で ThreadLocal Connection
         //     * https://github.com/cashapp/sqldelight/blob/cb699fcc19632a70deeb2930470bcf09db625a42/drivers/sqlite-driver/src/main/kotlin/app/cash/sqldelight/driver/jdbc/sqlite/JdbcSqliteDriver.kt#L83

@@ -24,6 +24,7 @@ actual class DriverFactory actual constructor(
         //   * -2000 (KB) = 2MB に設定
         // * sqlite_busy_timeout = 5000 ms (default)
         // * threading mode = multi-thread
+        //   * https://github.com/touchlab/SQLiter/issues/37
         //   * SQLiter supports single connection by concurrency access with lock
         //     * https://github.com/touchlab/SQLiter/blob/main/sqliter-driver/src/nativeCommonMain/kotlin/co/touchlab/sqliter/native/NativeDatabaseManager.kt
         //     * https://github.com/touchlab/SQLiter/blob/main/sqliter-driver/src/nativeCommonMain/kotlin/co/touchlab/sqliter/concurrency/ConcurrentDatabaseConnection.kt
