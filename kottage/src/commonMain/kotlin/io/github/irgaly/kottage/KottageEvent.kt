@@ -1,7 +1,9 @@
 package io.github.irgaly.kottage
 
 import io.github.irgaly.kottage.internal.model.ItemEvent
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class KottageEvent(
     val id: String,
     val createdAt: Long,

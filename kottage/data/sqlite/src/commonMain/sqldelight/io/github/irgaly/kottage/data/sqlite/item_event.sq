@@ -1,6 +1,6 @@
 import io.github.irgaly.kottage.data.sqlite.entity.ItemEventType;
 CREATE TABLE item_event (
-  id TEXT NOT NULL,
+  id TEXT PRIMARY KEY,
   created_at INTEGER NOT NULL,
   item_type TEXT NOT NULL,
   item_key TEXT NOT NULL,
@@ -12,11 +12,14 @@ CREATE INDEX item_event_item_type_created_at ON item_event(item_type, created_at
 insert:
 INSERT INTO item_event VALUES ?;
 
-selectAfter:
-SELECT * FROM item_event WHERE created_at >= ? ORDER BY created_at ASC;
+selectItemTypeAfterCreatedAt:
+SELECT * FROM item_event WHERE item_type = ? AND ? < created_at ORDER BY created_at ASC;
 
-selectItemTypeAfter:
-SELECT * FROM item_event WHERE item_type = ? AND created_at >= ? ORDER BY created_at ASC;
+selectItemTypeAfterCreatedAtLimit:
+SELECT * FROM item_event WHERE item_type = ? AND ? < created_at ORDER BY created_at ASC LIMIT :limit;
+
+selectItemTypeLatestCreatedAt:
+SELECT created_at FROM item_event WHERE item_type = ? ORDER BY created_at DESC LIMIT 1;
 
 deleteBefore:
 DELETE FROM item_event WHERE created_at < ?;

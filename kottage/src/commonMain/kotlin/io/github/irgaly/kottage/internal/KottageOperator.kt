@@ -1,9 +1,13 @@
 package io.github.irgaly.kottage.internal
 
+import io.github.irgaly.kottage.KottageEvent
 import io.github.irgaly.kottage.internal.model.Item
+import io.github.irgaly.kottage.internal.model.ItemEvent
+import io.github.irgaly.kottage.internal.model.ItemEventType
 import io.github.irgaly.kottage.internal.repository.KottageItemEventRepository
 import io.github.irgaly.kottage.internal.repository.KottageItemRepository
 import io.github.irgaly.kottage.internal.repository.KottageStatsRepository
+import io.github.irgaly.kottage.platform.Id
 import io.github.irgaly.kottage.strategy.KottageStrategyOperator
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -16,6 +20,47 @@ internal class KottageOperator(
     private val itemEventRepository: KottageItemEventRepository,
     private val statsRepository: KottageStatsRepository
 ): KottageStrategyOperator {
+    /**
+     * This should be called in transaction
+     *
+     * @return Event id
+     */
+    fun addCreateEvent(now: Long, itemType: String, itemKey: String): String {
+        return addEvent(now, itemType, itemKey, ItemEventType.Create)
+    }
+
+    /**
+     * This should be called in transaction
+     *
+     * @return Event id
+     */
+    fun addUpdateEvent(now: Long, itemType: String, itemKey: String): String {
+        return addEvent(now, itemType, itemKey, ItemEventType.Update)
+    }
+
+    /**
+     * This should be called in transaction
+     *
+     * @return Event id
+     */
+    fun addDeleteEvent(now: Long, itemType: String, itemKey: String): String {
+        return addEvent(now, itemType, itemKey, ItemEventType.Delete)
+    }
+
+    /**
+     * Get events
+     * This should be called in transaction
+     */
+    fun getEvents(itemType: String, afterUnixTimeMillisAt: Long, limit: Long?): List<KottageEvent> {
+        return itemEventRepository.selectAfter(
+            itemType = itemType,
+            createdAt = afterUnixTimeMillisAt,
+            limit = limit
+        ).map {
+            KottageEvent.from(it)
+        }
+    }
+
     /**
      * This should be called in transaction
      */
@@ -47,11 +92,11 @@ internal class KottageOperator(
     fun evictCache(now: Long, itemType: String? = null) {
         if (itemType != null) {
             itemRepository.getExpiredKeys(now, itemType) { key, _ ->
-                deleteExpiredItem(key, itemType, now)
+                deleteExpiredItem(key, itemType)
             }
         } else {
             itemRepository.getExpiredKeys(now) { key, expiredItemType ->
-                deleteExpiredItem(key, expiredItemType, now)
+                deleteExpiredItem(key, expiredItemType)
             }
         }
     }
@@ -75,7 +120,7 @@ internal class KottageOperator(
     override fun deleteExpiredItems(itemType: String, now: Long): Long {
         var deleted = 0L
         itemRepository.getExpiredKeys(now, itemType) { key, _ ->
-            deleteExpiredItem(key, itemType, now)
+            deleteExpiredItem(key, itemType)
             deleted++
         }
         return deleted
@@ -83,11 +128,35 @@ internal class KottageOperator(
 
     /**
      * Delete expired items
-     *
-     * * delete item
      */
-    private fun deleteExpiredItem(key: String, itemType: String, now: Long) {
+    private fun deleteExpiredItem(key: String, itemType: String) {
         itemRepository.delete(key, itemType)
         itemRepository.decrementStatsCount(itemType, 1)
+    }
+
+    /**
+     * Add Event item
+     *
+     * @return event id
+     */
+    private fun addEvent(
+        now: Long,
+        itemType: String,
+        itemKey: String,
+        eventType: ItemEventType
+    ): String {
+        val latestCreatedAt = (itemEventRepository.getLatestCreatedAt(itemType) ?: 0)
+        val createdAt = now.coerceAtLeast(latestCreatedAt + 1)
+        val id = Id.generateUuidV4Short()
+        itemEventRepository.create(
+            ItemEvent(
+                id = id,
+                createdAt = createdAt,
+                itemType = itemType,
+                itemKey = itemKey,
+                eventType = eventType
+            )
+        )
+        return id
     }
 }

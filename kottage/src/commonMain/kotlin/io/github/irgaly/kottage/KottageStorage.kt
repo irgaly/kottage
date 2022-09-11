@@ -74,6 +74,11 @@ interface KottageStorage {
      * Delete all entries and events
      */
     suspend fun clear()
+
+    /**
+     * Get events after fromUnitTimeMillisAt
+     */
+    suspend fun getEvents(afterUnixTimeMillisAt: Long, limit: Long? = null): List<KottageEvent>
 }
 
 /**

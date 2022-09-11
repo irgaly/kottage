@@ -11,21 +11,34 @@ internal class KottageSqliteItemEventRepository(
             .insert(itemEvent.toEntity())
     }
 
-    override fun selectAfter(itemType: String, createdAt: Long): List<ItemEvent> {
-        return database.item_eventQueries
-            .selectItemTypeAfter(
-                item_type = itemType,
-                created_at = createdAt
-            )
-            .executeAsList()
-            .map { it.toDomain() }
+    override fun selectAfter(
+        itemType: String,
+        createdAt: Long,
+        limit: Long?
+    ): List<ItemEvent> {
+        return if (limit != null) {
+            database.item_eventQueries
+                .selectItemTypeAfterCreatedAtLimit(
+                    item_type = itemType,
+                    created_at = createdAt,
+                    limit = limit
+                ).executeAsList()
+        } else {
+            database.item_eventQueries
+                .selectItemTypeAfterCreatedAt(
+                    item_type = itemType,
+                    created_at = createdAt
+                ).executeAsList()
+        }.map {
+            it.toDomain()
+        }
     }
 
-    override fun selectAfter(createdAt: Long): List<ItemEvent> {
+
+    override fun getLatestCreatedAt(itemType: String): Long? {
         return database.item_eventQueries
-            .selectAfter(created_at = createdAt)
-            .executeAsList()
-            .map { it.toDomain() }
+            .selectItemTypeLatestCreatedAt(itemType)
+            .executeAsOneOrNull()
     }
 
     override fun deleteBefore(createdAt: Long) {

@@ -1,14 +1,8 @@
 package io.github.irgaly.kottage.internal
 
-import io.github.irgaly.kottage.KottageEntry
-import io.github.irgaly.kottage.KottageOptions
-import io.github.irgaly.kottage.KottageStorage
-import io.github.irgaly.kottage.KottageStorageOptions
+import io.github.irgaly.kottage.*
 import io.github.irgaly.kottage.internal.encoder.Encoder
 import io.github.irgaly.kottage.internal.model.Item
-import io.github.irgaly.kottage.internal.model.ItemEvent
-import io.github.irgaly.kottage.internal.model.ItemEventType
-import io.github.irgaly.kottage.platform.Id
 import io.github.irgaly.kottage.platform.KottageCalendar
 import io.github.irgaly.kottage.strategy.KottageStrategy
 import kotlinx.coroutines.CoroutineDispatcher
@@ -33,9 +27,9 @@ internal class KottageStorageImpl(
 
     private val strategy: KottageStrategy = options.strategy
 
+    private val itemType: String = name
+
     private suspend fun itemRepository() = databaseManager.itemRepository.await()
-    private suspend fun itemEventRepository() = databaseManager.itemEventRepository.await()
-    private suspend fun statsRepository() = databaseManager.statsRepository.await()
     private suspend fun operator() = databaseManager.operator.await()
 
     override val defaultExpireTime: Duration? get() = options.defaultExpireTime
@@ -61,8 +55,8 @@ internal class KottageStorageImpl(
             val item = databaseManager.transactionWithResult {
                 compactionRequired =
                     operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
-                operator.getOrNull(key, name, now)?.also {
-                    strategy.onItemRead(key, name, now, operator)
+                operator.getOrNull(key, itemType, now)?.also {
+                    strategy.onItemRead(key, itemType, now, operator)
                 }
             }
             if (compactionRequired) {
@@ -90,8 +84,8 @@ internal class KottageStorageImpl(
         val item = databaseManager.transactionWithResult {
             compactionRequired =
                 operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
-            operator.getOrNull(key, name, now)?.also {
-                strategy.onItemRead(key, name, now, operator)
+            operator.getOrNull(key, itemType, now)?.also {
+                strategy.onItemRead(key, itemType, now, operator)
             }
         }
         if (compactionRequired) {
@@ -102,14 +96,13 @@ internal class KottageStorageImpl(
 
     override suspend fun exists(key: String): Boolean = withContext(dispatcher) {
         val now = calendar.nowUnixTimeMillis()
-        val item = itemRepository().get(key, name)
+        val item = itemRepository().get(key, itemType)
         (item?.isAvailable(now) ?: false)
     }
 
     override suspend fun <T : Any> put(key: String, value: T, type: KType) =
         withContext(dispatcher) {
             val itemRepository = itemRepository()
-            val itemEventRepository = itemEventRepository()
             val operator = operator()
             val now = calendar.nowUnixTimeMillis()
             val item = encoder.encode(
@@ -121,7 +114,7 @@ internal class KottageStorageImpl(
                 bytesValue: ByteArray? ->
                 Item(
                     key = key,
-                    type = name,
+                    type = itemType,
                     stringValue = stringValue,
                     longValue = longValue,
                     doubleValue = doubleValue,
@@ -135,23 +128,15 @@ internal class KottageStorageImpl(
             }
             var compactionRequired = false
             databaseManager.transaction {
-                val isCreate = !itemRepository.exists(key, name)
+                val isCreate = !itemRepository.exists(key, itemType)
                 itemRepository.upsert(item)
                 if (isCreate) {
-                    itemRepository.incrementStatsCount(name, 1)
-                }
-                itemEventRepository.create(
-                    ItemEvent(
-                        id = Id.generateUuidV4Short(),
-                        createdAt = now,
-                        itemType = name,
-                        itemKey = key,
-                        eventType = if (isCreate) ItemEventType.Create else ItemEventType.Update
-                    )
-                )
-                if (isCreate) {
-                    val count = itemRepository.getStatsCount(name)
-                    strategy.onPostItemCreate(key, name, count, now, operator)
+                    itemRepository.incrementStatsCount(itemType, 1)
+                    operator.addCreateEvent(now = now, itemType = itemType, itemKey = key)
+                    val count = itemRepository.getStatsCount(itemType)
+                    strategy.onPostItemCreate(key, itemType, count, now, operator)
+                } else {
+                    operator.addUpdateEvent(now = now, itemType = itemType, itemKey = key)
                 }
                 compactionRequired =
                     operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
@@ -163,24 +148,15 @@ internal class KottageStorageImpl(
 
     override suspend fun remove(key: String): Boolean = withContext(dispatcher) {
         val itemRepository = itemRepository()
-        val itemEventRepository = itemEventRepository()
         val operator = operator()
         val now = calendar.nowUnixTimeMillis()
         var compactionRequired = false
         val exists = databaseManager.transactionWithResult {
-            val exists = itemRepository.exists(key, name)
+            val exists = itemRepository.exists(key, itemType)
             if (exists) {
-                itemRepository.delete(key, name)
-                itemRepository.decrementStatsCount(name, 1)
-                itemEventRepository.create(
-                    ItemEvent(
-                        id = Id.generateUuidV4Short(),
-                        createdAt = now,
-                        itemType = name,
-                        itemKey = key,
-                        eventType = ItemEventType.Delete
-                    )
-                )
+                itemRepository.delete(key, itemType)
+                itemRepository.decrementStatsCount(itemType, 1)
+                operator.addDeleteEvent(now = now, itemType = itemType, itemKey = key)
             }
             compactionRequired =
                 operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
@@ -194,22 +170,14 @@ internal class KottageStorageImpl(
 
     override suspend fun removeAll(key: String) = withContext(dispatcher) {
         val itemRepository = itemRepository()
-        val itemEventRepository = itemEventRepository()
+        val operator = operator()
         val now = calendar.nowUnixTimeMillis()
         databaseManager.transaction {
-            itemRepository.getAllKeys(name) { key ->
-                itemEventRepository.create(
-                    ItemEvent(
-                        id = Id.generateUuidV4Short(),
-                        createdAt = now,
-                        itemType = name,
-                        itemKey = key,
-                        eventType = ItemEventType.Delete
-                    )
-                )
+            itemRepository.getAllKeys(itemType) { key ->
+                operator.addDeleteEvent(now = now, itemType = itemType, itemKey = key)
             }
-            itemRepository.deleteAll(name)
-            itemRepository.updateStatsCount(name, 0)
+            itemRepository.deleteAll(itemType)
+            itemRepository.updateStatsCount(itemType, 0)
         }
     }
 
@@ -217,15 +185,26 @@ internal class KottageStorageImpl(
         val operator = operator()
         val now = calendar.nowUnixTimeMillis()
         databaseManager.transaction {
-            operator.evictCache(now, name)
+            operator.evictCache(now, itemType)
         }
     }
 
     override suspend fun clear() = withContext(dispatcher) {
         val itemRepository = itemRepository()
         databaseManager.transaction {
-            itemRepository.deleteAll(name)
-            itemRepository.deleteStats(name)
+            itemRepository.deleteAll(itemType)
+            itemRepository.deleteStats(itemType)
+        }
+    }
+
+    override suspend fun getEvents(afterUnixTimeMillisAt: Long, limit: Long?): List<KottageEvent> {
+        val operator = operator()
+        return databaseManager.transactionWithResult {
+            operator.getEvents(
+                itemType = itemType,
+                afterUnixTimeMillisAt = afterUnixTimeMillisAt,
+                limit = limit
+            )
         }
     }
 }
