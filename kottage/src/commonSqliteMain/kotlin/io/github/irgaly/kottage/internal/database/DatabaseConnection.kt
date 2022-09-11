@@ -7,7 +7,6 @@ import io.github.irgaly.kottage.KottageEnvironment
 import io.github.irgaly.kottage.data.sqlite.DriverFactory
 import io.github.irgaly.kottage.data.sqlite.Item_event
 import io.github.irgaly.kottage.data.sqlite.KottageDatabase
-import io.github.irgaly.kottage.data.sqlite.extension.executeWalCheckpointTruncate
 import io.github.irgaly.kottage.platform.Files
 import kotlinx.coroutines.*
 
@@ -71,7 +70,7 @@ internal actual data class DatabaseConnection(
     actual suspend fun compact() = withContext(dispatcher) {
         withDatabase { sqlDriver, _ ->
             // reduce WAL file size to zero / https://www.sqlite.org/pragma.html#pragma_wal_checkpoint
-            sqlDriver.executeWalCheckpointTruncate()
+            sqlDriver.executeQuery(null, "PRAGMA wal_checkpoint(TRUNCATE)", 0).close()
             // reduce database file size and optimize b-tree / https://www.sqlite.org/matrix/lang_vacuum.html
             sqlDriver.execute(null, "VACUUM", 0)
         }
