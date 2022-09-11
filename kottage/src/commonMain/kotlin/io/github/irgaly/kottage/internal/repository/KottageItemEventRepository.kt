@@ -11,6 +11,12 @@ internal interface KottageItemEventRepository {
     ): List<ItemEvent>
 
     fun getLatestCreatedAt(itemType: String): Long?
+    fun getCount(itemType: String): Long
+    fun deleteOlderEvents(itemType: String, limit: Long)
     fun deleteBefore(createdAt: Long)
-
+    fun deleteAll(itemType: String)
+    fun getStatsCount(itemType: String): Long
+    fun incrementStatsCount(itemType: String, count: Long)
+    fun decrementStatsCount(itemType: String, count: Long)
+    fun updateStatsCount(itemType: String, count: Long)
 }

@@ -25,8 +25,16 @@ internal class KottageOperator(
      *
      * @return Event id
      */
-    fun addCreateEvent(now: Long, itemType: String, itemKey: String): String {
-        return addEvent(now, itemType, itemKey, ItemEventType.Create)
+    fun addCreateEvent(
+        now: Long,
+        itemType: String,
+        itemKey: String,
+        maxEventEntryCount: Long
+    ): String {
+        val id = addEvent(now, itemType, itemKey, ItemEventType.Create)
+        itemEventRepository.incrementStatsCount(itemType, 1)
+        reduceEvents(itemType, maxEventEntryCount)
+        return id
     }
 
     /**
@@ -34,8 +42,16 @@ internal class KottageOperator(
      *
      * @return Event id
      */
-    fun addUpdateEvent(now: Long, itemType: String, itemKey: String): String {
-        return addEvent(now, itemType, itemKey, ItemEventType.Update)
+    fun addUpdateEvent(
+        now: Long,
+        itemType: String,
+        itemKey: String,
+        maxEventEntryCount: Long
+    ): String {
+        val id = addEvent(now, itemType, itemKey, ItemEventType.Update)
+        itemEventRepository.incrementStatsCount(itemType, 1)
+        reduceEvents(itemType, maxEventEntryCount)
+        return id
     }
 
     /**
@@ -43,8 +59,16 @@ internal class KottageOperator(
      *
      * @return Event id
      */
-    fun addDeleteEvent(now: Long, itemType: String, itemKey: String): String {
-        return addEvent(now, itemType, itemKey, ItemEventType.Delete)
+    fun addDeleteEvent(
+        now: Long,
+        itemType: String,
+        itemKey: String,
+        maxEventEntryCount: Long
+    ): String {
+        val id = addEvent(now, itemType, itemKey, ItemEventType.Delete)
+        itemEventRepository.incrementStatsCount(itemType, 1)
+        reduceEvents(itemType, maxEventEntryCount)
+        return id
     }
 
     /**
@@ -158,5 +182,16 @@ internal class KottageOperator(
             )
         )
         return id
+    }
+
+    private fun reduceEvents(itemType: String, maxEventEntryCount: Long) {
+        val currentCount = itemEventRepository.getStatsCount(itemType)
+        if (maxEventEntryCount < currentCount) {
+            // TODO: delete time base expiring first.
+            val reduceCount = (maxEventEntryCount * 0.25).toLong().coerceAtLeast(1)
+            itemEventRepository.deleteOlderEvents(itemType, reduceCount)
+            val count = itemEventRepository.getCount(itemType)
+            itemEventRepository.updateStatsCount(itemType, count)
+        }
     }
 }

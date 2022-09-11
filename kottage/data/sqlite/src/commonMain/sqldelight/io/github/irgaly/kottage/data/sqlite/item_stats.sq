@@ -1,6 +1,7 @@
 CREATE TABLE item_stats (
   item_type TEXT PRIMARY KEY,
-  count INTEGER NOT NULL DEFAULT 0
+  count INTEGER NOT NULL DEFAULT 0,
+  event_count INTEGER NOT NULL DEFAULT 0
 );
 
 insertIfNotExists:
@@ -17,6 +18,15 @@ UPDATE item_stats SET count = count - ? WHERE item_type = ?;
 
 updateCount:
 UPDATE item_stats SET count = ? WHERE item_type = ?;
+
+incrementEventCount:
+UPDATE item_stats SET event_count = event_count + ? WHERE item_type = ?;
+
+decrementEventCount:
+UPDATE item_stats SET event_count = event_count - ? WHERE item_type = ?;
+
+updateEventCount:
+UPDATE item_stats SET event_count = ? WHERE item_type = ?;
 
 delete:
 DELETE FROM item_stats WHERE item_type = ?;
