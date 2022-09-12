@@ -2,12 +2,15 @@ import io.github.irgaly.kottage.data.sqlite.entity.ItemEventType;
 CREATE TABLE item_event (
   id TEXT PRIMARY KEY,
   created_at INTEGER NOT NULL,
+  expire_at INTEGER,
   item_type TEXT NOT NULL,
   item_key TEXT NOT NULL,
   event_type TEXT AS ItemEventType NOT NULL
 );
 CREATE INDEX item_event_created_at ON item_event(created_at);
+CREATE INDEX item_event_expire_at ON item_event(expire_at);
 CREATE INDEX item_event_item_type_created_at ON item_event(item_type, created_at);
+CREATE INDEX item_event_item_type_expire_at ON item_event(item_type, expire_at);
 
 insert:
 INSERT INTO item_event VALUES ?;
@@ -23,6 +26,13 @@ SELECT created_at FROM item_event WHERE item_type = ? ORDER BY created_at DESC L
 
 selectOlderCreatedIds:
 SELECT id FROM item_event WHERE item_type = ? ORDER BY created_at ASC LIMIT :limit;
+
+selectExpiredIds:
+SELECT id FROM item_event WHERE item_type = ? AND expire_at IS NOT NULL AND expire_at <= ? ORDER BY expire_at ASC;
+
+selectAllTypeExpiredIds:
+SELECT id, item_type FROM item_event WHERE expire_at IS NOT NULL AND expire_at <= ? ORDER BY expire_at ASC;
+
 
 countByType:
 SELECT count(*) FROM item_event WHERE item_type = ?;

@@ -58,7 +58,8 @@ internal class KottageDatabaseManager(
         val operator = operator.await()
         val now = calendar.nowUnixTimeMillis()
         databaseConnection.transaction {
-            operator.evictCache(now)
+            operator.evictCaches(now)
+            operator.evictEvents(now)
             statsRepository.updateLastEvictAt(now)
         }
         databaseConnection.compact()

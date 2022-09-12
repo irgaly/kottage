@@ -11,6 +11,7 @@ data class KottageStorageOptions(
     val strategy: KottageStrategy,
     val defaultExpireTime: Duration?,
     val maxEventEntryCount: Long,
+    val eventExpireTime: Duration?,
     val json: Json?
 ) {
     data class Builder(
@@ -22,6 +23,7 @@ data class KottageStorageOptions(
          * Deletion count = (maxEventEntryCount * 0.25)
          */
         var maxEventEntryCount: Long,
+        var eventExpireTime: Duration?,
         var json: Json? = null
     ) {
         fun build(): KottageStorageOptions {
@@ -29,6 +31,7 @@ data class KottageStorageOptions(
                 strategy = strategy,
                 defaultExpireTime = defaultExpireTime,
                 maxEventEntryCount = maxEventEntryCount,
+                eventExpireTime = eventExpireTime,
                 json = json
             )
         }

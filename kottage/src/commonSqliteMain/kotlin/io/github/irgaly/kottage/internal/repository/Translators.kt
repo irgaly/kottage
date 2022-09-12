@@ -36,6 +36,7 @@ internal fun io.github.irgaly.kottage.data.sqlite.Item_event.toDomain(): ItemEve
     return ItemEvent(
         id = id,
         createdAt = created_at,
+        expireAt = expire_at,
         itemType = item_type,
         itemKey = Item.keyFromEntityKey(item_key, item_type),
         eventType = event_type.toDomain()
@@ -46,6 +47,7 @@ internal fun ItemEvent.toEntity(): io.github.irgaly.kottage.data.sqlite.Item_eve
     return io.github.irgaly.kottage.data.sqlite.Item_event(
         id = id,
         created_at = createdAt,
+        expire_at = expireAt,
         item_type = itemType,
         item_key = Item.toEntityKey(itemKey, itemType),
         event_type = eventType.toEntity()

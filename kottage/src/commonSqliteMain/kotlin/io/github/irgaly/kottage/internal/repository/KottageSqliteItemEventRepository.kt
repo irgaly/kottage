@@ -41,10 +41,42 @@ internal class KottageSqliteItemEventRepository(
             .executeAsOneOrNull()
     }
 
+    override fun getExpiredIds(
+        now: Long,
+        itemType: String?,
+        receiver: (id: String, itemType: String) -> Unit
+    ) {
+        if (itemType != null) {
+            database.item_eventQueries
+                .selectExpiredIds(itemType, now)
+                .execute().use { cursor ->
+                    while (cursor.next()) {
+                        val id = checkNotNull(cursor.getString(0))
+                        receiver(id, itemType)
+                    }
+                }
+        } else {
+            database.item_eventQueries
+                .selectAllTypeExpiredIds(now)
+                .execute().use { cursor ->
+                    while (cursor.next()) {
+                        val id = checkNotNull(cursor.getString(0))
+                        val type = checkNotNull(cursor.getString(1))
+                        receiver(id, type)
+                    }
+                }
+        }
+    }
+
     override fun getCount(itemType: String): Long {
         return database.item_eventQueries
             .countByType(itemType)
             .executeAsOne()
+    }
+
+    override fun delete(id: String) {
+        database.item_eventQueries
+            .delete(id)
     }
 
     override fun deleteOlderEvents(itemType: String, limit: Long) {

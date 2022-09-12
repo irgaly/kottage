@@ -122,8 +122,8 @@ internal class KottageStorageImpl(
                     bytesValue = bytesValue,
                     createdAt = now,
                     lastReadAt = now,
-                    expireAt = defaultExpireTime?.inWholeMilliseconds?.let { duration ->
-                        now + duration
+                    expireAt = defaultExpireTime?.let { duration ->
+                        now + duration.inWholeMilliseconds
                     }
                 )
             }
@@ -135,6 +135,7 @@ internal class KottageStorageImpl(
                     itemRepository.incrementStatsCount(itemType, 1)
                     operator.addCreateEvent(
                         now = now,
+                        eventExpireTime = options.eventExpireTime,
                         itemType = itemType,
                         itemKey = key,
                         maxEventEntryCount = options.maxEventEntryCount
@@ -144,6 +145,7 @@ internal class KottageStorageImpl(
                 } else {
                     operator.addUpdateEvent(
                         now = now,
+                        eventExpireTime = options.eventExpireTime,
                         itemType = itemType,
                         itemKey = key,
                         maxEventEntryCount = options.maxEventEntryCount
@@ -169,6 +171,7 @@ internal class KottageStorageImpl(
                 itemRepository.decrementStatsCount(itemType, 1)
                 operator.addDeleteEvent(
                     now = now,
+                    eventExpireTime = options.eventExpireTime,
                     itemType = itemType,
                     itemKey = key,
                     maxEventEntryCount = options.maxEventEntryCount
@@ -192,6 +195,7 @@ internal class KottageStorageImpl(
             itemRepository.getAllKeys(itemType) { key ->
                 operator.addDeleteEvent(
                     now = now,
+                    eventExpireTime = options.eventExpireTime,
                     itemType = itemType,
                     itemKey = key,
                     maxEventEntryCount = options.maxEventEntryCount
@@ -206,7 +210,8 @@ internal class KottageStorageImpl(
         val operator = operator()
         val now = calendar.nowUnixTimeMillis()
         databaseManager.transaction {
-            operator.evictCache(now, itemType)
+            operator.evictCaches(now, itemType)
+            operator.evictEvents(now, itemType)
         }
     }
 

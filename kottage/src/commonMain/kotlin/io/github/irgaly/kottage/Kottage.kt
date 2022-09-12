@@ -60,7 +60,8 @@ class Kottage(
         val options = KottageStorageOptions.Builder(
             strategy = KottageKvsStrategy(),
             defaultExpireTime = null,
-            maxEventEntryCount = 1000
+            maxEventEntryCount = 1000,
+            eventExpireTime = 30.days
         ).apply {
             optionsBuilder?.invoke(this)
         }.build()
@@ -83,7 +84,8 @@ class Kottage(
         val options = KottageStorageOptions.Builder(
             strategy = KottageFifoStrategy(1000),
             defaultExpireTime = 30.days,
-            maxEventEntryCount = 1000
+            maxEventEntryCount = 1000,
+            eventExpireTime = 30.days
         ).apply {
             optionsBuilder?.invoke(this)
         }.build()

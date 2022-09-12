@@ -12,6 +12,7 @@ data class KottageOptions(
         /**
          * Execute evicting caches and optimizing database file size
          * on each autoCompactionDuration time elapsed
+         * if null, autoCompaction is disabled.
          */
         var autoCompactionDuration: Duration?
     ) {

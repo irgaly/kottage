@@ -9,6 +9,7 @@ import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.days
 
 /**
  * Event 関連のテスト
@@ -49,6 +50,16 @@ class KottageEventTest : DescribeSpec({
                     storage.put("key$id", "value$id")
                 }
                 storage.getEvents(0).size shouldBe 9
+            }
+            it("古い Event は削除される") {
+                val storage = kottage.storage("event_expire") {
+                    eventExpireTime = 10.days
+                }
+                calendar.setUtc(DateTime(2021, 1, 1))
+                storage.put("key", "value")
+                calendar.setUtc(DateTime(2021, 1, 11))
+                storage.compact()
+                storage.getEvents(0).size shouldBe 0
             }
         }
     }

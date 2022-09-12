@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 data class KottageEvent(
     val id: String,
     val createdAt: Long,
+    val expireAt: Long?,
     val itemType: String,
     val itemKey: String,
     val eventType: KottageEventType
@@ -14,11 +15,12 @@ data class KottageEvent(
     companion object {
         internal fun from(itemEvent: ItemEvent): KottageEvent {
             return KottageEvent(
-                itemEvent.id,
-                itemEvent.createdAt,
-                itemEvent.itemType,
-                itemEvent.itemKey,
-                KottageEventType.from(itemEvent.eventType)
+                id = itemEvent.id,
+                createdAt = itemEvent.createdAt,
+                expireAt = itemEvent.expireAt,
+                itemType = itemEvent.itemType,
+                itemKey = itemEvent.itemKey,
+                eventType = KottageEventType.from(itemEvent.eventType)
             )
         }
     }

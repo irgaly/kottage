@@ -27,13 +27,14 @@ internal class KottageOperator(
      */
     fun addCreateEvent(
         now: Long,
+        eventExpireTime: Duration?,
         itemType: String,
         itemKey: String,
         maxEventEntryCount: Long
     ): String {
-        val id = addEvent(now, itemType, itemKey, ItemEventType.Create)
+        val id = addEvent(now, eventExpireTime, itemType, itemKey, ItemEventType.Create)
         itemEventRepository.incrementStatsCount(itemType, 1)
-        reduceEvents(itemType, maxEventEntryCount)
+        reduceEvents(now, itemType, maxEventEntryCount)
         return id
     }
 
@@ -44,13 +45,14 @@ internal class KottageOperator(
      */
     fun addUpdateEvent(
         now: Long,
+        eventExpireTime: Duration?,
         itemType: String,
         itemKey: String,
         maxEventEntryCount: Long
     ): String {
-        val id = addEvent(now, itemType, itemKey, ItemEventType.Update)
+        val id = addEvent(now, eventExpireTime, itemType, itemKey, ItemEventType.Update)
         itemEventRepository.incrementStatsCount(itemType, 1)
-        reduceEvents(itemType, maxEventEntryCount)
+        reduceEvents(now, itemType, maxEventEntryCount)
         return id
     }
 
@@ -61,13 +63,14 @@ internal class KottageOperator(
      */
     fun addDeleteEvent(
         now: Long,
+        eventExpireTime: Duration?,
         itemType: String,
         itemKey: String,
         maxEventEntryCount: Long
     ): String {
-        val id = addEvent(now, itemType, itemKey, ItemEventType.Delete)
+        val id = addEvent(now, eventExpireTime, itemType, itemKey, ItemEventType.Delete)
         itemEventRepository.incrementStatsCount(itemType, 1)
-        reduceEvents(itemType, maxEventEntryCount)
+        reduceEvents(now, itemType, maxEventEntryCount)
         return id
     }
 
@@ -113,14 +116,30 @@ internal class KottageOperator(
      * Delete expired items
      * This should be called in transaction
      */
-    fun evictCache(now: Long, itemType: String? = null) {
+    fun evictCaches(now: Long, itemType: String? = null) {
         if (itemType != null) {
             itemRepository.getExpiredKeys(now, itemType) { key, _ ->
-                deleteExpiredItem(key, itemType)
+                deleteItem(key, itemType)
             }
         } else {
             itemRepository.getExpiredKeys(now) { key, expiredItemType ->
-                deleteExpiredItem(key, expiredItemType)
+                deleteItem(key, expiredItemType)
+            }
+        }
+    }
+
+    /**
+     * Delete old events
+     * This should be called in transaction
+     */
+    fun evictEvents(now: Long, itemType: String? = null) {
+        if (itemType != null) {
+            itemEventRepository.getExpiredIds(now, itemType) { id, _ ->
+                deleteEvent(id, itemType)
+            }
+        } else {
+            itemEventRepository.getExpiredIds(now) { id, type ->
+                deleteEvent(id, type)
             }
         }
     }
@@ -144,18 +163,26 @@ internal class KottageOperator(
     override fun deleteExpiredItems(itemType: String, now: Long): Long {
         var deleted = 0L
         itemRepository.getExpiredKeys(now, itemType) { key, _ ->
-            deleteExpiredItem(key, itemType)
+            deleteItem(key, itemType)
             deleted++
         }
         return deleted
     }
 
     /**
-     * Delete expired items
+     * Delete item
      */
-    private fun deleteExpiredItem(key: String, itemType: String) {
+    private fun deleteItem(key: String, itemType: String) {
         itemRepository.delete(key, itemType)
         itemRepository.decrementStatsCount(itemType, 1)
+    }
+
+    /**
+     * Delete event
+     */
+    private fun deleteEvent(id: String, itemType: String) {
+        itemEventRepository.delete(id)
+        itemEventRepository.decrementStatsCount(itemType, 1)
     }
 
     /**
@@ -165,17 +192,22 @@ internal class KottageOperator(
      */
     private fun addEvent(
         now: Long,
+        eventExpireTime: Duration?,
         itemType: String,
         itemKey: String,
         eventType: ItemEventType
     ): String {
+        val id = Id.generateUuidV4Short()
         val latestCreatedAt = (itemEventRepository.getLatestCreatedAt(itemType) ?: 0)
         val createdAt = now.coerceAtLeast(latestCreatedAt + 1)
-        val id = Id.generateUuidV4Short()
+        val expireAt = eventExpireTime?.let { duration ->
+            (createdAt + duration.inWholeMilliseconds)
+        }
         itemEventRepository.create(
             ItemEvent(
                 id = id,
                 createdAt = createdAt,
+                expireAt = expireAt,
                 itemType = itemType,
                 itemKey = itemKey,
                 eventType = eventType
@@ -184,14 +216,21 @@ internal class KottageOperator(
         return id
     }
 
-    private fun reduceEvents(itemType: String, maxEventEntryCount: Long) {
+    private fun reduceEvents(now: Long, itemType: String, maxEventEntryCount: Long) {
         val currentCount = itemEventRepository.getStatsCount(itemType)
         if (maxEventEntryCount < currentCount) {
-            // TODO: delete time base expiring first.
-            val reduceCount = (maxEventEntryCount * 0.25).toLong().coerceAtLeast(1)
-            itemEventRepository.deleteOlderEvents(itemType, reduceCount)
-            val count = itemEventRepository.getCount(itemType)
-            itemEventRepository.updateStatsCount(itemType, count)
+            var deleted = 0L
+            itemEventRepository.getExpiredIds(now, itemType) { id, _ ->
+                deleteEvent(id, itemType)
+                deleted++
+            }
+            val calculatedReduceCount = (maxEventEntryCount * 0.25).toLong().coerceAtLeast(1)
+            val reduceCount = calculatedReduceCount - deleted
+            if (0 < reduceCount) {
+                itemEventRepository.deleteOlderEvents(itemType, reduceCount)
+                val count = itemEventRepository.getCount(itemType)
+                itemEventRepository.updateStatsCount(itemType, count)
+            }
         }
     }
 }
