@@ -27,6 +27,7 @@ test-kotest-runner = { module = "io.kotest:kotest-runner-junit5", version.ref = 
 test-kotest-assertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 test-kotest-engine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
 test-mockk = { module = "io.mockk:mockk", version = "1.12.4" }
+test-turbine = { module = "app.cash.turbine:turbine", version = "0.10.0" }
 sqldelight-driver-android = { module = "com.squareup.sqldelight:android-driver", version.ref = "sqldelight" }
 sqldelight-driver-jvm = { module = "com.squareup.sqldelight:sqlite-driver", version.ref = "sqldelight" }
 sqldelight-driver-native = { module = "com.squareup.sqldelight:native-driver", version.ref = "sqldelight" }
@@ -37,7 +38,7 @@ kodein-di = { module = "org.kodein.di:kodein-di", version = "7.14.0" }
 [bundles]
 test-common = [
     "kotlin-reflect", "kotlinx-coroutines-test", "test-kotest-engine",
-    "test-kotest-assertions"]
+    "test-kotest-assertions", "test-turbine"]
 
 [plugins]
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization" }

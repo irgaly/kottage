@@ -1,6 +1,8 @@
 package io.github.irgaly.kottage
 
+import app.cash.turbine.test
 import com.soywiz.klock.DateTime
+import com.soywiz.klock.seconds
 import io.github.irgaly.kottage.platform.KottageContext
 import io.github.irgaly.kottage.platform.TestCalendar
 import io.github.irgaly.test.extension.tempdir
@@ -60,6 +62,44 @@ class KottageEventTest : DescribeSpec({
                 calendar.setUtc(DateTime(2021, 1, 11))
                 storage.compact()
                 storage.getEvents(0).size shouldBe 0
+            }
+        }
+        context("Event") {
+            it("Simple Event を受け取れること") {
+                val calendar2 = TestCalendar(DateTime(2022, 1, 1).utc)
+                val kottage2 = Kottage(
+                    "event",
+                    tempDirectory,
+                    KottageEnvironment(KottageContext(), calendar2)
+                )
+                val storage = kottage2.cache("event")
+                kottage2.simpleEventFlow.test {
+                    calendar2.now += 1.seconds
+                    storage.put("key1", "value")
+                    awaitItem().eventType shouldBe KottageEventType.Create
+                    calendar2.now += 1.seconds
+                    storage.remove("key1")
+                    awaitItem().eventType shouldBe KottageEventType.Delete
+                }
+            }
+        }
+        context("KottageEventFlow") {
+            it("KottageEventFlowで値を監視できる") {
+                val calendar2 = TestCalendar(DateTime(2022, 1, 1).utc)
+                val kottage2 = Kottage(
+                    "eventflow",
+                    tempDirectory,
+                    KottageEnvironment(KottageContext(), calendar2)
+                )
+                calendar2.now += 1.seconds
+                val storage = kottage2.cache("event")
+                storage.put("key1", "value")
+                storage.eventFlow(DateTime(2022, 1, 1).unixMillisLong).test {
+                    // 2022/1/1 以降のイベントから流れる
+                    awaitItem().eventType shouldBe KottageEventType.Create
+                    storage.remove("key1")
+                    awaitItem().eventType shouldBe KottageEventType.Delete
+                }
             }
         }
     }
