@@ -15,6 +15,8 @@
 
 * ログはアプリ側からDIする
 * storage.get(Key("key", typeOf(Int))) くらいは用意してもいいかも
+* get/put はなるべく早めに返したいので、compact, event 配信は coroutine launch で非同期処理にした方がいいかも
+  * kottage が scope を受け取る必要がある
 
 ---
 

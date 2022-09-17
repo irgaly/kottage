@@ -25,50 +25,15 @@ internal class KottageOperator(
      *
      * @return Event id
      */
-    fun addCreateEvent(
+    fun addEvent(
         now: Long,
+        eventType: ItemEventType,
         eventExpireTime: Duration?,
         itemType: String,
         itemKey: String,
         maxEventEntryCount: Long
     ): String {
-        val id = addEvent(now, eventExpireTime, itemType, itemKey, ItemEventType.Create)
-        itemEventRepository.incrementStatsCount(itemType, 1)
-        reduceEvents(now, itemType, maxEventEntryCount)
-        return id
-    }
-
-    /**
-     * This should be called in transaction
-     *
-     * @return Event id
-     */
-    fun addUpdateEvent(
-        now: Long,
-        eventExpireTime: Duration?,
-        itemType: String,
-        itemKey: String,
-        maxEventEntryCount: Long
-    ): String {
-        val id = addEvent(now, eventExpireTime, itemType, itemKey, ItemEventType.Update)
-        itemEventRepository.incrementStatsCount(itemType, 1)
-        reduceEvents(now, itemType, maxEventEntryCount)
-        return id
-    }
-
-    /**
-     * This should be called in transaction
-     *
-     * @return Event id
-     */
-    fun addDeleteEvent(
-        now: Long,
-        eventExpireTime: Duration?,
-        itemType: String,
-        itemKey: String,
-        maxEventEntryCount: Long
-    ): String {
-        val id = addEvent(now, eventExpireTime, itemType, itemKey, ItemEventType.Delete)
+        val id = addEventInternal(now, eventExpireTime, itemType, itemKey, eventType)
         itemEventRepository.incrementStatsCount(itemType, 1)
         reduceEvents(now, itemType, maxEventEntryCount)
         return id
@@ -78,10 +43,14 @@ internal class KottageOperator(
      * Get events
      * This should be called in transaction
      */
-    fun getEvents(itemType: String, afterUnixTimeMillisAt: Long, limit: Long?): List<KottageEvent> {
+    fun getEvents(
+        afterUnixTimeMillisAt: Long,
+        itemType: String?,
+        limit: Long?
+    ): List<KottageEvent> {
         return itemEventRepository.selectAfter(
-            itemType = itemType,
             createdAt = afterUnixTimeMillisAt,
+            itemType = itemType,
             limit = limit
         ).map {
             KottageEvent.from(it)
@@ -190,7 +159,7 @@ internal class KottageOperator(
      *
      * @return event id
      */
-    private fun addEvent(
+    private fun addEventInternal(
         now: Long,
         eventExpireTime: Duration?,
         itemType: String,

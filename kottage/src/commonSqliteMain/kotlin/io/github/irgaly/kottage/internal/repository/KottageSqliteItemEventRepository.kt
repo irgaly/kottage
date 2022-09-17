@@ -13,23 +13,38 @@ internal class KottageSqliteItemEventRepository(
     }
 
     override fun selectAfter(
-        itemType: String,
         createdAt: Long,
+        itemType: String?,
         limit: Long?
     ): List<ItemEvent> {
-        return if (limit != null) {
-            database.item_eventQueries
-                .selectItemTypeAfterCreatedAtLimit(
-                    item_type = itemType,
-                    created_at = createdAt,
-                    limit = limit
-                ).executeAsList()
+        return if (itemType != null) {
+            if (limit != null) {
+                database.item_eventQueries
+                    .selectItemTypeAfterCreatedAtLimit(
+                        item_type = itemType,
+                        created_at = createdAt,
+                        limit = limit
+                    ).executeAsList()
+            } else {
+                database.item_eventQueries
+                    .selectItemTypeAfterCreatedAt(
+                        item_type = itemType,
+                        created_at = createdAt
+                    ).executeAsList()
+            }
         } else {
-            database.item_eventQueries
-                .selectItemTypeAfterCreatedAt(
-                    item_type = itemType,
-                    created_at = createdAt
-                ).executeAsList()
+            if (limit != null) {
+                database.item_eventQueries
+                    .selectAfterCreatedAtLimit(
+                        created_at = createdAt,
+                        limit = limit
+                    ).executeAsList()
+            } else {
+                database.item_eventQueries
+                    .selectAfterCreatedAt(
+                        created_at = createdAt
+                    ).executeAsList()
+            }
         }.map {
             it.toDomain()
         }

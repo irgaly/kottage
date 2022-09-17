@@ -6,7 +6,9 @@ import io.github.irgaly.kottage.platform.Files
 import io.github.irgaly.kottage.strategy.KottageFifoStrategy
 import io.github.irgaly.kottage.strategy.KottageKvsStrategy
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.json.Json
 import kotlin.time.Duration.Companion.days
 
@@ -22,6 +24,7 @@ class Kottage(
     val environment: KottageEnvironment,
     val json: Json = Json,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
+    private val scope: CoroutineScope = CoroutineScope(dispatcher + SupervisorJob()),
     val optionsBuilder: (KottageOptions.Builder.() -> Unit)? = null
 ) {
     companion object {
@@ -39,7 +42,7 @@ class Kottage(
     }
 
     private val databaseManager by lazy {
-        KottageDatabaseManager(name, directoryPath, environment, dispatcher)
+        KottageDatabaseManager(name, directoryPath, environment, dispatcher, scope)
     }
 
     private val options: KottageOptions

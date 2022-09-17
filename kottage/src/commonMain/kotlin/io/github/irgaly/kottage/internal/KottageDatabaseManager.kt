@@ -2,20 +2,25 @@ package io.github.irgaly.kottage.internal
 
 import io.github.irgaly.kottage.KottageEnvironment
 import io.github.irgaly.kottage.internal.database.createDatabaseConnection
+import io.github.irgaly.kottage.internal.model.ItemEvent
+import io.github.irgaly.kottage.internal.model.ItemEventFlow
 import io.github.irgaly.kottage.internal.repository.KottageRepositoryFactory
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.Flow
 
 internal class KottageDatabaseManager(
     fileName: String,
     directoryPath: String,
     private val environment: KottageEnvironment,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
+    private val scope: CoroutineScope = CoroutineScope(dispatcher + SupervisorJob())
 ) {
     private val databaseConnection by lazy {
         createDatabaseConnection(fileName, directoryPath, environment, dispatcher)
     }
 
     private val calendar get() = environment.calendar
+    private val _eventFlow = ItemEventFlow(environment.calendar.nowUnixTimeMillis(), scope)
 
     private val repositoryFactory by lazy {
         KottageRepositoryFactory(databaseConnection)
@@ -45,6 +50,8 @@ internal class KottageDatabaseManager(
         )
     }
 
+    val eventFlow: Flow<ItemEvent> = _eventFlow.flow
+
     suspend fun <R> transactionWithResult(bodyWithReturn: () -> R): R =
         databaseConnection.transactionWithResult(bodyWithReturn)
 
@@ -71,5 +78,32 @@ internal class KottageDatabaseManager(
 
     suspend fun backupTo(file: String, directoryPath: String) {
         databaseConnection.backupTo(file, directoryPath)
+    }
+
+    /**
+     * Publish Events
+     */
+    suspend fun onEventCreated(eventId: String) {
+        val itemEventRepository = itemEventRepository.await()
+        val limit = 100L
+        _eventFlow.updateWithLock { lastEvent, emit ->
+            var lastEventTime = lastEvent.time
+            var remains = true
+            while (remains) {
+                val events = databaseConnection.transactionWithResult {
+                    itemEventRepository.selectAfter(
+                        createdAt = lastEventTime,
+                        limit = limit
+                    )
+                }
+                remains = (limit <= events.size)
+                events.lastOrNull()?.let {
+                    lastEventTime = it.createdAt
+                }
+                events.forEach {
+                    emit(it)
+                }
+            }
+        }
     }
 }

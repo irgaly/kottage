@@ -5,9 +5,9 @@ import io.github.irgaly.kottage.internal.model.ItemEvent
 internal interface KottageItemEventRepository {
     fun create(itemEvent: ItemEvent)
     fun selectAfter(
-        itemType: String,
         createdAt: Long,
-        limit: Long?
+        itemType: String? = null,
+        limit: Long? = null,
     ): List<ItemEvent>
 
     fun getLatestCreatedAt(itemType: String): Long?

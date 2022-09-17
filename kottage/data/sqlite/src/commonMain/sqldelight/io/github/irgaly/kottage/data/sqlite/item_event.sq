@@ -15,6 +15,12 @@ CREATE INDEX item_event_item_type_expire_at ON item_event(item_type, expire_at);
 insert:
 INSERT INTO item_event VALUES ?;
 
+selectAfterCreatedAt:
+SELECT * FROM item_event WHERE ? < created_at ORDER BY created_at ASC;
+
+selectAfterCreatedAtLimit:
+SELECT * FROM item_event WHERE ? < created_at ORDER BY created_at ASC LIMIT :limit;
+
 selectItemTypeAfterCreatedAt:
 SELECT * FROM item_event WHERE item_type = ? AND ? < created_at ORDER BY created_at ASC;
 
@@ -32,7 +38,6 @@ SELECT id FROM item_event WHERE item_type = ? AND expire_at IS NOT NULL AND expi
 
 selectAllTypeExpiredIds:
 SELECT id, item_type FROM item_event WHERE expire_at IS NOT NULL AND expire_at <= ? ORDER BY expire_at ASC;
-
 
 countByType:
 SELECT count(*) FROM item_event WHERE item_type = ?;
