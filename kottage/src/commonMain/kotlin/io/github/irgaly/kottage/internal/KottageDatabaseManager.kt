@@ -114,7 +114,8 @@ internal class KottageDatabaseManager(
             itemType,
             _eventFlow,
             databaseConnection,
-            operator
+            operator,
+            dispatcher
         )
     }
 }

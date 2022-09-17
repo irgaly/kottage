@@ -43,9 +43,8 @@ class Kottage(
         }
     }
 
-    private val databaseManager by lazy {
+    private val databaseManager =
         KottageDatabaseManager(name, directoryPath, environment, dispatcher, scope)
-    }
 
     private val options: KottageOptions
 
