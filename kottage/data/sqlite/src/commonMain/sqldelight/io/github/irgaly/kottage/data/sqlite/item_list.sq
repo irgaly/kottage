@@ -1,10 +1,10 @@
-CREATE TABLE item_list (
-  key TEXT PRIMARY KEY,
-  type TEXT NOT NULL,
-  item_key TEXT NOT NULL,
-  prev_key TEXT,
-  next_key TEXT
-);
+--CREATE TABLE item_list (
+--  key TEXT PRIMARY KEY,
+--  type TEXT NOT NULL,
+--  item_key TEXT NOT NULL,
+--  prev_key TEXT,
+--  next_key TEXT
+--);
 
-deleteAll:
-DELETE FROM item_list;
+--deleteAll:
+--DELETE FROM item_list;
