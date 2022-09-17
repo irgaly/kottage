@@ -1,6 +1,5 @@
 package io.github.irgaly.kottage.internal
 
-import io.github.irgaly.kottage.KottageEvent
 import io.github.irgaly.kottage.internal.model.Item
 import io.github.irgaly.kottage.internal.model.ItemEvent
 import io.github.irgaly.kottage.internal.model.ItemEventType
@@ -45,16 +44,14 @@ internal class KottageOperator(
      */
     fun getEvents(
         afterUnixTimeMillisAt: Long,
-        itemType: String?,
-        limit: Long?
-    ): List<KottageEvent> {
+        itemType: String? = null,
+        limit: Long? = null
+    ): List<ItemEvent> {
         return itemEventRepository.selectAfter(
             createdAt = afterUnixTimeMillisAt,
             itemType = itemType,
             limit = limit
-        ).map {
-            KottageEvent.from(it)
-        }
+        )
     }
 
     /**

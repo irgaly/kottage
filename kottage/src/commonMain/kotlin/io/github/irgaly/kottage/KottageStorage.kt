@@ -79,6 +79,11 @@ interface KottageStorage {
      * Get events after fromUnitTimeMillisAt
      */
     suspend fun getEvents(afterUnixTimeMillisAt: Long, limit: Long? = null): List<KottageEvent>
+
+    /**
+     * get KottageEventFlow
+     */
+    fun eventFlow(afterUnixTimeMillisAt: Long? = null): KottageEventFlow
 }
 
 /**

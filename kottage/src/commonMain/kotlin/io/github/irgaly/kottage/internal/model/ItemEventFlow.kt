@@ -28,6 +28,12 @@ internal class ItemEventFlow(initialTime: Long, scope: CoroutineScope) {
         }
     }
 
+    suspend fun withLock(block: suspend (latestEvent: Event) -> Unit) {
+        mutex.withLock {
+            block(lastEvent.value)
+        }
+    }
+
     data class Event(
         val time: Long,
         val event: ItemEvent?

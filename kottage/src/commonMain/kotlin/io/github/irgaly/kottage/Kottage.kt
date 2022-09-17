@@ -9,6 +9,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 import kotlin.time.Duration.Companion.days
 
@@ -46,6 +48,15 @@ class Kottage(
     }
 
     private val options: KottageOptions
+
+    /**
+     * Simple KottageEvent Flow
+     * This is a simple hot flow.
+     *
+     * see also [eventFlow]
+     */
+    val simpleEventFlow: Flow<KottageEvent> =
+        databaseManager.eventFlow.map { KottageEvent.from(it) }
 
     init {
         require(!name.contains(Files.separator)) { "name contains separator: $name" }
@@ -102,6 +113,13 @@ class Kottage(
             { databaseManager.compact() },
             dispatcher
         )
+    }
+
+    /**
+     * get KottageEventFlow
+     */
+    fun eventFlow(afterUnixTimeMillisAt: Long? = null): KottageEventFlow {
+        return databaseManager.eventFlow(afterUnixTimeMillisAt)
     }
 
     /**

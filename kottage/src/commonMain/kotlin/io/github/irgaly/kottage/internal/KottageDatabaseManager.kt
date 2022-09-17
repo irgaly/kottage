@@ -1,6 +1,7 @@
 package io.github.irgaly.kottage.internal
 
 import io.github.irgaly.kottage.KottageEnvironment
+import io.github.irgaly.kottage.KottageEventFlow
 import io.github.irgaly.kottage.internal.database.createDatabaseConnection
 import io.github.irgaly.kottage.internal.model.ItemEvent
 import io.github.irgaly.kottage.internal.model.ItemEventFlow
@@ -84,15 +85,15 @@ internal class KottageDatabaseManager(
      * Publish Events
      */
     suspend fun onEventCreated(eventId: String) {
-        val itemEventRepository = itemEventRepository.await()
+        val operator = operator.await()
         val limit = 100L
         _eventFlow.updateWithLock { lastEvent, emit ->
             var lastEventTime = lastEvent.time
             var remains = true
             while (remains) {
                 val events = databaseConnection.transactionWithResult {
-                    itemEventRepository.selectAfter(
-                        createdAt = lastEventTime,
+                    operator.getEvents(
+                        afterUnixTimeMillisAt = lastEventTime,
                         limit = limit
                     )
                 }
@@ -105,5 +106,15 @@ internal class KottageDatabaseManager(
                 }
             }
         }
+    }
+
+    fun eventFlow(afterUnixTimeMillisAt: Long? = null, itemType: String? = null): KottageEventFlow {
+        return KottageEventFlow(
+            afterUnixTimeMillisAt,
+            itemType,
+            _eventFlow,
+            databaseConnection,
+            operator
+        )
     }
 }

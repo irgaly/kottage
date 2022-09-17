@@ -239,7 +239,13 @@ internal class KottageStorageImpl(
                 afterUnixTimeMillisAt = afterUnixTimeMillisAt,
                 itemType = itemType,
                 limit = limit
-            )
+            ).map {
+                KottageEvent.from(it)
+            }
         }
+    }
+
+    override fun eventFlow(afterUnixTimeMillisAt: Long?): KottageEventFlow {
+        return databaseManager.eventFlow(afterUnixTimeMillisAt, itemType)
     }
 }
