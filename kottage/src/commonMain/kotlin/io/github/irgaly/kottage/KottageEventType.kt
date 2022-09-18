@@ -5,8 +5,7 @@ import io.github.irgaly.kottage.internal.model.ItemEventType
 enum class KottageEventType {
     Create,
     Update,
-    Delete,
-    Expired;
+    Delete;
 
     companion object {
         internal fun from(itemEventType: ItemEventType): KottageEventType {
@@ -14,7 +13,6 @@ enum class KottageEventType {
                 ItemEventType.Create -> Create
                 ItemEventType.Update -> Update
                 ItemEventType.Delete -> Delete
-                ItemEventType.Expired -> Expired
             }
         }
     }

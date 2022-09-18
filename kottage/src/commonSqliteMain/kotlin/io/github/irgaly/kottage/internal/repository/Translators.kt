@@ -59,7 +59,6 @@ internal fun ItemEventType.toEntity(): io.github.irgaly.kottage.data.sqlite.enti
         ItemEventType.Create -> io.github.irgaly.kottage.data.sqlite.entity.ItemEventType.Create
         ItemEventType.Update -> io.github.irgaly.kottage.data.sqlite.entity.ItemEventType.Update
         ItemEventType.Delete -> io.github.irgaly.kottage.data.sqlite.entity.ItemEventType.Delete
-        ItemEventType.Expired -> io.github.irgaly.kottage.data.sqlite.entity.ItemEventType.Expired
     }
 }
 
@@ -68,6 +67,5 @@ internal fun io.github.irgaly.kottage.data.sqlite.entity.ItemEventType.toDomain(
         io.github.irgaly.kottage.data.sqlite.entity.ItemEventType.Create -> ItemEventType.Create
         io.github.irgaly.kottage.data.sqlite.entity.ItemEventType.Update -> ItemEventType.Update
         io.github.irgaly.kottage.data.sqlite.entity.ItemEventType.Delete -> ItemEventType.Delete
-        io.github.irgaly.kottage.data.sqlite.entity.ItemEventType.Expired -> ItemEventType.Expired
     }
 }
