@@ -56,7 +56,7 @@ interface KottageStorage {
         SerializationException::class,
         CancellationException::class
     )
-    suspend fun <T : Any> put(key: String, value: T, type: KType, expireDuration: Duration? = null)
+    suspend fun <T : Any> put(key: String, value: T, type: KType, expireTime: Duration? = null)
 
     suspend fun remove(key: String): Boolean
 
