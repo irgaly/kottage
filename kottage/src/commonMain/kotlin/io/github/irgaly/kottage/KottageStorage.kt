@@ -56,7 +56,7 @@ interface KottageStorage {
         SerializationException::class,
         CancellationException::class
     )
-    suspend fun <T : Any> put(key: String, value: T, type: KType)
+    suspend fun <T : Any> put(key: String, value: T, type: KType, expireDuration: Duration? = null)
 
     suspend fun remove(key: String): Boolean
 
@@ -119,8 +119,12 @@ suspend inline fun <reified T : Any> KottageStorage.getOrNull(key: String): T? {
     SerializationException::class,
     CancellationException::class
 )
-suspend inline fun <reified T : Any> KottageStorage.put(key: String, value: T) {
-    put(key, value, typeOf<T>())
+suspend inline fun <reified T : Any> KottageStorage.put(
+    key: String,
+    value: T,
+    expireTime: Duration? = null
+) {
+    put(key, value, typeOf<T>(), expireTime)
 }
 
 @Throws(

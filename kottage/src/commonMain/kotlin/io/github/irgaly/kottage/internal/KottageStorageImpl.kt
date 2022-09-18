@@ -102,7 +102,7 @@ internal class KottageStorageImpl(
         (item?.isAvailable(now) ?: false)
     }
 
-    override suspend fun <T : Any> put(key: String, value: T, type: KType) =
+    override suspend fun <T : Any> put(key: String, value: T, type: KType, expireTime: Duration?) =
         withContext(dispatcher) {
             val itemRepository = itemRepository()
             val operator = operator()
@@ -123,7 +123,7 @@ internal class KottageStorageImpl(
                     bytesValue = bytesValue,
                     createdAt = now,
                     lastReadAt = now,
-                    expireAt = defaultExpireTime?.let { duration ->
+                    expireAt = (expireTime ?: defaultExpireTime)?.let { duration ->
                         now + duration.inWholeMilliseconds
                     }
                 )

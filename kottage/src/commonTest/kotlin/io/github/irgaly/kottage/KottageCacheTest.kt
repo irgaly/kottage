@@ -44,6 +44,24 @@ class KottageCacheTest : DescribeSpec({
                     cache.getEntry<String>("expire1")
                 }
             }
+            it("put expireTime 経過で cache が消えること") {
+                val cache = kottage.cache("cache2") {
+                    defaultExpireTime = 2.days.duration
+                }
+                cache.put("expire1", "value", 1.days.duration)
+                cache.put("expire2", "value")
+                calendar.now += 1.days
+                cache.exists("expire1") shouldBe false
+                cache.getOrNull<String>("expire1") shouldBe null
+                cache.getEntryOrNull<String>("expire1") shouldBe null
+                shouldThrow<NoSuchElementException> {
+                    cache.get<String>("expire1")
+                }
+                shouldThrow<NoSuchElementException> {
+                    cache.getEntry<String>("expire1")
+                }
+                cache.exists("expire2") shouldBe true
+            }
         }
         context("Auto Compaction") {
             val compactionKottage = Kottage(
