@@ -42,8 +42,8 @@ jobs:
             ~/.gradle/caches/build-cache-*
             ~/.gradle/caches/[0-9]*.*
             .gradle
-          key: ${{ runner.os }}-gradle-build-${{ steps.get-month.outputs.month }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-gradle-build-${{ steps.get-month.outputs.month }}-
+          key: ${{ runner.os }}-gradle-build-${{ github.workflow }}-${{ steps.get-month.outputs.month }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-gradle-build-${{ github.workflow }}-${{ steps.get-month.outputs.month }}-
       - name: Deploy to Maven Central
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME_TOKEN }}
