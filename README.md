@@ -62,7 +62,8 @@ kotlin.native.binary.memoryModel=experimental
 
 Use Kottage as KVS cache or KVS storage.
 
-At first, get a Kottage instance.
+At first, get a Kottage instance. Even though you can use Kottage instance as a singleton, multiple
+Kottage instances creation is allowed. Kottage instances and methods are thread safe.
 
 ```kotlin
 // directory path string for SQLite file
