@@ -4,16 +4,17 @@ Kotlin Multiplatform Key-Value Store Local Cache Storage for Single Source of Tr
 
 # Features
 
-* SQLite based Key-Value Store
-* Observing events as Flow when items are changed
+* A Kotlin Multiplatform library
+* Key-Value Store with no schemas, that values are stored based on SQLite
+* Observing events of item updates as Flow
 * Cache Expiration
     * Cache Eviction Strategy Options:
         * Expiration Time
         * FIFO Strategy
         * LRU Strategy
-* KVS Storage mode
-    * Simple KVS Store with no item eviction
-* Kotlin Multiplatform
+* KVS Cache mode / KVS Storage mode
+    * Expired items are evicted automatically
+    * There is a storage mode with no item expiration
 * Support primitive values and `@Serializable` classes
 
 # Requires
@@ -53,7 +54,7 @@ Enable Kotlin/Native New Memory Manger in gradle.properties if your project usin
 `gradle.properties`
 
 ```properties
-# memoryModel experimental is default from Kotlin 1.7.20
+# memoryModel experimental is enabled by default from Kotlin 1.7.20
 kotlin.native.binary.memoryModel=experimental
 ```
 
@@ -61,14 +62,149 @@ kotlin.native.binary.memoryModel=experimental
 
 Use kottage as KVS cache or KVS storage.
 
+Get a Kottage instance.
+
 ```kotlin
-...
+// directory path string for SQLite file
+// For example:
+// * Android File Directory: context.getFilesDir().path
+// * Android Cache Directory: context.getCacheDir().path
+val databaseDirectory: String = ...
+val kottageEnvironment: KottageEnvironment = KottageEnvironment(
+    context = context, // for Android, set Android Context object
+    //context = KottageContext(), // for other platforms
+    calendar = object : KottageCalendar {
+        override fun nowUnixTimeMillis(): Long {
+            // for example: JVM / Android Unix Time implementation
+            return System.currentTimeMillis
+        }
+    }
+)
+// Initialize with Kottage database information.
+val kottage: Kottage = Kottage(
+    name = "kottage-store-name",
+    directoryPath = databaseDirectory,
+    environment = kottageEnvironment,
+    json = Json.Default // kotlinx.serialization's json object
+)
+```
+
+Use it as KVS Cache.
+
+```kotlin
+import kotlin.time.Duration.Companion.days
+
+// Open Kottage database as cache mode
+val cache: KottageStorage = kottage.cache("timeline_item_cache") {
+    // There are some options
+    strategy = KottageFifoStrategy(maxEntryCount = 1000) // default strategy in cache mode
+    //strategy = KottageLruStrategy(maxEntryCount = 1000) // LRU cache strategy
+    defaultExpireTime = 30.days // cache item expiration time in kotlin.time.Duration
+}
+// These items will be expired and automatically deleted after 30 days elapsed
+cache.put("item1", "item1 value")
+cache.put("item2", 42)
+cache.put("item3", true)
+val value1: String = cache.get<String>("item1")
+val value2: Int = cache.get<Int>("item2")
+val value3: Boolean = cache.get<Boolean>("item3")
+cache.exists("item4") // => false
+cache.getOrNull<String>("item4") // => null
+```
+
+Use it as KVS Storage with no expiration.
+
+```kotlin
+// Open Kottage database as storage mode
+val storage: KottageStorage = kottage.storage("app_configs")
+// These items has no expiration
+storage.put("item1", "item1 value")
+storage.put("item2", 42)
+storage.put("item3", true)
+val value1: String = storage.get<String>("item1")
+val value2: Int = storage.get<Int>("item2")
+val value3: Boolean = storage.get<Boolean>("item3")
+storage.exists("item4") // => false
+storage.getOrNull<String>("item4") // => null
+```
+
+### Serialization
+
+Kottage can store and restore Serializable classes.
+
+```kotlin
+@Serializable
+data class MyData(val myValue: Int)
+
+val data: MyData = MyData(42)
+val list: List<String> = listOf("item1", "item2") // List<String> is Serializable
+val cache: KottageStorage = kottage.cache("my_data_cache")
+cache.put("item1", data)
+cache.put("item2", list)
+val storedData: MyData = cache.get<MyData>("item1")
+val storedList: List<String> = cache.get<List<String>>("item2")
+```
+
+### Type mismatch error
+
+Store and restore works correctly with same type. It throws ClassCastException if wrong types.
+
+```kotlin
+val cache: KottageStorage = kottage.cache("type_items")
+cache.put("item1", 0) // Store as Number (= SQLite Number = Long, Int, Short, Byte or Boolean)
+cache.put("item2", "strings") // Store as String
+cache.get<String>("item1") // throws ClassCastException
+cache.get<Int>("item2") // throws ClassCastException
+```
+
+Serializable types are stored as String. It throws SerializationException if wrong types.
+
+```kotlin
+@Serializable
+data class Data(val data: Int)
+
+@Serializable
+data class Data2(val data2: Int)
+
+val cache: KottageStorage = kottage.cache("type_items")
+cache.put("data", Data(42))
+cache.get<Data2>("data") // throws SerializationException
 ```
 
 ### Event Observing
 
 ```kotlin
-...
+val cache: KottageStorage = kottage.cache("my_item_cache")
+val now: Long = ... // Unix Time (UTC) in millis
+cache.eventFlow(now).collect { event ->
+    // receive events from flow
+    val eventType: KottageEventType = event.eventType
+    // eventType => KottageEventType.Create
+    val updatedValue: String = cache.get<String>(event.itemKey)
+    // updatedValue => "value"
+}
+cache.put("key", "value")
+// get events after time
+val events: List<KottageEvent> = cache.getEvents(now)
+val updatedValue: String = cache.get<String>(event.first().itemKey)
+// updatedValue => "value"
+```
+
+A eventFlow (KottageEventFlow) can resume from previous emitted event.
+For example, on Android platform, collect while Lifecycle is at least START.
+
+```kotlin
+val cache = kottage.cache("my_item_cache")
+val now = ... // Unix Time (UTC) in millis
+val eventFlow = cache.eventFlow(now)
+lifecycleScope.launch {
+    repeatOnLifecycle(Lifecycle.State.STARTED) {
+        eventFlow.collect { event ->
+            // eventFlow starts dispatching events from last emitted event on previous subscription.
+        }
+    }
+}
+
 ```
 
 # Supporting Data Types
@@ -80,7 +216,7 @@ Use kottage as KVS cache or KVS storage.
 
 # Multiplatform
 
-Kottage is a Kotlin Multiplatform library. Please feel free to report a issue if kottage doesn't
+Kottage is a Kotlin Multiplatform library. Please feel free to report a issue if it doesn't
 work correctly on these platforms.
 
 | Platform              | Target                                                         | Status                                                                        |
@@ -94,3 +230,11 @@ work correctly on these platforms.
 | Kotlin/Native macOS   | macosArm64<br>macosX64                                         | :white_check_mark: Supported, :white_check_mark: Tested                       |
 | Kotlin/Native Linux   | linuxX64                                                       | :white_check_mark: Supported, :tired_face: currently no automated unit tests. |
 | Kotlin/Native Windows | mingwX64                                                       | :white_check_mark: Supported, :tired_face: currently no automated unit tests. |
+
+# Kottage Internals
+
+TBA: I'll write details of library here.
+
+* Lazy item expiration.
+* Automated clean up of expired item.
+* Limit item counts.
