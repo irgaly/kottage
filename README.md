@@ -102,7 +102,7 @@ val cache: KottageStorage = kottage.cache("timeline_item_cache") {
     //strategy = KottageLruStrategy(maxEntryCount = 1000) // LRU cache strategy
     defaultExpireTime = 30.days // cache item expiration time in kotlin.time.Duration
 }
-// Kottage's data accessing methods (get / put) are suspending function
+// Kottage's data accessing methods (get, put...) are suspending function
 // These items will be expired and automatically deleted after 30 days elapsed
 cache.put("item1", "item1 value")
 cache.put("item2", 42)
@@ -119,7 +119,7 @@ Use it as KVS Storage with no expiration.
 ```kotlin
 // Open Kottage database as storage mode
 val storage: KottageStorage = kottage.storage("app_configs")
-// Kottage's data accessing methods (get / put) are suspending function
+// Kottage's data accessing methods (get, put...) are suspending function
 // These items has no expiration
 storage.put("item1", "item1 value")
 storage.put("item2", 42)
@@ -194,17 +194,23 @@ val events: List<KottageEvent> = cache.getEvents(now)
 val updatedValue: String = cache.get<String>(event.first().itemKey) // updatedValue => "value"
 ```
 
-A eventFlow (KottageEventFlow) can resume from previous emitted event.
-For example, on Android platform, collect while Lifecycle is at least START.
+A eventFlow (KottageEventFlow) can automatically resume from previous emitted event.
+For example, on Android platform, collect events while Lifecycle is at least STARTED.
 
 ```kotlin
 val cache = kottage.cache("my_item_cache")
 val now = ... // Unix Time (UTC) in millis
 val eventFlow = cache.eventFlow(now)
-lifecycleScope.launch {
-    repeatOnLifecycle(Lifecycle.State.STARTED) {
-        eventFlow.collect { event ->
-            // eventFlow starts dispatching events from last emitted event on previous subscription.
+
+...
+
+override fun onCreate(...) { // for example: onCreate
+    ...
+    lifecycleScope.launch {
+        repeatOnLifecycle(Lifecycle.State.STARTED) {
+            eventFlow.collect { event ->
+                // eventFlow starts dispatching events from last emitted event on previous subscription.
+            }
         }
     }
 }
@@ -213,9 +219,9 @@ lifecycleScope.launch {
 
 # Supporting Data Types
 
-* Primitives: Double, Float, Long, Int, Short, Byte, Boolean
-* Bytes: ByteArray
-* Texts: String
+* Primitives: `Double`, `Float`, `Long`, `Int`, `Short`, `Byte`, `Boolean`
+* Bytes: `ByteArray`
+* Texts: `String`
 * Serializable: kotlinx.serialization's `@Serializable` classes
 
 # Multiplatform
