@@ -69,7 +69,7 @@ subprojects {
                         pom {
                             name.set(artifactId)
                             description.set("Kotlin KVS Storage for Kotlin Multiplatform.")
-                            url.set("https://github.com/irgaly/kotlin-kvs")
+                            url.set("https://github.com/irgaly/kottage")
                             developers {
                                 developer {
                                     id.set("irgaly")
@@ -84,9 +84,9 @@ subprojects {
                                 }
                             }
                             scm {
-                                connection.set("git@github.com:irgaly/kotlin-kvs.git")
-                                developerConnection.set("git@github.com:irgaly/kotlin-kvs.git")
-                                url.set("https://github.com/irgaly/kotlin-kvs")
+                                connection.set("git@github.com:irgaly/kottage.git")
+                                developerConnection.set("git@github.com:irgaly/kottage.git")
+                                url.set("https://github.com/irgaly/kottage")
                             }
                         }
                     }
