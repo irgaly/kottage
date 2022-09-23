@@ -40,7 +40,7 @@ kotlin {
     }
 }
 
-// For Kotlin/JVM or Kotlin/Android
+// It can be used as a JVM library for Kotlin/JVM or Kotlin/Android
 dependencies {
     implementation("io.github.irgaly.kottage:kottage:0.9.1")
 }
