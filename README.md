@@ -26,7 +26,7 @@ Kotlin Multiplatform Key-Value Store Local Cache Storage for Single Source of Tr
 
 ## Setup
 
-Add kottage as gradle dependency.
+Add Kottage as gradle dependency.
 
 `build.gradle.kts`
 
@@ -40,7 +40,7 @@ kotlin {
     }
 }
 
-// For Kotlin/JVM, Kotlin/Android
+// For Kotlin/JVM or Kotlin/Android
 dependencies {
     implementation("io.github.irgaly.kottage:kottage:0.9.1")
 }
@@ -58,11 +58,11 @@ Enable Kotlin/Native New Memory Manger in gradle.properties if your project usin
 kotlin.native.binary.memoryModel=experimental
 ```
 
-## Use
+## Use Kottage
 
-Use kottage as KVS cache or KVS storage.
+Use Kottage as KVS cache or KVS storage.
 
-Get a Kottage instance.
+At first, get a Kottage instance.
 
 ```kotlin
 // directory path string for SQLite file
@@ -82,14 +82,14 @@ val kottageEnvironment: KottageEnvironment = KottageEnvironment(
 )
 // Initialize with Kottage database information.
 val kottage: Kottage = Kottage(
-    name = "kottage-store-name",
+    name = "kottage-store-name", // This will be database file name
     directoryPath = databaseDirectory,
     environment = kottageEnvironment,
     json = Json.Default // kotlinx.serialization's json object
 )
 ```
 
-Use it as KVS Cache.
+Then, use it as KVS Cache.
 
 ```kotlin
 import kotlin.time.Duration.Companion.days
@@ -101,6 +101,7 @@ val cache: KottageStorage = kottage.cache("timeline_item_cache") {
     //strategy = KottageLruStrategy(maxEntryCount = 1000) // LRU cache strategy
     defaultExpireTime = 30.days // cache item expiration time in kotlin.time.Duration
 }
+// Kottage's data accessing methods (get / put) are suspending function
 // These items will be expired and automatically deleted after 30 days elapsed
 cache.put("item1", "item1 value")
 cache.put("item2", 42)
@@ -117,6 +118,7 @@ Use it as KVS Storage with no expiration.
 ```kotlin
 // Open Kottage database as storage mode
 val storage: KottageStorage = kottage.storage("app_configs")
+// Kottage's data accessing methods (get / put) are suspending function
 // These items has no expiration
 storage.put("item1", "item1 value")
 storage.put("item2", 42)
@@ -147,7 +149,8 @@ val storedList: List<String> = cache.get<List<String>>("item2")
 
 ### Type mismatch error
 
-Store and restore works correctly with same type. It throws ClassCastException if wrong types.
+Store and restore works correctly with same type. It throws ClassCastException if restore with wrong
+types.
 
 ```kotlin
 val cache: KottageStorage = kottage.cache("type_items")
@@ -157,7 +160,8 @@ cache.get<String>("item1") // throws ClassCastException
 cache.get<Int>("item2") // throws ClassCastException
 ```
 
-Serializable types are stored as String. It throws SerializationException if wrong types.
+Serializable types are stored as String. It throws SerializationException if restore with wrong
+types.
 
 ```kotlin
 @Serializable
@@ -173,21 +177,20 @@ cache.get<Data2>("data") // throws SerializationException
 
 ### Event Observing
 
+Kottage supports observing events of item updates for implementing Single Source of Truth.
+
 ```kotlin
 val cache: KottageStorage = kottage.cache("my_item_cache")
 val now: Long = ... // Unix Time (UTC) in millis
 cache.eventFlow(now).collect { event ->
     // receive events from flow
-    val eventType: KottageEventType = event.eventType
-    // eventType => KottageEventType.Create
-    val updatedValue: String = cache.get<String>(event.itemKey)
-    // updatedValue => "value"
+    val eventType: KottageEventType = event.eventType // eventType => KottageEventType.Create
+    val updatedValue: String = cache.get<String>(event.itemKey) // updatedValue => "value"
 }
 cache.put("key", "value")
 // get events after time
 val events: List<KottageEvent> = cache.getEvents(now)
-val updatedValue: String = cache.get<String>(event.first().itemKey)
-// updatedValue => "value"
+val updatedValue: String = cache.get<String>(event.first().itemKey) // updatedValue => "value"
 ```
 
 A eventFlow (KottageEventFlow) can resume from previous emitted event.
