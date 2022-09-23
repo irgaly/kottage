@@ -1,5 +1,5 @@
 # コミットごとに Unit Test 実行
-name: Build, Test
+name: Build & Test
 
 on: push
 
