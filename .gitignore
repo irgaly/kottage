@@ -1,6 +1,7 @@
 
 .idea/runConfigurations
 .idea/deploymentTargetDropDown.xml
+.idea/kotlinc.xml
 
 # Created by https://www.toptal.com/developers/gitignore/api/macos,android,windows,intellij,androidstudio
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,android,windows,intellij,androidstudio
