@@ -1,3 +1,14 @@
+CREATE TABLE item_list (
+  id TEXT PRIMARY KEY,
+  type TEXT NOT NULL,
+  item_type TEXT NOT NULL,
+  item_key TEXT,
+  previous_id TEXT,
+  next_id TEXT,
+  user_previous_key TEXT,
+  user_current_key TEXT,
+  user_next_key TEXT
+);
 CREATE TABLE item_list_stats (
   item_list_type TEXT PRIMARY KEY,
   count INTEGER NOT NULL DEFAULT 0,
@@ -5,6 +16,4 @@ CREATE TABLE item_list_stats (
   last_item_list_id TEXT NOT NULL,
   expire_at INTEGER
 );
-
 CREATE INDEX item_list_stats_created_at ON item_list_stats(expire_at);
-

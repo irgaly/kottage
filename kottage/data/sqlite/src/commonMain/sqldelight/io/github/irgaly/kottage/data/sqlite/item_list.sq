@@ -1,10 +1,12 @@
---CREATE TABLE item_list (
---  key TEXT PRIMARY KEY,
---  type TEXT NOT NULL,
---  item_key TEXT NOT NULL,
---  prev_key TEXT,
---  next_key TEXT
---);
+CREATE TABLE item_list (
+  id TEXT PRIMARY KEY,
+  type TEXT NOT NULL,
+  item_type TEXT NOT NULL,
+  item_key TEXT,
+  previous_id TEXT,
+  next_id TEXT,
+  user_previous_key TEXT,
+  user_current_key TEXT,
+  user_next_key TEXT
+);
 
---deleteAll:
---DELETE FROM item_list;
