@@ -66,14 +66,16 @@ At first, get a Kottage instance. Even though you can use Kottage instance as a 
 Kottage instances creation is allowed. Kottage instances and methods are thread safe.
 
 ```kotlin
+import io.github.irgaly.kottage.platform.contextOf
+
 // directory path string for SQLite file
 // For example:
 // * Android File Directory: context.getFilesDir().path
 // * Android Cache Directory: context.getCacheDir().path
 val databaseDirectory: String = ...
 val kottageEnvironment: KottageEnvironment = KottageEnvironment(
-    context = context, // for Android, set Android Context object
-    //context = KottageContext(), // for other platforms
+    context = contextOf(context), // for Android, set a KottageContext with Android Context object
+    //context = KottageContext(), // for other platforms, set an empty KottageContext
     calendar = object : KottageCalendar {
         override fun nowUnixTimeMillis(): Long {
             // for example: JVM / Android Unix Time implementation
