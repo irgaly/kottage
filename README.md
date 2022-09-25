@@ -194,7 +194,7 @@ val events: List<KottageEvent> = cache.getEvents(now)
 val updatedValue: String = cache.get<String>(event.first().itemKey) // updatedValue => "value"
 ```
 
-A eventFlow (KottageEventFlow) can automatically resume from previous emitted event.
+An eventFlow (KottageEventFlow) can automatically resume from previous emitted event.
 For example, on Android platform, collect events while Lifecycle is at least STARTED.
 
 ```kotlin
