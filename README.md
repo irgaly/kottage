@@ -175,6 +175,7 @@ data class Data2(val data2: Int)
 
 val cache: KottageStorage = kottage.cache("type_items")
 cache.put("data", Data(42))
+cache.get<String>("data") // => "{\"data\":42}"
 cache.get<Data2>("data") // throws SerializationException
 ```
 
