@@ -29,3 +29,12 @@ SELECT * FROM item_list WHERE id = ?;
 
 selectIdFromItem:
 SELECT id FROM item_list WHERE item_type = ? AND item_key = ?;
+
+countByType:
+SELECT count(*) FROM item_list WHERE type = ?;
+
+delete:
+DELETE FROM item_list WHERE id = ?;
+
+deleteAllByType:
+DELETE FROM item_list WHERE type = ?;

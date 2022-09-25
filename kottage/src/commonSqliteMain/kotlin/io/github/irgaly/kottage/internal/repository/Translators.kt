@@ -3,6 +3,7 @@ package io.github.irgaly.kottage.internal.repository
 import io.github.irgaly.kottage.internal.model.Item
 import io.github.irgaly.kottage.internal.model.ItemEvent
 import io.github.irgaly.kottage.internal.model.ItemEventType
+import io.github.irgaly.kottage.internal.model.ItemListEntry
 
 internal fun io.github.irgaly.kottage.data.sqlite.Item.toDomain(): Item {
     return Item(
@@ -29,6 +30,34 @@ internal fun Item.toEntity(): io.github.irgaly.kottage.data.sqlite.Item {
         created_at = createdAt,
         last_read_at = lastReadAt,
         expire_at = expireAt
+    )
+}
+
+internal fun io.github.irgaly.kottage.data.sqlite.Item_list.toDomain(): ItemListEntry {
+    return ItemListEntry(
+        id = id,
+        type = type,
+        itemType = item_type,
+        itemKey = item_key,
+        previousId = previous_id,
+        nextId = next_id,
+        userPreviousKey = user_previous_key,
+        userCurrentKey = user_current_key,
+        userNextKey = user_next_key
+    )
+}
+
+internal fun ItemListEntry.toEntity(): io.github.irgaly.kottage.data.sqlite.Item_list {
+    return io.github.irgaly.kottage.data.sqlite.Item_list(
+        id = id,
+        type = type,
+        item_type = itemType,
+        item_key = itemKey,
+        previous_id = previousId,
+        next_id = nextId,
+        user_previous_key = userPreviousKey,
+        user_current_key = userCurrentKey,
+        user_next_key = userNextKey
     )
 }
 

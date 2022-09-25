@@ -6,6 +6,7 @@ internal expect class KottageRepositoryFactory(
     databaseConnection: DatabaseConnection
 ) {
     suspend fun createItemRepository(): KottageItemRepository
+    suspend fun createItemListRepository(): KottageItemListRepository
     suspend fun createItemEventRepository(): KottageItemEventRepository
     suspend fun createStatsRepository(): KottageStatsRepository
 }
