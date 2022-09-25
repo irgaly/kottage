@@ -1,3 +1,7 @@
+ALTER TABLE item_event ADD COLUMN item_list_id TEXT;
+ALTER TABLE item_event ADD COLUMN item_list_type TEXT;
+CREATE INDEX item_event_item_list_type_created_at ON item_event(item_list_type, created_at);
+CREATE INDEX item_event_item_list_type_expire_at ON item_event(item_list_type, expire_at);
 CREATE TABLE item_list (
   id TEXT PRIMARY KEY,
   type TEXT NOT NULL,
