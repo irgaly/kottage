@@ -50,6 +50,8 @@ internal fun ItemEvent.toEntity(): io.github.irgaly.kottage.data.sqlite.Item_eve
         expire_at = expireAt,
         item_type = itemType,
         item_key = Item.toEntityKey(itemKey, itemType),
+        item_list_id = null,
+        item_list_type = null,
         event_type = eventType.toEntity()
     )
 }
