@@ -8,3 +8,26 @@ CREATE TABLE item_list_stats (
 
 CREATE INDEX item_list_stats_created_at ON item_list_stats(expire_at);
 
+insertIfNotExists:
+INSERT OR IGNORE INTO item_list_stats(item_list_type, first_item_list_id, last_item_list_id) VALUES(?, ?, ?);
+
+updateFirstItemListId:
+UPDATE item_list_stats SET first_item_list_id = ? WHERE item_list_type = ?;
+
+updateLastItemListId:
+UPDATE item_list_stats SET last_item_list_id = ? WHERE item_list_type = ?;
+
+updateExpireAt:
+UPDATE item_list_stats SET expire_at = ? WHERE item_list_type = ?;
+
+incrementCount:
+UPDATE item_list_stats SET count = count + ? WHERE item_list_type = ?;
+
+decrementCount:
+UPDATE item_list_stats SET count = count - ? WHERE item_list_type = ?;
+
+updateCount:
+UPDATE item_list_stats SET count = ? WHERE item_list_type = ?;
+
+select:
+SELECT * FROM item_list_stats WHERE item_list_type = ?;

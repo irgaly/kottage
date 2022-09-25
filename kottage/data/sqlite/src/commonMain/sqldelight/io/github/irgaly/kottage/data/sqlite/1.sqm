@@ -13,6 +13,7 @@ CREATE TABLE item_list (
   user_current_key TEXT,
   user_next_key TEXT
 );
+CREATE INDEX item_list_item_type_item_key ON item_list(item_type, item_key);
 CREATE TABLE item_list_stats (
   item_list_type TEXT PRIMARY KEY,
   count INTEGER NOT NULL DEFAULT 0,

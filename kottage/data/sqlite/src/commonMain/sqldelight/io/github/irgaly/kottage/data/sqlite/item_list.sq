@@ -9,4 +9,22 @@ CREATE TABLE item_list (
   user_current_key TEXT,
   user_next_key TEXT
 );
+CREATE INDEX item_list_item_type_item_key ON item_list(item_type, item_key);
 
+replace:
+REPLACE INTO item_list VALUES ?;
+
+updatePreviousId:
+UPDATE item_list SET previous_id = ? WHERE id = ?;
+
+updateNextId:
+UPDATE item_list SET next_id = ? WHERE id = ?;
+
+updateItemKey:
+UPDATE item_list SET item_key = ? WHERE id = ?;
+
+select:
+SELECT * FROM item_list WHERE id = ?;
+
+selectIdFromItem:
+SELECT id FROM item_list WHERE item_type = ? AND item_key = ?;
