@@ -10,6 +10,7 @@ CREATE TABLE item (
   last_read_at INTEGER NOT NULL,
   expire_at INTEGER
 );
+CREATE INDEX item_type ON item(type);
 CREATE INDEX item_type_created_at ON item(type, created_at);
 CREATE INDEX item_type_last_read ON item(type, last_read_at);
 CREATE INDEX item_type_expire_at ON item(type, expire_at);
