@@ -98,3 +98,58 @@ storage.clear()
 Kottage.clear()
 
 ```
+
+---
+
+# List Cache
+
+```kotlin
+data class Item(val positionId: String)
+
+class MyPagingSource(
+  kottage: Kottage
+) : PagingSource<String, Item>() {
+  val cache = kottage.cache("items")
+  val itemsList: KottageList = cache.list("my_page")
+  override fun getRefreshKey(state: PagingState<String, Item>): String? {
+    val page = state.closestPageToPosition(state.anchorPosition!!)!!
+    return page.data.firstOrNull()?.positionId
+  }
+
+  override suspend fun load(params: LoadParams<String>): LoadResult<String, Item> {
+    val key = params.key
+    val page: KottageListPage = when (params) {
+      is LoadParams.Refresh -> {
+        itemsList.getPageFrom(positionId = key, limit = 20L, direction = Forward)
+      }
+
+      is LoadParams.Append -> {
+        itemsList.getPageFrom(positionId = key, limit = 20L, direction = Forward)
+      }
+
+      is LoadParams.Prepend -> {
+        itemsList.getPageFrom(positionId = key, limit = 20L, direction = Backward)
+      }
+    }
+    return LoadResult.Page(
+      data = page.items,
+      prevKey = page.previousPositionId,
+      nextKey = page.nextPositionId
+    )
+  }
+}
+
+data class KottageListPage<T>(
+  val items: List<KottageListItem<T>>,
+  val previousPositionId: String?,
+  val nextPositionId: String?
+)
+
+data class KottageListItem<T>(
+  val positionId: String,
+  val value: T,
+  val previousKey: String?,
+  val currentKey: String?,
+  val nextKey: String?
+)
+```
