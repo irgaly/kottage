@@ -41,12 +41,12 @@ internal class KottageSqliteItemListRepository(
             .executeAsOneOrNull()?.toDomain()
     }
 
-    override fun getId(itemType: String, itemKey: String): String? {
+    override fun getIds(itemType: String, itemKey: String): List<String> {
         return database.item_listQueries
             .selectIdFromItem(
                 item_type = itemType,
                 item_key = itemKey
-            ).executeAsOneOrNull()
+            ).executeAsList()
     }
 
     override fun getCount(type: String): Long {

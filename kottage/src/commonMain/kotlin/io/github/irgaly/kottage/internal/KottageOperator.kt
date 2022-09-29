@@ -1,9 +1,11 @@
 package io.github.irgaly.kottage.internal
 
+import io.github.irgaly.kottage.KottageStorageOptions
 import io.github.irgaly.kottage.internal.model.Item
 import io.github.irgaly.kottage.internal.model.ItemEvent
 import io.github.irgaly.kottage.internal.model.ItemEventType
 import io.github.irgaly.kottage.internal.repository.KottageItemEventRepository
+import io.github.irgaly.kottage.internal.repository.KottageItemListRepository
 import io.github.irgaly.kottage.internal.repository.KottageItemRepository
 import io.github.irgaly.kottage.internal.repository.KottageStatsRepository
 import io.github.irgaly.kottage.platform.Id
@@ -16,6 +18,7 @@ import kotlin.time.Duration.Companion.milliseconds
  */
 internal class KottageOperator(
     private val itemRepository: KottageItemRepository,
+    private val itemListRepository: KottageItemListRepository,
     private val itemEventRepository: KottageItemEventRepository,
     private val statsRepository: KottageStatsRepository
 ): KottageStrategyOperator {
@@ -30,9 +33,19 @@ internal class KottageOperator(
         eventExpireTime: Duration?,
         itemType: String,
         itemKey: String,
+        itemListId: String?,
+        itemListType: String?,
         maxEventEntryCount: Long
     ): String {
-        val id = addEventInternal(now, eventExpireTime, itemType, itemKey, eventType)
+        val id = addEventInternal(
+            now = now,
+            eventExpireTime = eventExpireTime,
+            itemType = itemType,
+            itemKey = itemKey,
+            itemListId = itemListId,
+            itemListType = itemListType,
+            eventType = eventType
+        )
         itemEventRepository.incrementStatsCount(itemType, 1)
         reduceEvents(now, itemType, maxEventEntryCount)
         return id
@@ -80,16 +93,26 @@ internal class KottageOperator(
 
     /**
      * Delete expired items
+     * existing items in ItemList are ignored
      * This should be called in transaction
      */
     fun evictCaches(now: Long, itemType: String? = null) {
         if (itemType != null) {
             itemRepository.getExpiredKeys(now, itemType) { key, _ ->
-                deleteItem(key, itemType)
+                val itemListEntryIds = itemListRepository.getIds(itemType = itemType, itemKey = key)
+                if (itemListEntryIds.isEmpty()) {
+                    // ItemList に存在しなければ削除可能
+                    deleteItemInternal(key, itemType)
+                }
             }
         } else {
             itemRepository.getExpiredKeys(now) { key, expiredItemType ->
-                deleteItem(key, expiredItemType)
+                val itemListEntryIds =
+                    itemListRepository.getIds(itemType = expiredItemType, itemKey = key)
+                if (itemListEntryIds.isEmpty()) {
+                    // ItemList に存在しなければ削除可能
+                    deleteItemInternal(key, expiredItemType)
+                }
             }
         }
     }
@@ -110,35 +133,100 @@ internal class KottageOperator(
         }
     }
 
+    /**
+     * Delete Item
+     * This should be called in transaction
+     *
+     * * ItemList からも削除される
+     * * ItemList / Item の Delete Event が登録される
+     */
+    fun deleteItem(
+        key: String,
+        itemType: String,
+        now: Long,
+        options: KottageStorageOptions,
+        onEventCreated: (eventId: String) -> Unit
+    ) {
+        itemListRepository.getIds(
+            itemType = itemType,
+            itemKey = key
+        ).forEach { itemListEntryId ->
+            val entry = checkNotNull(itemListRepository.get(itemListEntryId))
+            // ItemList から削除
+            itemListRepository.updateItemKey(
+                id = entry.id,
+                itemKey = null
+            )
+            itemListRepository.decrementStatsCount(entry.type, 1)
+            val eventId = addEvent(
+                now = now,
+                eventType = ItemEventType.Delete,
+                eventExpireTime = options.eventExpireTime,
+                itemType = itemType,
+                itemKey = key,
+                itemListId = entry.id,
+                itemListType = entry.type,
+                maxEventEntryCount = options.maxEventEntryCount
+            )
+            onEventCreated(eventId)
+        }
+        deleteItemInternal(key = key, itemType = itemType)
+        val eventId = addEvent(
+            now = now,
+            eventType = ItemEventType.Delete,
+            eventExpireTime = options.eventExpireTime,
+            itemType = itemType,
+            itemKey = key,
+            itemListId = null,
+            itemListType = null,
+            maxEventEntryCount = options.maxEventEntryCount
+        )
+        onEventCreated(eventId)
+    }
+
     override fun updateItemLastRead(key: String, itemType: String, now: Long) {
         itemRepository.updateLastRead(key, itemType, now)
     }
 
     override fun deleteLeastRecentlyUsed(itemType: String, limit: Long) {
-        itemRepository.deleteLeastRecentlyUsed(itemType, limit)
-        val count = itemRepository.getCount(itemType)
-        itemRepository.updateStatsCount(itemType, count)
+        itemRepository.getLeastRecentlyUsedKeys(itemType, limit) { key, _ ->
+            val itemListEntryIds = itemListRepository.getIds(itemType = itemType, itemKey = key)
+            if (itemListEntryIds.isEmpty()) {
+                // ItemList に存在しなければ削除可能
+                deleteItemInternal(key, itemType)
+            }
+        }
     }
 
     override fun deleteOlderItems(itemType: String, limit: Long) {
-        itemRepository.deleteOlderItems(itemType, limit)
-        val count = itemRepository.getCount(itemType)
-        itemRepository.updateStatsCount(itemType, count)
+        itemRepository.getOlderKeys(itemType, limit) { key, _ ->
+            val itemListEntryIds = itemListRepository.getIds(itemType = itemType, itemKey = key)
+            if (itemListEntryIds.isEmpty()) {
+                // ItemList に存在しなければ削除可能
+                deleteItemInternal(key, itemType)
+            }
+        }
     }
 
     override fun deleteExpiredItems(itemType: String, now: Long): Long {
         var deleted = 0L
         itemRepository.getExpiredKeys(now, itemType) { key, _ ->
-            deleteItem(key, itemType)
-            deleted++
+            val itemListEntryIds = itemListRepository.getIds(itemType = itemType, itemKey = key)
+            if (itemListEntryIds.isEmpty()) {
+                // ItemList に存在しなければ削除可能
+                deleteItemInternal(key, itemType)
+                deleted++
+            }
         }
         return deleted
     }
 
     /**
      * Delete item
+     *
+     * ItemList の存在チェックなしで Item を削除する
      */
-    private fun deleteItem(key: String, itemType: String) {
+    private fun deleteItemInternal(key: String, itemType: String) {
         itemRepository.delete(key, itemType)
         itemRepository.decrementStatsCount(itemType, 1)
     }
@@ -161,6 +249,8 @@ internal class KottageOperator(
         eventExpireTime: Duration?,
         itemType: String,
         itemKey: String,
+        itemListId: String?,
+        itemListType: String?,
         eventType: ItemEventType
     ): String {
         val id = Id.generateUuidV4Short()
@@ -176,6 +266,8 @@ internal class KottageOperator(
                 expireAt = expireAt,
                 itemType = itemType,
                 itemKey = itemKey,
+                itemListId = itemListId,
+                itemListType = itemListType,
                 eventType = eventType
             )
         )

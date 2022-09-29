@@ -16,9 +16,19 @@ internal interface KottageItemRepository {
         receiver: (key: String, itemType: String) -> Unit
     )
 
+    fun getLeastRecentlyUsedKeys(
+        itemType: String,
+        limit: Long,
+        receiver: (key: String, itemType: String) -> Unit
+    )
+
+    fun getOlderKeys(
+        itemType: String,
+        limit: Long,
+        receiver: (key: String, itemType: String) -> Unit
+    )
+
     fun delete(key: String, itemType: String)
-    fun deleteLeastRecentlyUsed(itemType: String, limit: Long)
-    fun deleteOlderItems(itemType: String, limit: Long)
     fun deleteAll(itemType: String)
     fun getStatsCount(itemType: String): Long
     fun incrementStatsCount(itemType: String, count: Long)

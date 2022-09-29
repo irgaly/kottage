@@ -6,7 +6,14 @@ import io.github.irgaly.kottage.internal.database.createDatabaseConnection
 import io.github.irgaly.kottage.internal.model.ItemEvent
 import io.github.irgaly.kottage.internal.model.ItemEventFlow
 import io.github.irgaly.kottage.internal.repository.KottageRepositoryFactory
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 
 internal class KottageDatabaseManager(
@@ -33,6 +40,11 @@ internal class KottageDatabaseManager(
     }
 
     @OptIn(DelicateCoroutinesApi::class)
+    val itemListRepository = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
+        repositoryFactory.createItemListRepository()
+    }
+
+    @OptIn(DelicateCoroutinesApi::class)
     val itemEventRepository = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
         repositoryFactory.createItemEventRepository()
     }
@@ -46,6 +58,7 @@ internal class KottageDatabaseManager(
     val operator = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
         KottageOperator(
             itemRepository.await(),
+            itemListRepository.await(),
             itemEventRepository.await(),
             statsRepository.await()
         )

@@ -79,33 +79,39 @@ internal class KottageSqliteItemRepository(
         }
     }
 
-    override fun delete(key: String, itemType: String) {
-        database.itemQueries
-            .delete(Item.toEntityKey(key, itemType))
-    }
-
-    override fun deleteLeastRecentlyUsed(itemType: String, limit: Long) {
+    override fun getLeastRecentlyUsedKeys(
+        itemType: String,
+        limit: Long,
+        receiver: (key: String, itemType: String) -> Unit
+    ) {
         database.itemQueries
             .selectLeastRecentlyUsedKeys(itemType, limit)
             .execute().use { cursor ->
                 while (cursor.next()) {
                     val key = checkNotNull(cursor.getString(0))
-                    database.itemQueries
-                        .delete(key)
+                    receiver(Item.keyFromEntityKey(key, itemType), itemType)
                 }
             }
     }
 
-    override fun deleteOlderItems(itemType: String, limit: Long) {
+    override fun getOlderKeys(
+        itemType: String,
+        limit: Long,
+        receiver: (key: String, itemType: String) -> Unit
+    ) {
         database.itemQueries
             .selectOlderCreatedKeys(itemType, limit)
             .execute().use { cursor ->
                 while (cursor.next()) {
                     val key = checkNotNull(cursor.getString(0))
-                    database.itemQueries
-                        .delete(key)
+                    receiver(Item.keyFromEntityKey(key, itemType), itemType)
                 }
             }
+    }
+
+    override fun delete(key: String, itemType: String) {
+        database.itemQueries
+            .delete(Item.toEntityKey(key, itemType))
     }
 
     override fun deleteAll(itemType: String) {

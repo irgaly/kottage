@@ -5,6 +5,7 @@ CREATE TABLE item_list (
   item_key TEXT,
   previous_id TEXT,
   next_id TEXT,
+  expire_at INTEGER,
   user_previous_key TEXT,
   user_current_key TEXT,
   user_next_key TEXT

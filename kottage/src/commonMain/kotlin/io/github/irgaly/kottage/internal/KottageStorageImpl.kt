@@ -31,6 +31,7 @@ internal class KottageStorageImpl(
     private val itemType: String = name
 
     private suspend fun itemRepository() = databaseManager.itemRepository.await()
+    private suspend fun itemListRepository() = databaseManager.itemListRepository.await()
     private suspend fun itemEventRepository() = databaseManager.itemEventRepository.await()
     private suspend fun operator() = databaseManager.operator.await()
 
@@ -166,16 +167,14 @@ internal class KottageStorageImpl(
         val exists = databaseManager.transactionWithResult {
             val exists = itemRepository.exists(key, itemType)
             if (exists) {
-                itemRepository.delete(key, itemType)
-                itemRepository.decrementStatsCount(itemType, 1)
-                eventId = operator.addEvent(
-                    now = now,
-                    eventType = ItemEventType.Delete,
-                    eventExpireTime = options.eventExpireTime,
-                    itemType = itemType,
-                    itemKey = key,
-                    maxEventEntryCount = options.maxEventEntryCount
-                )
+                operator.deleteItem(
+                        key = key,
+                        itemType = itemType,
+                        now = now,
+                        options = options
+                ) {
+                    eventId = it
+                }
             }
             compactionRequired =
                 operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
@@ -195,18 +194,17 @@ internal class KottageStorageImpl(
         var eventId: String? = null
         databaseManager.transaction {
             itemRepository.getAllKeys(itemType) { key ->
-                eventId = operator.addEvent(
-                    now = now,
-                    eventType = ItemEventType.Delete,
-                    eventExpireTime = options.eventExpireTime,
-                    itemType = itemType,
-                    itemKey = key,
-                    maxEventEntryCount = options.maxEventEntryCount
-                )
+                operator.deleteItem(
+                        key = key,
+                        itemType = itemType,
+                        now = now,
+                        options = options
+                ) {
+                    eventId = it
+                }
             }
-            itemRepository.deleteAll(itemType)
-            itemRepository.updateStatsCount(itemType, 0)
         }
+        // TODO: remove 同様に Compaction 判定と実行
         eventId?.let {
             // 最後の eventId を渡す
             databaseManager.onEventCreated(it)
