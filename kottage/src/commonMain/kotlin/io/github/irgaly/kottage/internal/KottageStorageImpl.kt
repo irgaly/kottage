@@ -1,6 +1,11 @@
 package io.github.irgaly.kottage.internal
 
-import io.github.irgaly.kottage.*
+import io.github.irgaly.kottage.KottageEntry
+import io.github.irgaly.kottage.KottageEvent
+import io.github.irgaly.kottage.KottageEventFlow
+import io.github.irgaly.kottage.KottageOptions
+import io.github.irgaly.kottage.KottageStorage
+import io.github.irgaly.kottage.KottageStorageOptions
 import io.github.irgaly.kottage.internal.encoder.Encoder
 import io.github.irgaly.kottage.internal.model.Item
 import io.github.irgaly.kottage.internal.model.ItemEventType
@@ -130,19 +135,20 @@ internal class KottageStorageImpl(
                 )
             }
             var compactionRequired = false
-            lateinit var eventId: String
             databaseManager.transaction {
                 val isCreate = !itemRepository.exists(key, itemType)
                 itemRepository.upsert(item)
                 if (isCreate) {
                     itemRepository.incrementStatsCount(itemType, 1)
                 }
-                eventId = operator.addEvent(
+                operator.addEvent(
                     now = now,
                     eventType = if (isCreate) ItemEventType.Create else ItemEventType.Update,
                     eventExpireTime = options.eventExpireTime,
                     itemType = itemType,
                     itemKey = key,
+                    itemListId = null,
+                    itemListType = null,
                     maxEventEntryCount = options.maxEventEntryCount
                 )
                 if (isCreate) {
@@ -155,7 +161,7 @@ internal class KottageStorageImpl(
             if (compactionRequired) {
                 onCompactionRequired()
             }
-            databaseManager.onEventCreated(eventId)
+            databaseManager.onEventCreated()
         }
 
     override suspend fun remove(key: String): Boolean = withContext(dispatcher) {
@@ -163,17 +169,17 @@ internal class KottageStorageImpl(
         val operator = operator()
         val now = calendar.nowUnixTimeMillis()
         var compactionRequired = false
-        lateinit var eventId: String
+        var eventCreated = false
         val exists = databaseManager.transactionWithResult {
             val exists = itemRepository.exists(key, itemType)
             if (exists) {
                 operator.deleteItem(
-                        key = key,
-                        itemType = itemType,
-                        now = now,
-                        options = options
+                    key = key,
+                    itemType = itemType,
+                    now = now,
+                    options = options
                 ) {
-                    eventId = it
+                    eventCreated = true
                 }
             }
             compactionRequired =
@@ -183,7 +189,9 @@ internal class KottageStorageImpl(
         if (compactionRequired) {
             onCompactionRequired()
         }
-        databaseManager.onEventCreated(eventId)
+        if (eventCreated) {
+            databaseManager.onEventCreated()
+        }
         exists
     }
 
@@ -191,23 +199,22 @@ internal class KottageStorageImpl(
         val itemRepository = itemRepository()
         val operator = operator()
         val now = calendar.nowUnixTimeMillis()
-        var eventId: String? = null
+        var eventCreated = false
         databaseManager.transaction {
             itemRepository.getAllKeys(itemType) { key ->
                 operator.deleteItem(
-                        key = key,
-                        itemType = itemType,
-                        now = now,
-                        options = options
+                    key = key,
+                    itemType = itemType,
+                    now = now,
+                    options = options
                 ) {
-                    eventId = it
+                    eventCreated = true
                 }
             }
         }
         // TODO: remove 同様に Compaction 判定と実行
-        eventId?.let {
-            // 最後の eventId を渡す
-            databaseManager.onEventCreated(it)
+        if (eventCreated) {
+            databaseManager.onEventCreated()
         }
     }
 

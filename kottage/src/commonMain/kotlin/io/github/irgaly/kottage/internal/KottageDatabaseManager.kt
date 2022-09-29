@@ -97,7 +97,7 @@ internal class KottageDatabaseManager(
     /**
      * Publish Events
      */
-    suspend fun onEventCreated(eventId: String) {
+    suspend fun onEventCreated() {
         val operator = operator.await()
         val limit = 100L
         _eventFlow.updateWithLock { lastEvent, emit ->
