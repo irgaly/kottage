@@ -1,6 +1,7 @@
 package io.github.irgaly.kottage.internal.repository
 
 import io.github.irgaly.kottage.internal.model.ItemListEntry
+import io.github.irgaly.kottage.internal.model.ItemListStats
 
 internal interface KottageItemListRepository {
     fun upsert(entry: ItemListEntry)
@@ -17,6 +18,8 @@ internal interface KottageItemListRepository {
         firstItemListEntryId: String,
         lastItemListEntryId: String
     )
+
+    fun getStats(type: String): ItemListStats?
     fun getStatsCount(type: String): Long
     fun incrementStatsCount(type: String, count: Long)
     fun decrementStatsCount(type: String, count: Long)

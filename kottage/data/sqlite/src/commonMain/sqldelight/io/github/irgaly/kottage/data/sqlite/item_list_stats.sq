@@ -14,9 +14,6 @@ UPDATE item_list_stats SET first_item_list_id = ? WHERE item_list_type = ?;
 updateLastItemListId:
 UPDATE item_list_stats SET last_item_list_id = ? WHERE item_list_type = ?;
 
-updateExpireAt:
-UPDATE item_list_stats SET expire_at = ? WHERE item_list_type = ?;
-
 incrementCount:
 UPDATE item_list_stats SET count = count + ? WHERE item_list_type = ?;
 

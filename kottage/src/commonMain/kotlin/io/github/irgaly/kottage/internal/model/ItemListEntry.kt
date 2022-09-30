@@ -7,7 +7,10 @@ internal data class ItemListEntry(
     val itemKey: String?,
     val previousId: String?,
     val nextId: String?,
+    val expireAt: Long?,
     val userPreviousKey: String?,
     val userCurrentKey: String?,
     val userNextKey: String?
-)
+) {
+    val itemExists: Boolean get() = (itemKey != null)
+}

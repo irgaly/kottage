@@ -2,6 +2,7 @@ package io.github.irgaly.kottage.internal.repository
 
 import io.github.irgaly.kottage.data.sqlite.KottageDatabase
 import io.github.irgaly.kottage.internal.model.ItemListEntry
+import io.github.irgaly.kottage.internal.model.ItemListStats
 
 internal class KottageSqliteItemListRepository(
     private val database: KottageDatabase
@@ -76,6 +77,12 @@ internal class KottageSqliteItemListRepository(
                 first_item_list_id = firstItemListEntryId,
                 last_item_list_id = lastItemListEntryId
             )
+    }
+
+    override fun getStats(type: String): ItemListStats? {
+        return database.item_list_statsQueries
+            .select(item_list_type = type)
+            .executeAsOneOrNull()?.toDomain()
     }
 
     override fun getStatsCount(type: String): Long {

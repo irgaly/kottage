@@ -1,9 +1,12 @@
 package io.github.irgaly.kottage.internal
 
+import io.github.irgaly.kottage.KottageListDirection
 import io.github.irgaly.kottage.KottageStorageOptions
 import io.github.irgaly.kottage.internal.model.Item
 import io.github.irgaly.kottage.internal.model.ItemEvent
 import io.github.irgaly.kottage.internal.model.ItemEventType
+import io.github.irgaly.kottage.internal.model.ItemListEntry
+import io.github.irgaly.kottage.internal.model.ItemListStats
 import io.github.irgaly.kottage.internal.repository.KottageItemEventRepository
 import io.github.irgaly.kottage.internal.repository.KottageItemListRepository
 import io.github.irgaly.kottage.internal.repository.KottageItemRepository
@@ -80,13 +83,15 @@ internal class KottageOperator(
     /**
      * This should be called in transaction
      */
-    fun getOrNull(key: String, itemType: String, now: Long): Item? {
+    fun getOrNull(key: String, itemType: String, now: Long?): Item? {
         var item = itemRepository.get(key, itemType)
-        if (item?.isExpired(now) == true) {
-            // delete cache
-            item = null
-            itemRepository.delete(key, itemType)
-            itemRepository.decrementStatsCount(itemType, 1)
+        if (now != null) {
+            if (item?.isExpired(now) == true) {
+                // delete cache
+                item = null
+                itemRepository.delete(key, itemType)
+                itemRepository.decrementStatsCount(itemType, 1)
+            }
         }
         return item
     }
@@ -184,6 +189,51 @@ internal class KottageOperator(
         onEventCreated(eventId)
     }
 
+    /**
+     * This should be called in transaction
+     */
+    fun getListStats(listType: String): ItemListStats? {
+        return itemListRepository.getStats(type = listType)
+    }
+
+    /**
+     * Get List Item Count
+     * This should be called in transaction
+     */
+    fun getListCount(listType: String): Long {
+        return itemListRepository.getStatsCount(type = listType)
+    }
+
+    /**
+     * This should be called in transaction
+     *
+     * positionId からたどり、有効な Entry があればそれを返す
+     */
+    fun getListItem(
+        listType: String,
+        positionId: String,
+        direction: KottageListDirection
+    ): ItemListEntry? {
+        var nextId: String? = positionId
+        var entry: ItemListEntry? = null
+        while (entry == null && nextId != null) {
+            val current = itemListRepository.get(nextId)
+            nextId = when (direction) {
+                KottageListDirection.Forward -> current?.nextId
+                KottageListDirection.Backward -> current?.previousId
+            }
+            if (current != null) {
+                if (current.type != listType) {
+                    // positionId と listType　が不一致のとき
+                    nextId = null
+                } else if (current.itemExists) {
+                    entry = current
+                }
+            }
+        }
+        return entry
+    }
+
     override fun updateItemLastRead(key: String, itemType: String, now: Long) {
         itemRepository.updateLastRead(key, itemType, now)
     }
@@ -223,6 +273,7 @@ internal class KottageOperator(
 
     /**
      * Delete item
+     * This should be called in transaction
      *
      * ItemList の存在チェックなしで Item を削除する
      */
@@ -233,6 +284,8 @@ internal class KottageOperator(
 
     /**
      * Delete event
+     *
+     * This should be called in transaction
      */
     private fun deleteEvent(id: String, itemType: String) {
         itemEventRepository.delete(id)
@@ -241,6 +294,8 @@ internal class KottageOperator(
 
     /**
      * Add Event item
+     *
+     * This should be called in transaction
      *
      * @return event id
      */
@@ -274,6 +329,9 @@ internal class KottageOperator(
         return id
     }
 
+    /**
+     * This should be called in transaction
+     */
     private fun reduceEvents(now: Long, itemType: String, maxEventEntryCount: Long) {
         val currentCount = itemEventRepository.getStatsCount(itemType)
         if (maxEventEntryCount < currentCount) {

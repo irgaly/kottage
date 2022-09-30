@@ -6,14 +6,14 @@ import kotlin.time.Duration
  * List Options
  */
 data class KottageListOptions(
-    val expireTime: Duration?
+    val itemExpireTime: Duration?
 ) {
     data class Builder(
-        var expireTime: Duration?
+        var itemExpireTime: Duration?
     ) {
         fun build(): KottageListOptions {
             return KottageListOptions(
-                expireTime = expireTime
+                itemExpireTime = itemExpireTime
             )
         }
     }

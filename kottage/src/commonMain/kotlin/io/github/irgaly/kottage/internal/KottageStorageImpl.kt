@@ -3,6 +3,8 @@ package io.github.irgaly.kottage.internal
 import io.github.irgaly.kottage.KottageEntry
 import io.github.irgaly.kottage.KottageEvent
 import io.github.irgaly.kottage.KottageEventFlow
+import io.github.irgaly.kottage.KottageList
+import io.github.irgaly.kottage.KottageListOptions
 import io.github.irgaly.kottage.KottageOptions
 import io.github.irgaly.kottage.KottageStorage
 import io.github.irgaly.kottage.KottageStorageOptions
@@ -18,9 +20,10 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlin.reflect.KType
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
 
 internal class KottageStorageImpl(
-    private val name: String,
+    override val name: String,
     json: Json,
     private val options: KottageStorageOptions,
     private val kottageOptions: KottageOptions,
@@ -252,5 +255,26 @@ internal class KottageStorageImpl(
 
     override fun eventFlow(afterUnixTimeMillisAt: Long?): KottageEventFlow {
         return databaseManager.eventFlow(afterUnixTimeMillisAt, itemType)
+    }
+
+    override fun list(
+        name: String,
+        optionsBuilder: (KottageListOptions.Builder.() -> Unit)?
+    ): KottageList {
+        val options = KottageListOptions.Builder(
+            itemExpireTime = 30.days
+        ).apply {
+            optionsBuilder?.invoke(this)
+        }.build()
+        return KottageListImpl(
+            name,
+            this,
+            this.options.strategy,
+            encoder,
+            options,
+            databaseManager,
+            calendar,
+            dispatcher
+        )
     }
 }

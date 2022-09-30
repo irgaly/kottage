@@ -4,6 +4,7 @@ import io.github.irgaly.kottage.internal.model.Item
 import io.github.irgaly.kottage.internal.model.ItemEvent
 import io.github.irgaly.kottage.internal.model.ItemEventType
 import io.github.irgaly.kottage.internal.model.ItemListEntry
+import io.github.irgaly.kottage.internal.model.ItemListStats
 
 internal fun io.github.irgaly.kottage.data.sqlite.Item.toDomain(): Item {
     return Item(
@@ -41,6 +42,7 @@ internal fun io.github.irgaly.kottage.data.sqlite.Item_list.toDomain(): ItemList
         itemKey = item_key,
         previousId = previous_id,
         nextId = next_id,
+        expireAt = expire_at,
         userPreviousKey = user_previous_key,
         userCurrentKey = user_current_key,
         userNextKey = user_next_key
@@ -55,9 +57,19 @@ internal fun ItemListEntry.toEntity(): io.github.irgaly.kottage.data.sqlite.Item
         item_key = itemKey,
         previous_id = previousId,
         next_id = nextId,
+        expire_at = expireAt,
         user_previous_key = userPreviousKey,
         user_current_key = userCurrentKey,
         user_next_key = userNextKey
+    )
+}
+
+internal fun io.github.irgaly.kottage.data.sqlite.Item_list_stats.toDomain(): ItemListStats {
+    return ItemListStats(
+        listType = item_list_type,
+        count = count,
+        firstItemPositionId = first_item_list_id,
+        lastItemPositionId = last_item_list_id
     )
 }
 
@@ -68,6 +80,8 @@ internal fun io.github.irgaly.kottage.data.sqlite.Item_event.toDomain(): ItemEve
         expireAt = expire_at,
         itemType = item_type,
         itemKey = Item.keyFromEntityKey(item_key, item_type),
+        itemListId = item_list_id,
+        itemListType = item_list_type,
         eventType = event_type.toDomain()
     )
 }
