@@ -158,11 +158,10 @@ internal class KottageOperator(
         ).forEach { itemListEntryId ->
             val entry = checkNotNull(itemListRepository.get(itemListEntryId))
             // ItemList から削除
-            itemListRepository.updateItemKey(
-                id = entry.id,
-                itemKey = null
+            removeListItemInternal(
+                positionId = entry.id,
+                listType = entry.type
             )
-            itemListRepository.decrementStatsCount(entry.type, 1)
             val eventId = addEvent(
                 now = now,
                 eventType = ItemEventType.Delete,
@@ -232,6 +231,24 @@ internal class KottageOperator(
             }
         }
         return entry
+    }
+
+    /**
+     * This should be called in transaction
+     */
+    fun removeListItem(positionId: String, listType: String) {
+        removeListItemInternal(positionId = positionId, listType = listType)
+    }
+
+    /**
+     * This should be called in transaction
+     */
+    private fun removeListItemInternal(positionId: String, listType: String) {
+        itemListRepository.updateItemKey(
+            id = positionId,
+            itemKey = null
+        )
+        itemListRepository.decrementStatsCount(listType, 1)
     }
 
     override fun updateItemLastRead(key: String, itemType: String, now: Long) {

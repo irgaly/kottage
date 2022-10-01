@@ -315,6 +315,9 @@ internal class KottageListImpl(
     }
 
     override suspend fun remove(positionId: String) {
-        TODO("Not yet implemented")
+        val operator = operator()
+        return databaseManager.transaction {
+            operator.removeListItem(positionId = positionId, listType = listType)
+        }
     }
 }
