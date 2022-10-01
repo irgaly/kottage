@@ -18,7 +18,7 @@ kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 kotlinx-coroutines-js = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core-js", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.4.0" }
-androidx-core = { module = "androidx.core:core-ktx", version = "1.8.0" }
+androidx-core = { module = "androidx.core:core-ktx", version = "1.9.0" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.5.0" }
 androidx-lifecycle = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version = "2.5.1" }
 androidx-material = { module = "com.google.android.material:material", version = "1.6.1" }
@@ -26,14 +26,14 @@ androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayo
 test-kotest-runner = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 test-kotest-assertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 test-kotest-engine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
-test-mockk = { module = "io.mockk:mockk", version = "1.12.4" }
-test-turbine = { module = "app.cash.turbine:turbine", version = "0.10.0" }
+test-mockk = { module = "io.mockk:mockk", version = "1.13.2" }
+test-turbine = { module = "app.cash.turbine:turbine", version = "0.11.0" }
 sqldelight-driver-android = { module = "com.squareup.sqldelight:android-driver", version.ref = "sqldelight" }
 sqldelight-driver-jvm = { module = "com.squareup.sqldelight:sqlite-driver", version.ref = "sqldelight" }
 sqldelight-driver-native = { module = "com.squareup.sqldelight:native-driver", version.ref = "sqldelight" }
 sqldelight-driver-js = { module = "com.squareup.sqldelight:sqljs-driver", version.ref = "sqldelight" }
-klock = { module = "com.soywiz.korlibs.klock:klock", version = "3.0.0" }
-kodein-di = { module = "org.kodein.di:kodein-di", version = "7.14.0" }
+klock = { module = "com.soywiz.korlibs.klock:klock", version = "3.2.0" }
+kodein-di = { module = "org.kodein.di:kodein-di", version = "7.15.0" }
 
 [bundles]
 test-common = [
