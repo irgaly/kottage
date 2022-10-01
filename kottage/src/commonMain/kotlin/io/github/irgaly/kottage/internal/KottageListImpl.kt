@@ -7,6 +7,7 @@ import io.github.irgaly.kottage.KottageListOptions
 import io.github.irgaly.kottage.KottageListPage
 import io.github.irgaly.kottage.KottageStorage
 import io.github.irgaly.kottage.internal.encoder.Encoder
+import io.github.irgaly.kottage.internal.model.ItemListEntry
 import io.github.irgaly.kottage.platform.KottageCalendar
 import io.github.irgaly.kottage.strategy.KottageStrategy
 import kotlinx.coroutines.CoroutineDispatcher
@@ -33,7 +34,65 @@ internal class KottageListImpl(
         type: KType,
         direction: KottageListDirection
     ): KottageListPage<T> {
-        TODO("Not yet implemented")
+        val operator = operator()
+        val now = calendar.nowUnixTimeMillis()
+        val items = databaseManager.transactionWithResult {
+            val items = mutableListOf<KottageListItem<T>>()
+            var initialPositionId = positionId
+            if (initialPositionId == null) {
+                initialPositionId = operator.getListStats(listType)?.let { stats ->
+                    when (direction) {
+                        KottageListDirection.Forward -> {
+                            stats.firstItemPositionId
+                        }
+
+                        KottageListDirection.Backward -> {
+                            stats.lastItemPositionId
+                        }
+                    }
+                }
+            }
+            if (initialPositionId != null) {
+                var nextPositionId: String? = initialPositionId
+                while (
+                    (pageSize?.let { items.size < it } != false)
+                    && (nextPositionId != null)) {
+                    operator.getListItem(listType, nextPositionId, direction)?.let { entry ->
+                        nextPositionId = entry.nextId
+                        val itemKey = checkNotNull(entry.itemKey)
+                        val item = checkNotNull(
+                            operator.getOrNull(
+                                key = itemKey,
+                                itemType = itemType,
+                                null
+                            )
+                        )
+                        strategy.onItemRead(
+                            key = itemKey, itemType = itemType, now = now, operator = operator
+                        )
+                        items.add(
+                            KottageListItem.from(
+                                entry = entry,
+                                itemKey = itemKey,
+                                item = item,
+                                type = type,
+                                encoder = encoder
+                            )
+                        )
+                    }
+                }
+            }
+            if (direction == KottageListDirection.Backward) {
+                // KottageListPage.items は常に Forward 順
+                items.reverse()
+            }
+            items.toList()
+        }
+        return KottageListPage(
+            items = items,
+            previousPositionId = items.firstOrNull()?.previousPositionId,
+            nextPositionId = items.lastOrNull()?.nextPositionId
+        )
     }
 
     override suspend fun getSize(): Long {
@@ -124,7 +183,50 @@ internal class KottageListImpl(
         type: KType,
         direction: KottageListDirection
     ): KottageListItem<T>? {
-        TODO("Not yet implemented")
+        val operator = operator()
+        val now = calendar.nowUnixTimeMillis()
+        return databaseManager.transactionWithResult {
+            val initialPositionId = operator.getListStats(listType)?.let { stats ->
+                when (direction) {
+                    KottageListDirection.Forward -> {
+                        stats.firstItemPositionId
+                    }
+
+                    KottageListDirection.Backward -> {
+                        stats.lastItemPositionId
+                    }
+                }
+            }
+            var currentIndex = -1L
+            var currentEntry: ItemListEntry? = null
+            var nextIndex = 0L
+            var nextPositionId = initialPositionId
+            while (
+                (nextIndex <= index)
+                && (nextPositionId != null)
+            ) {
+                currentEntry = operator.getListItem(listType, nextPositionId, direction)
+                currentIndex = nextIndex
+                nextIndex++
+                nextPositionId = currentEntry?.nextId
+            }
+            if (currentEntry != null && currentIndex == index) {
+                // index のアイテムを見つけた
+                val itemKey = checkNotNull(currentEntry.itemKey)
+                val item =
+                    checkNotNull(operator.getOrNull(key = itemKey, itemType = itemType, null))
+                strategy.onItemRead(
+                    key = itemKey, itemType = itemType, now = now, operator = operator
+                )
+                KottageListItem.from(
+                    entry = currentEntry,
+                    itemKey = itemKey,
+                    item = item,
+                    type = type,
+                    encoder = encoder
+                )
+            } else null
+        }
     }
 
     override suspend fun <T : Any> add(key: String, value: T, type: KType) {

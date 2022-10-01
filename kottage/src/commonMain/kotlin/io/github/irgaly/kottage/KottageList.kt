@@ -29,13 +29,6 @@ interface KottageList {
     suspend fun <T : Any> getFirst(type: KType): KottageListItem<T>?
     suspend fun <T : Any> getLast(type: KType): KottageListItem<T>?
 
-    /**
-     * @throws NoSuchElementException positionId is invalid
-     */
-    @Throws(
-        NoSuchElementException::class,
-        CancellationException::class
-    )
     suspend fun <T : Any> get(positionId: String, type: KType): KottageListItem<T>?
 
     /**
