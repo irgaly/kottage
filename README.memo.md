@@ -26,6 +26,7 @@ TODO:
 * Evicted event は生成しないほうがよさそう？
   * GC のタイミングで大量のイベントが発生するため
 * ある程度 item を追加したときに expired アイテムのクリーンアップをする
+* item count = 0 のときに stats データを削除する
 
 機能
 
