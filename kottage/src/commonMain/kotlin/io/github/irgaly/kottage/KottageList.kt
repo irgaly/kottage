@@ -52,6 +52,11 @@ interface KottageList {
     suspend fun addKeyFirst(key: String)
     suspend fun <T : Any> addAllFirst(values: List<Pair<String, T>>, type: KType)
     suspend fun addKeysFirst(keys: List<String>)
+
+    @Throws(
+        NoSuchElementException::class,
+        CancellationException::class
+    )
     suspend fun <T : Any> update(positionId: String, key: String, value: T, type: KType)
     suspend fun updateKey(positionId: String, key: String)
     suspend fun <T : Any> insertAfter(positionId: String, key: String, value: T, type: KType)

@@ -12,6 +12,7 @@ import io.github.irgaly.kottage.internal.repository.KottageItemListRepository
 import io.github.irgaly.kottage.internal.repository.KottageItemRepository
 import io.github.irgaly.kottage.internal.repository.KottageStatsRepository
 import io.github.irgaly.kottage.platform.Id
+import io.github.irgaly.kottage.strategy.KottageStrategy
 import io.github.irgaly.kottage.strategy.KottageStrategyOperator
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -25,6 +26,37 @@ internal class KottageOperator(
     private val itemEventRepository: KottageItemEventRepository,
     private val statsRepository: KottageStatsRepository
 ): KottageStrategyOperator {
+
+    /**
+     * This should be called in transaction
+     */
+    fun upsertItem(
+        item: Item,
+        now: Long,
+        options: KottageStorageOptions,
+        strategy: KottageStrategy
+    ) {
+        val isCreate = !itemRepository.exists(item.key, item.type)
+        itemRepository.upsert(item)
+        if (isCreate) {
+            itemRepository.incrementStatsCount(item.type, 1)
+        }
+        addEvent(
+            now = now,
+            eventType = if (isCreate) ItemEventType.Create else ItemEventType.Update,
+            eventExpireTime = options.eventExpireTime,
+            itemType = item.type,
+            itemKey = item.key,
+            itemListId = null,
+            itemListType = null,
+            maxEventEntryCount = options.maxEventEntryCount
+        )
+        if (isCreate) {
+            val count = itemRepository.getStatsCount(item.type)
+            strategy.onPostItemCreate(item.key, item.type, count, now, this)
+        }
+    }
+
     /**
      * This should be called in transaction
      *
@@ -208,7 +240,7 @@ internal class KottageOperator(
      *
      * positionId からたどり、有効な Entry があればそれを返す
      */
-    fun getListItem(
+    fun getAvailableListItem(
         listType: String,
         positionId: String,
         direction: KottageListDirection
@@ -235,6 +267,18 @@ internal class KottageOperator(
 
     /**
      * This should be called in transaction
+     *
+     * positionId の ItemListEntry を取得する
+     */
+    fun getListItem(
+        listType: String,
+        positionId: String
+    ): ItemListEntry? {
+        return itemListRepository.get(positionId)
+    }
+
+    /**
+     * This should be called in transaction
      */
     fun removeListItem(positionId: String, listType: String) {
         removeListItemInternal(positionId = positionId, listType = listType)
@@ -244,10 +288,7 @@ internal class KottageOperator(
      * This should be called in transaction
      */
     private fun removeListItemInternal(positionId: String, listType: String) {
-        itemListRepository.updateItemKey(
-            id = positionId,
-            itemKey = null
-        )
+        itemListRepository.removeItemKey(id = positionId)
         itemListRepository.decrementStatsCount(listType, 1)
     }
 

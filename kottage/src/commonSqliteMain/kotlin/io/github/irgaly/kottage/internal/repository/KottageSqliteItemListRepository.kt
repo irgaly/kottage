@@ -28,12 +28,19 @@ internal class KottageSqliteItemListRepository(
             )
     }
 
-    override fun updateItemKey(id: String, itemKey: String?) {
+    override fun updateItemKey(id: String, itemType: String, itemKey: String?, expireAt: Long?) {
         database.item_listQueries
             .updateItemKey(
                 item_key = itemKey,
+                item_type = itemType,
+                expire_at = expireAt,
                 id = id
             )
+    }
+
+    override fun removeItemKey(id: String) {
+        database.item_listQueries
+            .removeItemKey(id = id)
     }
 
     override fun get(id: String): ItemListEntry? {

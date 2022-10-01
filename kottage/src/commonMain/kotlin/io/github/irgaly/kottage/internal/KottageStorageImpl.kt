@@ -10,7 +10,6 @@ import io.github.irgaly.kottage.KottageStorage
 import io.github.irgaly.kottage.KottageStorageOptions
 import io.github.irgaly.kottage.internal.encoder.Encoder
 import io.github.irgaly.kottage.internal.model.Item
-import io.github.irgaly.kottage.internal.model.ItemEventType
 import io.github.irgaly.kottage.platform.KottageCalendar
 import io.github.irgaly.kottage.strategy.KottageStrategy
 import kotlinx.coroutines.CoroutineDispatcher
@@ -25,7 +24,7 @@ import kotlin.time.Duration.Companion.days
 internal class KottageStorageImpl(
     override val name: String,
     json: Json,
-    private val options: KottageStorageOptions,
+    override val options: KottageStorageOptions,
     private val kottageOptions: KottageOptions,
     private val databaseManager: KottageDatabaseManager,
     private val calendar: KottageCalendar,
@@ -113,7 +112,6 @@ internal class KottageStorageImpl(
 
     override suspend fun <T : Any> put(key: String, value: T, type: KType, expireTime: Duration?) =
         withContext(dispatcher) {
-            val itemRepository = itemRepository()
             val operator = operator()
             val now = calendar.nowUnixTimeMillis()
             val item = encoder.encode(
@@ -139,25 +137,7 @@ internal class KottageStorageImpl(
             }
             var compactionRequired = false
             databaseManager.transaction {
-                val isCreate = !itemRepository.exists(key, itemType)
-                itemRepository.upsert(item)
-                if (isCreate) {
-                    itemRepository.incrementStatsCount(itemType, 1)
-                }
-                operator.addEvent(
-                    now = now,
-                    eventType = if (isCreate) ItemEventType.Create else ItemEventType.Update,
-                    eventExpireTime = options.eventExpireTime,
-                    itemType = itemType,
-                    itemKey = key,
-                    itemListId = null,
-                    itemListType = null,
-                    maxEventEntryCount = options.maxEventEntryCount
-                )
-                if (isCreate) {
-                    val count = itemRepository.getStatsCount(itemType)
-                    strategy.onPostItemCreate(key, itemType, count, now, operator)
-                }
+                operator.upsertItem(item, now, options, strategy)
                 compactionRequired =
                     operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
             }
@@ -272,8 +252,10 @@ internal class KottageStorageImpl(
             this.options.strategy,
             encoder,
             options,
+            kottageOptions,
             databaseManager,
             calendar,
+            onCompactionRequired,
             dispatcher
         )
     }

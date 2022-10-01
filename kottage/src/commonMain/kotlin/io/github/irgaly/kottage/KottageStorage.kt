@@ -8,6 +8,7 @@ import kotlin.time.Duration
 
 interface KottageStorage {
     val name: String
+    val options: KottageStorageOptions
     val defaultExpireTime: Duration?
 
     /**

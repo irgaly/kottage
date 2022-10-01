@@ -5,8 +5,11 @@ import io.github.irgaly.kottage.KottageListDirection
 import io.github.irgaly.kottage.KottageListItem
 import io.github.irgaly.kottage.KottageListOptions
 import io.github.irgaly.kottage.KottageListPage
+import io.github.irgaly.kottage.KottageOptions
 import io.github.irgaly.kottage.KottageStorage
 import io.github.irgaly.kottage.internal.encoder.Encoder
+import io.github.irgaly.kottage.internal.model.Item
+import io.github.irgaly.kottage.internal.model.ItemEventType
 import io.github.irgaly.kottage.internal.model.ItemListEntry
 import io.github.irgaly.kottage.platform.KottageCalendar
 import io.github.irgaly.kottage.strategy.KottageStrategy
@@ -20,13 +23,16 @@ internal class KottageListImpl(
     private val strategy: KottageStrategy,
     private val encoder: Encoder,
     private val options: KottageListOptions,
+    private val kottageOptions: KottageOptions,
     private val databaseManager: KottageDatabaseManager,
     private val calendar: KottageCalendar,
+    private val onCompactionRequired: suspend () -> Unit,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default
 ): KottageList {
     private val itemType: String = storage.name
     private val listType: String = name
     private suspend fun operator() = databaseManager.operator.await()
+    private suspend fun itemListRepository() = databaseManager.itemListRepository.await()
 
     override suspend fun <T : Any> getPageFrom(
         positionId: String?,
@@ -57,29 +63,30 @@ internal class KottageListImpl(
                 while (
                     (pageSize?.let { items.size < it } != false)
                     && (nextPositionId != null)) {
-                    operator.getListItem(listType, nextPositionId, direction)?.let { entry ->
-                        nextPositionId = entry.nextId
-                        val itemKey = checkNotNull(entry.itemKey)
-                        val item = checkNotNull(
-                            operator.getOrNull(
-                                key = itemKey,
-                                itemType = itemType,
-                                null
+                    operator.getAvailableListItem(listType, nextPositionId, direction)
+                        ?.let { entry ->
+                            nextPositionId = entry.nextId
+                            val itemKey = checkNotNull(entry.itemKey)
+                            val item = checkNotNull(
+                                operator.getOrNull(
+                                    key = itemKey,
+                                    itemType = itemType,
+                                    null
+                                )
                             )
-                        )
-                        strategy.onItemRead(
-                            key = itemKey, itemType = itemType, now = now, operator = operator
-                        )
-                        items.add(
-                            KottageListItem.from(
-                                entry = entry,
-                                itemKey = itemKey,
-                                item = item,
-                                type = type,
-                                encoder = encoder
+                            strategy.onItemRead(
+                                key = itemKey, itemType = itemType, now = now, operator = operator
                             )
-                        )
-                    }
+                            items.add(
+                                KottageListItem.from(
+                                    entry = entry,
+                                    itemKey = itemKey,
+                                    item = item,
+                                    type = type,
+                                    encoder = encoder
+                                )
+                            )
+                        }
                 }
             }
             if (direction == KottageListDirection.Backward) {
@@ -107,7 +114,7 @@ internal class KottageListImpl(
         val now = calendar.nowUnixTimeMillis()
         return databaseManager.transactionWithResult {
             operator.getListStats(listType)?.let { stats ->
-                operator.getListItem(
+                operator.getAvailableListItem(
                     listType, stats.firstItemPositionId,
                     KottageListDirection.Forward
                 )?.let { entry ->
@@ -133,7 +140,7 @@ internal class KottageListImpl(
         val now = calendar.nowUnixTimeMillis()
         return databaseManager.transactionWithResult {
             operator.getListStats(listType)?.let { stats ->
-                operator.getListItem(
+                operator.getAvailableListItem(
                     listType, stats.lastItemPositionId,
                     KottageListDirection.Backward
                 )?.let { entry ->
@@ -158,7 +165,7 @@ internal class KottageListImpl(
         val operator = operator()
         val now = calendar.nowUnixTimeMillis()
         return databaseManager.transactionWithResult {
-            operator.getListItem(
+            operator.getAvailableListItem(
                 listType, positionId,
                 KottageListDirection.Forward
             )?.let { entry ->
@@ -205,7 +212,7 @@ internal class KottageListImpl(
                 (nextIndex <= index)
                 && (nextPositionId != null)
             ) {
-                currentEntry = operator.getListItem(listType, nextPositionId, direction)
+                currentEntry = operator.getAvailableListItem(listType, nextPositionId, direction)
                 currentIndex = nextIndex
                 nextIndex++
                 nextPositionId = currentEntry?.nextId
@@ -262,7 +269,60 @@ internal class KottageListImpl(
     }
 
     override suspend fun <T : Any> update(positionId: String, key: String, value: T, type: KType) {
-        TODO("Not yet implemented")
+        val operator = operator()
+        val itemListRepository = itemListRepository()
+        val now = calendar.nowUnixTimeMillis()
+        val item = encoder.encode(
+            value,
+            type
+        ) { stringValue: String?,
+            longValue: Long?,
+            doubleValue: Double?,
+            bytesValue: ByteArray? ->
+            Item(
+                key = key,
+                type = itemType,
+                stringValue = stringValue,
+                longValue = longValue,
+                doubleValue = doubleValue,
+                bytesValue = bytesValue,
+                createdAt = now,
+                lastReadAt = now,
+                expireAt = storage.defaultExpireTime?.let { duration ->
+                    now + duration.inWholeMilliseconds
+                }
+            )
+        }
+        var compactionRequired = false
+        databaseManager.transaction {
+            val entry = operator.getListItem(listType = listType, positionId = positionId)
+                ?: throw NoSuchElementException("positionId = $positionId")
+            operator.upsertItem(item, now, storage.options, strategy)
+            itemListRepository.updateItemKey(
+                id = entry.id,
+                itemType = item.type,
+                itemKey = item.key,
+                expireAt = options.itemExpireTime?.let { duration ->
+                    now + duration.inWholeMilliseconds
+                }
+            )
+            operator.addEvent(
+                now = now,
+                eventType = ItemEventType.Update,
+                eventExpireTime = storage.options.eventExpireTime,
+                itemType = item.type,
+                itemKey = item.key,
+                itemListId = entry.id,
+                itemListType = listType,
+                maxEventEntryCount = storage.options.maxEventEntryCount
+            )
+            compactionRequired =
+                operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
+        }
+        if (compactionRequired) {
+            onCompactionRequired()
+        }
+        databaseManager.onEventCreated()
     }
 
     override suspend fun updateKey(positionId: String, key: String) {

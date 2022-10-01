@@ -7,7 +7,8 @@ internal interface KottageItemListRepository {
     fun upsert(entry: ItemListEntry)
     fun updatePreviousId(id: String, previousId: String?)
     fun updateNextId(id: String, nextId: String?)
-    fun updateItemKey(id: String, itemKey: String?)
+    fun updateItemKey(id: String, itemType: String, itemKey: String?, expireAt: Long?)
+    fun removeItemKey(id: String)
     fun get(id: String): ItemListEntry?
     fun getIds(itemType: String, itemKey: String): List<String>
     fun getCount(type: String): Long

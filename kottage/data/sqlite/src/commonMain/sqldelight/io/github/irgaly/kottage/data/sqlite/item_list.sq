@@ -23,7 +23,10 @@ updateNextId:
 UPDATE item_list SET next_id = ? WHERE id = ?;
 
 updateItemKey:
-UPDATE item_list SET item_key = ? WHERE id = ?;
+UPDATE item_list SET item_key = ?, item_type = ?, expire_at = ? WHERE id = ?;
+
+removeItemKey:
+UPDATE item_list SET item_key = NULL WHERE id = ?;
 
 select:
 SELECT * FROM item_list WHERE id = ?;
