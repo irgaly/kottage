@@ -15,6 +15,7 @@ import io.github.irgaly.kottage.platform.KottageCalendar
 import io.github.irgaly.kottage.strategy.KottageStrategy
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlin.reflect.KType
 
 internal class KottageListImpl(
@@ -39,7 +40,7 @@ internal class KottageListImpl(
         pageSize: Long?,
         type: KType,
         direction: KottageListDirection
-    ): KottageListPage<T> {
+    ): KottageListPage<T> = withContext(dispatcher) {
         val operator = operator()
         val now = calendar.nowUnixTimeMillis()
         val items = databaseManager.transactionWithResult {
@@ -95,31 +96,98 @@ internal class KottageListImpl(
             }
             items.toList()
         }
-        return KottageListPage(
+        KottageListPage(
             items = items,
             previousPositionId = items.firstOrNull()?.previousPositionId,
             nextPositionId = items.lastOrNull()?.nextPositionId
         )
     }
 
-    override suspend fun getSize(): Long {
+    override suspend fun getSize(): Long = withContext(dispatcher) {
         val operator = operator()
-        return databaseManager.transactionWithResult {
+        databaseManager.transactionWithResult {
             operator.getListCount(listType)
         }
     }
 
-    override suspend fun <T : Any> getFirst(type: KType): KottageListItem<T>? {
-        val operator = operator()
-        val now = calendar.nowUnixTimeMillis()
-        return databaseManager.transactionWithResult {
-            operator.getListStats(listType)?.let { stats ->
+    override suspend fun <T : Any> getFirst(type: KType): KottageListItem<T>? =
+        withContext(dispatcher) {
+            val operator = operator()
+            val now = calendar.nowUnixTimeMillis()
+            databaseManager.transactionWithResult {
+                operator.getListStats(listType)?.let { stats ->
+                    operator.getAvailableListItem(
+                        listType, stats.firstItemPositionId,
+                        KottageListDirection.Forward
+                    )?.let { entry ->
+                        val itemKey = checkNotNull(entry.itemKey)
+                        val item = checkNotNull(
+                            operator.getOrNull(
+                                key = itemKey,
+                                itemType = itemType,
+                                null
+                            )
+                        )
+                        strategy.onItemRead(
+                            key = itemKey, itemType = itemType, now = now, operator = operator
+                        )
+                        KottageListItem.from(
+                            entry = entry,
+                            itemKey = itemKey,
+                            item = item,
+                            type = type,
+                            encoder = encoder
+                        )
+                    }
+                }
+            }
+        }
+
+    override suspend fun <T : Any> getLast(type: KType): KottageListItem<T>? =
+        withContext(dispatcher) {
+            val operator = operator()
+            val now = calendar.nowUnixTimeMillis()
+            databaseManager.transactionWithResult {
+                operator.getListStats(listType)?.let { stats ->
+                    operator.getAvailableListItem(
+                        listType, stats.lastItemPositionId,
+                        KottageListDirection.Backward
+                    )?.let { entry ->
+                        val itemKey = checkNotNull(entry.itemKey)
+                        val item = checkNotNull(
+                            operator.getOrNull(
+                                key = itemKey,
+                                itemType = itemType,
+                                null
+                            )
+                        )
+                        strategy.onItemRead(
+                            key = itemKey, itemType = itemType, now = now, operator = operator
+                        )
+                        KottageListItem.from(
+                            entry = entry,
+                            itemKey = itemKey,
+                            item = item,
+                            type = type,
+                            encoder = encoder
+                        )
+                    }
+                }
+            }
+        }
+
+    override suspend fun <T : Any> get(positionId: String, type: KType): KottageListItem<T>? =
+        withContext(dispatcher) {
+            val operator = operator()
+            val now = calendar.nowUnixTimeMillis()
+            databaseManager.transactionWithResult {
                 operator.getAvailableListItem(
-                    listType, stats.firstItemPositionId,
+                    listType, positionId,
                     KottageListDirection.Forward
                 )?.let { entry ->
                     val itemKey = checkNotNull(entry.itemKey)
-                    val item = checkNotNull(operator.getOrNull(key = itemKey, itemType = itemType, null))
+                    val item =
+                        checkNotNull(operator.getOrNull(key = itemKey, itemType = itemType, null))
                     strategy.onItemRead(
                         key = itemKey, itemType = itemType, now = now, operator = operator
                     )
@@ -133,66 +201,15 @@ internal class KottageListImpl(
                 }
             }
         }
-    }
-
-    override suspend fun <T : Any> getLast(type: KType): KottageListItem<T>? {
-        val operator = operator()
-        val now = calendar.nowUnixTimeMillis()
-        return databaseManager.transactionWithResult {
-            operator.getListStats(listType)?.let { stats ->
-                operator.getAvailableListItem(
-                    listType, stats.lastItemPositionId,
-                    KottageListDirection.Backward
-                )?.let { entry ->
-                    val itemKey = checkNotNull(entry.itemKey)
-                    val item = checkNotNull(operator.getOrNull(key = itemKey, itemType = itemType, null))
-                    strategy.onItemRead(
-                        key = itemKey, itemType = itemType, now = now, operator = operator
-                    )
-                    KottageListItem.from(
-                        entry = entry,
-                        itemKey = itemKey,
-                        item = item,
-                        type = type,
-                        encoder = encoder
-                    )
-                }
-            }
-        }
-    }
-
-    override suspend fun <T : Any> get(positionId: String, type: KType): KottageListItem<T>? {
-        val operator = operator()
-        val now = calendar.nowUnixTimeMillis()
-        return databaseManager.transactionWithResult {
-            operator.getAvailableListItem(
-                listType, positionId,
-                KottageListDirection.Forward
-            )?.let { entry ->
-                val itemKey = checkNotNull(entry.itemKey)
-                val item = checkNotNull(operator.getOrNull(key = itemKey, itemType = itemType, null))
-                strategy.onItemRead(
-                    key = itemKey, itemType = itemType, now = now, operator = operator
-                )
-                KottageListItem.from(
-                    entry = entry,
-                    itemKey = itemKey,
-                    item = item,
-                    type = type,
-                    encoder = encoder
-                )
-            }
-        }
-    }
 
     override suspend fun <T : Any> getByIndex(
         index: Long,
         type: KType,
         direction: KottageListDirection
-    ): KottageListItem<T>? {
+    ): KottageListItem<T>? = withContext(dispatcher) {
         val operator = operator()
         val now = calendar.nowUnixTimeMillis()
-        return databaseManager.transactionWithResult {
+        databaseManager.transactionWithResult {
             val initialPositionId = operator.getListStats(listType)?.let { stats ->
                 when (direction) {
                     KottageListDirection.Forward -> {
@@ -268,37 +285,38 @@ internal class KottageListImpl(
         TODO("Not yet implemented")
     }
 
-    override suspend fun <T : Any> update(positionId: String, key: String, value: T, type: KType) {
-        val operator = operator()
-        val itemListRepository = itemListRepository()
-        val now = calendar.nowUnixTimeMillis()
-        val item = encoder.encode(
-            value,
-            type
-        ) { stringValue: String?,
-            longValue: Long?,
-            doubleValue: Double?,
-            bytesValue: ByteArray? ->
-            Item(
-                key = key,
-                type = itemType,
-                stringValue = stringValue,
-                longValue = longValue,
-                doubleValue = doubleValue,
-                bytesValue = bytesValue,
-                createdAt = now,
-                lastReadAt = now,
-                expireAt = storage.defaultExpireTime?.let { duration ->
-                    now + duration.inWholeMilliseconds
-                }
-            )
-        }
-        var compactionRequired = false
-        databaseManager.transaction {
-            val entry = operator.getListItem(listType = listType, positionId = positionId)
-                ?: throw NoSuchElementException("positionId = $positionId")
-            operator.upsertItem(item, now, storage.options, strategy)
-            itemListRepository.updateItemKey(
+    override suspend fun <T : Any> update(positionId: String, key: String, value: T, type: KType) =
+        withContext(dispatcher) {
+            val operator = operator()
+            val itemListRepository = itemListRepository()
+            val now = calendar.nowUnixTimeMillis()
+            val item = encoder.encode(
+                value,
+                type
+            ) { stringValue: String?,
+                longValue: Long?,
+                doubleValue: Double?,
+                bytesValue: ByteArray? ->
+                Item(
+                    key = key,
+                    type = itemType,
+                    stringValue = stringValue,
+                    longValue = longValue,
+                    doubleValue = doubleValue,
+                    bytesValue = bytesValue,
+                    createdAt = now,
+                    lastReadAt = now,
+                    expireAt = storage.defaultExpireTime?.let { duration ->
+                        now + duration.inWholeMilliseconds
+                    }
+                )
+            }
+            var compactionRequired = false
+            databaseManager.transaction {
+                val entry = operator.getListItem(listType = listType, positionId = positionId)
+                    ?: throw NoSuchElementException("positionId = $positionId")
+                operator.upsertItem(item, now, storage.options, strategy)
+                itemListRepository.updateItemKey(
                 id = entry.id,
                 itemType = item.type,
                 itemKey = item.key,
@@ -374,9 +392,9 @@ internal class KottageListImpl(
         TODO("Not yet implemented")
     }
 
-    override suspend fun remove(positionId: String) {
+    override suspend fun remove(positionId: String) = withContext(dispatcher) {
         val operator = operator()
-        return databaseManager.transaction {
+        databaseManager.transaction {
             operator.removeListItem(positionId = positionId, listType = listType)
         }
     }
