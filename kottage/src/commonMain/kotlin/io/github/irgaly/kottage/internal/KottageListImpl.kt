@@ -332,7 +332,7 @@ internal class KottageListImpl(
             }
             var compactionRequired = false
             databaseManager.transaction {
-                val entry = operator.getListItem(listType = listType, positionId = positionId)
+                val entry = listOperator.getListItem(positionId = positionId)
                     ?: throw NoSuchElementException("positionId = $positionId")
                 storageOperator.upsertItem(item, now)
                 itemListRepository.updateItemKey(

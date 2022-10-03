@@ -166,18 +166,6 @@ internal class KottageOperator(
         return entry
     }
 
-    /**
-     * This should be called in transaction
-     *
-     * positionId の ItemListEntry を取得する
-     */
-    fun getListItem(
-        listType: String,
-        positionId: String
-    ): ItemListEntry? {
-        return itemListRepository.get(positionId)
-    }
-
     override fun updateItemLastRead(key: String, itemType: String, now: Long) {
         itemRepository.updateLastRead(key, itemType, now)
     }
