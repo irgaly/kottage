@@ -1,8 +1,6 @@
 package io.github.irgaly.kottage.internal
 
 import io.github.irgaly.kottage.KottageListDirection
-import io.github.irgaly.kottage.KottageStorageOptions
-import io.github.irgaly.kottage.internal.model.Item
 import io.github.irgaly.kottage.internal.model.ItemEvent
 import io.github.irgaly.kottage.internal.model.ItemEventType
 import io.github.irgaly.kottage.internal.model.ItemListEntry
@@ -12,7 +10,6 @@ import io.github.irgaly.kottage.internal.repository.KottageItemListRepository
 import io.github.irgaly.kottage.internal.repository.KottageItemRepository
 import io.github.irgaly.kottage.internal.repository.KottageStatsRepository
 import io.github.irgaly.kottage.platform.Id
-import io.github.irgaly.kottage.strategy.KottageStrategy
 import io.github.irgaly.kottage.strategy.KottageStrategyOperator
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -26,37 +23,6 @@ internal class KottageOperator(
     private val itemEventRepository: KottageItemEventRepository,
     private val statsRepository: KottageStatsRepository
 ): KottageStrategyOperator {
-
-    /**
-     * This should be called in transaction
-     */
-    fun upsertItem(
-        item: Item,
-        now: Long,
-        options: KottageStorageOptions,
-        strategy: KottageStrategy
-    ) {
-        val isCreate = !itemRepository.exists(item.key, item.type)
-        itemRepository.upsert(item)
-        if (isCreate) {
-            itemRepository.incrementStatsCount(item.type, 1)
-        }
-        addEvent(
-            now = now,
-            eventType = if (isCreate) ItemEventType.Create else ItemEventType.Update,
-            eventExpireTime = options.eventExpireTime,
-            itemType = item.type,
-            itemKey = item.key,
-            itemListId = null,
-            itemListType = null,
-            maxEventEntryCount = options.maxEventEntryCount
-        )
-        if (isCreate) {
-            val count = itemRepository.getStatsCount(item.type)
-            strategy.onPostItemCreate(item.key, item.type, count, now, this)
-        }
-    }
-
     /**
      * This should be called in transaction
      *
@@ -113,22 +79,6 @@ internal class KottageOperator(
     }
 
     /**
-     * This should be called in transaction
-     */
-    fun getOrNull(key: String, itemType: String, now: Long?): Item? {
-        var item = itemRepository.get(key, itemType)
-        if (now != null) {
-            if (item?.isExpired(now) == true) {
-                // delete cache
-                item = null
-                itemRepository.delete(key, itemType)
-                itemRepository.decrementStatsCount(itemType, 1)
-            }
-        }
-        return item
-    }
-
-    /**
      * Delete expired items
      * existing items in ItemList are ignored
      * This should be called in transaction
@@ -170,55 +120,6 @@ internal class KottageOperator(
         }
     }
 
-    /**
-     * Delete Item
-     * This should be called in transaction
-     *
-     * * ItemList からも削除される
-     * * ItemList / Item の Delete Event が登録される
-     */
-    fun deleteItem(
-        key: String,
-        itemType: String,
-        now: Long,
-        options: KottageStorageOptions,
-        onEventCreated: (eventId: String) -> Unit
-    ) {
-        itemListRepository.getIds(
-            itemType = itemType,
-            itemKey = key
-        ).forEach { itemListEntryId ->
-            val entry = checkNotNull(itemListRepository.get(itemListEntryId))
-            // ItemList から削除
-            removeListItemInternal(
-                positionId = entry.id,
-                listType = entry.type
-            )
-            val eventId = addEvent(
-                now = now,
-                eventType = ItemEventType.Delete,
-                eventExpireTime = options.eventExpireTime,
-                itemType = itemType,
-                itemKey = key,
-                itemListId = entry.id,
-                itemListType = entry.type,
-                maxEventEntryCount = options.maxEventEntryCount
-            )
-            onEventCreated(eventId)
-        }
-        deleteItemInternal(key = key, itemType = itemType)
-        val eventId = addEvent(
-            now = now,
-            eventType = ItemEventType.Delete,
-            eventExpireTime = options.eventExpireTime,
-            itemType = itemType,
-            itemKey = key,
-            itemListId = null,
-            itemListType = null,
-            maxEventEntryCount = options.maxEventEntryCount
-        )
-        onEventCreated(eventId)
-    }
 
     /**
      * This should be called in transaction
@@ -277,21 +178,6 @@ internal class KottageOperator(
         return itemListRepository.get(positionId)
     }
 
-    /**
-     * This should be called in transaction
-     */
-    fun removeListItem(positionId: String, listType: String) {
-        removeListItemInternal(positionId = positionId, listType = listType)
-    }
-
-    /**
-     * This should be called in transaction
-     */
-    private fun removeListItemInternal(positionId: String, listType: String) {
-        itemListRepository.removeItemKey(id = positionId)
-        itemListRepository.decrementStatsCount(listType, 1)
-    }
-
     override fun updateItemLastRead(key: String, itemType: String, now: Long) {
         itemRepository.updateLastRead(key, itemType, now)
     }
@@ -335,7 +221,7 @@ internal class KottageOperator(
      *
      * ItemList の存在チェックなしで Item を削除する
      */
-    private fun deleteItemInternal(key: String, itemType: String) {
+    fun deleteItemInternal(key: String, itemType: String) {
         itemRepository.delete(key, itemType)
         itemRepository.decrementStatsCount(itemType, 1)
     }

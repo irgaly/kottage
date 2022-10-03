@@ -2,6 +2,8 @@ package io.github.irgaly.kottage.internal
 
 import io.github.irgaly.kottage.KottageEnvironment
 import io.github.irgaly.kottage.KottageEventFlow
+import io.github.irgaly.kottage.KottageList
+import io.github.irgaly.kottage.KottageStorage
 import io.github.irgaly.kottage.internal.database.createDatabaseConnection
 import io.github.irgaly.kottage.internal.model.ItemEvent
 import io.github.irgaly.kottage.internal.model.ItemEventFlow
@@ -65,6 +67,33 @@ internal class KottageDatabaseManager(
     }
 
     val eventFlow: Flow<ItemEvent> = _eventFlow.flow
+
+    suspend fun getStorageOperator(storage: KottageStorage): KottageStorageOperator {
+        return KottageStorageOperator(
+            storage,
+            operator.await(),
+            itemRepository.await(),
+            itemListRepository.await(),
+            itemEventRepository.await(),
+            statsRepository.await()
+        )
+    }
+
+    suspend fun getListOperator(
+        kottageList: KottageList,
+        storage: KottageStorage
+    ): KottageListOperator {
+        return KottageListOperator(
+            kottageList,
+            storage,
+            operator.await(),
+            getStorageOperator(storage),
+            itemRepository.await(),
+            itemListRepository.await(),
+            itemEventRepository.await(),
+            statsRepository.await()
+        )
+    }
 
     suspend fun <R> transactionWithResult(bodyWithReturn: () -> R): R =
         databaseConnection.transactionWithResult(bodyWithReturn)
