@@ -58,6 +58,11 @@ interface KottageList {
         CancellationException::class
     )
     suspend fun <T : Any> update(positionId: String, key: String, value: T, type: KType)
+
+    @Throws(
+        NoSuchElementException::class,
+        CancellationException::class
+    )
     suspend fun updateKey(positionId: String, key: String)
     suspend fun <T : Any> insertAfter(positionId: String, key: String, value: T, type: KType)
     suspend fun insertKeyAfter(positionId: String, key: String)

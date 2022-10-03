@@ -343,7 +343,36 @@ internal class KottageListImpl(
     }
 
     override suspend fun updateKey(positionId: String, key: String) {
-        TODO("Not yet implemented")
+        val operator = operator()
+        val storageOperator = storageOperator.await()
+        val listOperator = listOperator.await()
+        val itemListRepository = itemListRepository()
+        val now = calendar.nowUnixTimeMillis()
+        databaseManager.transaction {
+            val item = storageOperator.getOrNull(key = key, now = null)
+                ?: throw NoSuchElementException("storage = ${storage.name}, key = $key")
+            val entry = listOperator.getListItem(positionId = positionId)
+                ?: throw NoSuchElementException("positionId = $positionId")
+            itemListRepository.updateItemKey(
+                id = entry.id,
+                itemType = item.type,
+                itemKey = item.key,
+                expireAt = options.itemExpireTime?.let { duration ->
+                    now + duration.inWholeMilliseconds
+                }
+            )
+            operator.addEvent(
+                now = now,
+                eventType = ItemEventType.Update,
+                eventExpireTime = storage.options.eventExpireTime,
+                itemType = item.type,
+                itemKey = item.key,
+                itemListId = entry.id,
+                itemListType = listType,
+                maxEventEntryCount = storage.options.maxEventEntryCount
+            )
+        }
+        databaseManager.onEventCreated()
     }
 
     override suspend fun <T : Any> insertAfter(

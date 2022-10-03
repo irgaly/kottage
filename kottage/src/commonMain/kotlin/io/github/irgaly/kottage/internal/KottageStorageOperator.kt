@@ -51,13 +51,11 @@ internal class KottageStorageOperator(
      */
     fun getOrNull(key: String, now: Long?): Item? {
         var item = itemRepository.get(key, itemType)
-        if (now != null) {
-            if (item?.isExpired(now) == true) {
-                // delete cache
-                item = null
-                itemRepository.delete(key, itemType)
-                itemRepository.decrementStatsCount(itemType, 1)
-            }
+        if ((now != null) && (item != null) && item.isExpired(now)) {
+            // delete cache
+            item = null
+            itemRepository.delete(key, itemType)
+            itemRepository.decrementStatsCount(itemType, 1)
         }
         return item
     }
