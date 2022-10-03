@@ -8,7 +8,7 @@ import io.github.irgaly.kottage.KottageListPage
 import io.github.irgaly.kottage.KottageOptions
 import io.github.irgaly.kottage.KottageStorage
 import io.github.irgaly.kottage.internal.encoder.Encoder
-import io.github.irgaly.kottage.internal.model.Item
+import io.github.irgaly.kottage.internal.encoder.encodeItem
 import io.github.irgaly.kottage.internal.model.ItemEventType
 import io.github.irgaly.kottage.internal.model.ItemListEntry
 import io.github.irgaly.kottage.platform.KottageCalendar
@@ -309,40 +309,20 @@ internal class KottageListImpl(
         val listOperator = listOperator.await()
         val itemListRepository = itemListRepository()
         val now = calendar.nowUnixTimeMillis()
-        val item = encoder.encode(
-            value,
-            type
-        ) { stringValue: String?,
-            longValue: Long?,
-            doubleValue: Double?,
-            bytesValue: ByteArray? ->
-            Item(
-                    key = key,
-                    type = itemType,
-                    stringValue = stringValue,
-                    longValue = longValue,
-                    doubleValue = doubleValue,
-                    bytesValue = bytesValue,
-                    createdAt = now,
-                    lastReadAt = now,
-                    expireAt = storage.defaultExpireTime?.let { duration ->
-                        now + duration.inWholeMilliseconds
-                    }
-                )
-            }
-            var compactionRequired = false
-            databaseManager.transaction {
-                val entry = listOperator.getListItem(positionId = positionId)
-                    ?: throw NoSuchElementException("positionId = $positionId")
-                storageOperator.upsertItem(item, now)
-                itemListRepository.updateItemKey(
-                    id = entry.id,
-                    itemType = item.type,
-                    itemKey = item.key,
-                    expireAt = options.itemExpireTime?.let { duration ->
-                        now + duration.inWholeMilliseconds
-                    }
-                )
+        val item = encoder.encodeItem(storage, key, value, type, now)
+        var compactionRequired = false
+        databaseManager.transaction {
+            val entry = listOperator.getListItem(positionId = positionId)
+                ?: throw NoSuchElementException("positionId = $positionId")
+            storageOperator.upsertItem(item, now)
+            itemListRepository.updateItemKey(
+                id = entry.id,
+                itemType = item.type,
+                itemKey = item.key,
+                expireAt = options.itemExpireTime?.let { duration ->
+                    now + duration.inWholeMilliseconds
+                }
+            )
             operator.addEvent(
                 now = now,
                 eventType = ItemEventType.Update,

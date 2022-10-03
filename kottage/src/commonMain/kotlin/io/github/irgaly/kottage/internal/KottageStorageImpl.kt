@@ -9,7 +9,7 @@ import io.github.irgaly.kottage.KottageOptions
 import io.github.irgaly.kottage.KottageStorage
 import io.github.irgaly.kottage.KottageStorageOptions
 import io.github.irgaly.kottage.internal.encoder.Encoder
-import io.github.irgaly.kottage.internal.model.Item
+import io.github.irgaly.kottage.internal.encoder.encodeItem
 import io.github.irgaly.kottage.platform.KottageCalendar
 import io.github.irgaly.kottage.strategy.KottageStrategy
 import kotlinx.coroutines.CoroutineDispatcher
@@ -126,27 +126,8 @@ internal class KottageStorageImpl(
             val operator = operator()
             val storageOperator = storageOperator.await()
             val now = calendar.nowUnixTimeMillis()
-            val item = encoder.encode(
-                value,
-                type
-            ) { stringValue: String?,
-                longValue: Long?,
-                doubleValue: Double?,
-                bytesValue: ByteArray? ->
-                Item(
-                    key = key,
-                    type = itemType,
-                    stringValue = stringValue,
-                    longValue = longValue,
-                    doubleValue = doubleValue,
-                    bytesValue = bytesValue,
-                    createdAt = now,
-                    lastReadAt = now,
-                    expireAt = (expireTime ?: defaultExpireTime)?.let { duration ->
-                        now + duration.inWholeMilliseconds
-                    }
-                )
-            }
+            val item =
+                encoder.encodeItem(this@KottageStorageImpl, key, value, type, now, expireTime)
             var compactionRequired = false
             databaseManager.transaction {
                 storageOperator.upsertItem(item, now)
