@@ -118,10 +118,15 @@ interface KottageList {
 
     suspend fun <T : Any> insertAllBefore(
         positionId: String,
-        values: KottageListEntry<T>,
+        values: List<KottageListEntry<T>>,
         type: KType
     )
 
-    suspend fun insertKeysBefore(positionId: String, keys: List<String>)
+    suspend fun insertKeysBefore(
+        positionId: String,
+        keys: List<String>,
+        metaData: KottageListMetaData? = null
+    )
+
     suspend fun remove(positionId: String)
 }
