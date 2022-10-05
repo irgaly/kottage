@@ -317,8 +317,42 @@ internal class KottageListImpl(
         databaseManager.onEventCreated()
     }
 
-    override suspend fun addKey(key: String) {
-        TODO("Not yet implemented")
+    override suspend fun addKey(key: String, metaData: KottageListMetaData?) {
+        val operator = operator()
+        val storageOperator = storageOperator.await()
+        val listOperator = listOperator.await()
+        val now = calendar.nowUnixTimeMillis()
+        val newPositionId = Id.generateUuidV4Short()
+        databaseManager.transaction {
+            val item = storageOperator.getOrNull(key = key, now = null)
+                ?: throw NoSuchElementException("storage = ${storage.name}, key = $key")
+            val lastPositionId = listOperator.getLastItemPositionId()
+            val entry = createItemListEntry(
+                id = newPositionId,
+                itemKey = item.key,
+                previousId = lastPositionId,
+                nextId = null,
+                now = now,
+                metaData = metaData
+            )
+            if (lastPositionId == null) {
+                listOperator.addInitialItem(entry)
+            } else {
+                listOperator.addLastItem(entry, lastPositionId)
+                listOperator.incrementStatsItemCount(1)
+            }
+            operator.addEvent(
+                now = now,
+                eventType = ItemEventType.Create,
+                eventExpireTime = storage.options.eventExpireTime,
+                itemType = item.type,
+                itemKey = item.key,
+                itemListId = entry.id,
+                itemListType = listType,
+                maxEventEntryCount = storage.options.maxEventEntryCount
+            )
+        }
+        databaseManager.onEventCreated()
     }
 
     override suspend fun <T : Any> addAll(values: List<Pair<String, T>>, type: KType) {
@@ -378,8 +412,42 @@ internal class KottageListImpl(
         databaseManager.onEventCreated()
     }
 
-    override suspend fun addKeyFirst(key: String) {
-        TODO("Not yet implemented")
+    override suspend fun addKeyFirst(key: String, metaData: KottageListMetaData?) {
+        val operator = operator()
+        val storageOperator = storageOperator.await()
+        val listOperator = listOperator.await()
+        val now = calendar.nowUnixTimeMillis()
+        val newPositionId = Id.generateUuidV4Short()
+        databaseManager.transaction {
+            val item = storageOperator.getOrNull(key = key, now = null)
+                ?: throw NoSuchElementException("storage = ${storage.name}, key = $key")
+            val firstPositionId = listOperator.getFirstItemPositionId()
+            val entry = createItemListEntry(
+                id = newPositionId,
+                itemKey = item.key,
+                previousId = null,
+                nextId = firstPositionId,
+                now = now,
+                metaData = metaData
+            )
+            if (firstPositionId == null) {
+                listOperator.addInitialItem(entry)
+            } else {
+                listOperator.addFirstItem(entry, firstPositionId)
+                listOperator.incrementStatsItemCount(1)
+            }
+            operator.addEvent(
+                now = now,
+                eventType = ItemEventType.Create,
+                eventExpireTime = storage.options.eventExpireTime,
+                itemType = item.type,
+                itemKey = item.key,
+                itemListId = entry.id,
+                itemListType = listType,
+                maxEventEntryCount = storage.options.maxEventEntryCount
+            )
+        }
+        databaseManager.onEventCreated()
     }
 
     override suspend fun <T : Any> addAllFirst(values: List<Pair<String, T>>, type: KType) {
