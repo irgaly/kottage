@@ -52,7 +52,7 @@ interface KottageList {
     )
 
     suspend fun addKey(key: String, metaData: KottageListMetaData? = null)
-    suspend fun <T : Any> addAll(values: List<Pair<String, T>>, type: KType)
+    suspend fun <T : Any> addAll(values: List<KottageListEntry<T>>, type: KType)
     suspend fun addKeys(keys: List<String>)
     suspend fun <T : Any> addFirst(
         key: String,
@@ -62,7 +62,7 @@ interface KottageList {
     )
 
     suspend fun addKeyFirst(key: String, metaData: KottageListMetaData? = null)
-    suspend fun <T : Any> addAllFirst(values: List<Pair<String, T>>, type: KType)
+    suspend fun <T : Any> addAllFirst(values: List<KottageListEntry<T>>, type: KType)
     suspend fun addKeysFirst(keys: List<String>)
 
     @Throws(
@@ -85,7 +85,12 @@ interface KottageList {
     )
 
     suspend fun insertKeyAfter(positionId: String, key: String, metaData: KottageListMetaData?)
-    suspend fun <T : Any> insertAllAfter(positionId: String, values: Pair<String, T>, type: KType)
+    suspend fun <T : Any> insertAllAfter(
+        positionId: String,
+        values: KottageListEntry<T>,
+        type: KType
+    )
+
     suspend fun insertKeysAfter(positionId: String, keys: List<String>)
     suspend fun <T : Any> insertBefore(
         positionId: String,
@@ -96,7 +101,12 @@ interface KottageList {
     )
 
     suspend fun insertKeyBefore(positionId: String, key: String, metaData: KottageListMetaData?)
-    suspend fun <T : Any> insertAllBefore(positionId: String, values: Pair<String, T>, type: KType)
+    suspend fun <T : Any> insertAllBefore(
+        positionId: String,
+        values: KottageListEntry<T>,
+        type: KType
+    )
+
     suspend fun insertKeysBefore(positionId: String, keys: List<String>)
     suspend fun remove(positionId: String)
 }

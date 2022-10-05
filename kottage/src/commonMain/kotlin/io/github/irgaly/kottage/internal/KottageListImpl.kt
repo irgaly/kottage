@@ -2,6 +2,7 @@ package io.github.irgaly.kottage.internal
 
 import io.github.irgaly.kottage.KottageList
 import io.github.irgaly.kottage.KottageListDirection
+import io.github.irgaly.kottage.KottageListEntry
 import io.github.irgaly.kottage.KottageListItem
 import io.github.irgaly.kottage.KottageListMetaData
 import io.github.irgaly.kottage.KottageListOptions
@@ -292,22 +293,7 @@ internal class KottageListImpl(
                 now = now,
                 metaData = metaData
             )
-            if (lastPositionId == null) {
-                listOperator.addInitialItem(entry)
-            } else {
-                listOperator.addItem(entry)
-                listOperator.incrementStatsItemCount(1)
-            }
-            operator.addEvent(
-                now = now,
-                eventType = ItemEventType.Create,
-                eventExpireTime = storage.options.eventExpireTime,
-                itemType = item.type,
-                itemKey = item.key,
-                itemListId = entry.id,
-                itemListType = listType,
-                maxEventEntryCount = storage.options.maxEventEntryCount
-            )
+            listOperator.addListEntries(listOf(entry), now)
             compactionRequired =
                 operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
         }
@@ -335,28 +321,47 @@ internal class KottageListImpl(
                 now = now,
                 metaData = metaData
             )
-            if (lastPositionId == null) {
-                listOperator.addInitialItem(entry)
-            } else {
-                listOperator.addItem(entry)
-                listOperator.incrementStatsItemCount(1)
-            }
-            operator.addEvent(
-                now = now,
-                eventType = ItemEventType.Create,
-                eventExpireTime = storage.options.eventExpireTime,
-                itemType = item.type,
-                itemKey = item.key,
-                itemListId = entry.id,
-                itemListType = listType,
-                maxEventEntryCount = storage.options.maxEventEntryCount
-            )
+            listOperator.addListEntries(listOf(entry), now)
         }
         databaseManager.onEventCreated()
     }
 
-    override suspend fun <T : Any> addAll(values: List<Pair<String, T>>, type: KType) {
-        TODO("Not yet implemented")
+    override suspend fun <T : Any> addAll(values: List<KottageListEntry<T>>, type: KType) {
+        val operator = operator()
+        val storageOperator = storageOperator.await()
+        val listOperator = listOperator.await()
+        val now = calendar.nowUnixTimeMillis()
+        val items = values.map {
+            val id = Id.generateUuidV4Short()
+            val item = encoder.encodeItem(storage, it.key, it.value, type, now)
+            Triple(id, item, it.metaData)
+        }
+        var compactionRequired = false
+        databaseManager.transaction {
+            val lastPositionId = listOperator.getLastItemPositionId()
+            val entries = items.mapIndexed { index, (id, item, metaData) ->
+                createItemListEntry(
+                    id = id,
+                    itemKey = item.key,
+                    previousId = items.getOrNull(index - 1)?.first ?: lastPositionId,
+                    nextId = items.getOrNull(index + 1)?.first,
+                    now = now,
+                    metaData = metaData
+                )
+            }
+            items.forEach { (_, item, _) ->
+                storageOperator.upsertItem(item, now)
+            }
+            listOperator.addListEntries(entries, now)
+            compactionRequired =
+                operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
+        }
+        if (compactionRequired) {
+            onCompactionRequired()
+        }
+        if (values.isNotEmpty()) {
+            databaseManager.onEventCreated()
+        }
     }
 
     override suspend fun addKeys(keys: List<String>) {
@@ -387,22 +392,7 @@ internal class KottageListImpl(
                 now = now,
                 metaData = metaData
             )
-            if (firstPositionId == null) {
-                listOperator.addInitialItem(entry)
-            } else {
-                listOperator.addItem(entry)
-                listOperator.incrementStatsItemCount(1)
-            }
-            operator.addEvent(
-                now = now,
-                eventType = ItemEventType.Create,
-                eventExpireTime = storage.options.eventExpireTime,
-                itemType = item.type,
-                itemKey = item.key,
-                itemListId = entry.id,
-                itemListType = listType,
-                maxEventEntryCount = storage.options.maxEventEntryCount
-            )
+            listOperator.addListEntries(listOf(entry), now)
             compactionRequired =
                 operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
         }
@@ -430,27 +420,12 @@ internal class KottageListImpl(
                 now = now,
                 metaData = metaData
             )
-            if (firstPositionId == null) {
-                listOperator.addInitialItem(entry)
-            } else {
-                listOperator.addItem(entry)
-                listOperator.incrementStatsItemCount(1)
-            }
-            operator.addEvent(
-                now = now,
-                eventType = ItemEventType.Create,
-                eventExpireTime = storage.options.eventExpireTime,
-                itemType = item.type,
-                itemKey = item.key,
-                itemListId = entry.id,
-                itemListType = listType,
-                maxEventEntryCount = storage.options.maxEventEntryCount
-            )
+            listOperator.addListEntries(listOf(entry), now)
         }
         databaseManager.onEventCreated()
     }
 
-    override suspend fun <T : Any> addAllFirst(values: List<Pair<String, T>>, type: KType) {
+    override suspend fun <T : Any> addAllFirst(values: List<KottageListEntry<T>>, type: KType) {
         TODO("Not yet implemented")
     }
 
@@ -564,18 +539,7 @@ internal class KottageListImpl(
                 now = now,
                 metaData = metaData
             )
-            listOperator.addItem(entry)
-            listOperator.incrementStatsItemCount(1)
-            operator.addEvent(
-                now = now,
-                eventType = ItemEventType.Create,
-                eventExpireTime = storage.options.eventExpireTime,
-                itemType = item.type,
-                itemKey = item.key,
-                itemListId = entry.id,
-                itemListType = listType,
-                maxEventEntryCount = storage.options.maxEventEntryCount
-            )
+            listOperator.addListEntries(listOf(entry), now)
             compactionRequired =
                 operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
         }
@@ -608,25 +572,14 @@ internal class KottageListImpl(
                 now = now,
                 metaData = metaData
             )
-            listOperator.addItem(entry)
-            listOperator.incrementStatsItemCount(1)
-            operator.addEvent(
-                now = now,
-                eventType = ItemEventType.Create,
-                eventExpireTime = storage.options.eventExpireTime,
-                itemType = item.type,
-                itemKey = item.key,
-                itemListId = entry.id,
-                itemListType = listType,
-                maxEventEntryCount = storage.options.maxEventEntryCount
-            )
+            listOperator.addListEntries(listOf(entry), now)
         }
         databaseManager.onEventCreated()
     }
 
     override suspend fun <T : Any> insertAllAfter(
         positionId: String,
-        values: Pair<String, T>,
+        values: KottageListEntry<T>,
         type: KType
     ) {
         TODO("Not yet implemented")
@@ -662,18 +615,7 @@ internal class KottageListImpl(
                 now = now,
                 metaData = metaData
             )
-            listOperator.addItem(entry)
-            listOperator.incrementStatsItemCount(1)
-            operator.addEvent(
-                now = now,
-                eventType = ItemEventType.Create,
-                eventExpireTime = storage.options.eventExpireTime,
-                itemType = item.type,
-                itemKey = item.key,
-                itemListId = entry.id,
-                itemListType = listType,
-                maxEventEntryCount = storage.options.maxEventEntryCount
-            )
+            listOperator.addListEntries(listOf(entry), now)
             compactionRequired =
                 operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
         }
@@ -706,25 +648,14 @@ internal class KottageListImpl(
                 now = now,
                 metaData = metaData
             )
-            listOperator.addItem(entry)
-            listOperator.incrementStatsItemCount(1)
-            operator.addEvent(
-                now = now,
-                eventType = ItemEventType.Create,
-                eventExpireTime = storage.options.eventExpireTime,
-                itemType = item.type,
-                itemKey = item.key,
-                itemListId = entry.id,
-                itemListType = listType,
-                maxEventEntryCount = storage.options.maxEventEntryCount
-            )
+            listOperator.addListEntries(listOf(entry), now)
         }
         databaseManager.onEventCreated()
     }
 
     override suspend fun <T : Any> insertAllBefore(
         positionId: String,
-        values: Pair<String, T>,
+        values: KottageListEntry<T>,
         type: KType
     ) {
         TODO("Not yet implemented")
