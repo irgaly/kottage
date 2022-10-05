@@ -53,7 +53,7 @@ interface KottageList {
 
     suspend fun addKey(key: String, metaData: KottageListMetaData? = null)
     suspend fun <T : Any> addAll(values: List<KottageListEntry<T>>, type: KType)
-    suspend fun addKeys(keys: List<String>)
+    suspend fun addKeys(keys: List<String>, metaData: KottageListMetaData? = null)
     suspend fun <T : Any> addFirst(
         key: String,
         value: T,
