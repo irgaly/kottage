@@ -53,7 +53,7 @@ internal class KottageListOperator(
                 itemListRepository.updateNextId(id = previousId, nextId = first.id)
             }
             last.nextId?.let { nextId ->
-                itemListRepository.updateNextId(id = nextId, nextId = last.id)
+                itemListRepository.updatePreviousId(id = nextId, previousId = last.id)
             }
             if (hasStats) {
                 if (first.isFirst) {

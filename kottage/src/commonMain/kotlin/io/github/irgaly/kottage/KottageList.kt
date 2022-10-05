@@ -81,26 +81,41 @@ interface KottageList {
         key: String,
         value: T,
         type: KType,
-        metaData: KottageListMetaData?
+        metaData: KottageListMetaData? = null
     )
 
-    suspend fun insertKeyAfter(positionId: String, key: String, metaData: KottageListMetaData?)
+    suspend fun insertKeyAfter(
+        positionId: String,
+        key: String,
+        metaData: KottageListMetaData? = null
+    )
+
     suspend fun <T : Any> insertAllAfter(
         positionId: String,
-        values: KottageListEntry<T>,
+        values: List<KottageListEntry<T>>,
         type: KType
     )
 
-    suspend fun insertKeysAfter(positionId: String, keys: List<String>)
+    suspend fun insertKeysAfter(
+        positionId: String,
+        keys: List<String>,
+        metaData: KottageListMetaData? = null
+    )
+
     suspend fun <T : Any> insertBefore(
         positionId: String,
         key: String,
         value: T,
         type: KType,
-        metaData: KottageListMetaData?
+        metaData: KottageListMetaData? = null
     )
 
-    suspend fun insertKeyBefore(positionId: String, key: String, metaData: KottageListMetaData?)
+    suspend fun insertKeyBefore(
+        positionId: String,
+        key: String,
+        metaData: KottageListMetaData? = null
+    )
+
     suspend fun <T : Any> insertAllBefore(
         positionId: String,
         values: KottageListEntry<T>,
