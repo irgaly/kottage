@@ -205,18 +205,19 @@ internal class KottageStorageImpl(
         }
     }
 
-    override suspend fun getEvents(afterUnixTimeMillisAt: Long, limit: Long?): List<KottageEvent> {
-        val operator = operator()
-        return databaseManager.transactionWithResult {
-            operator.getEvents(
-                afterUnixTimeMillisAt = afterUnixTimeMillisAt,
-                itemType = itemType,
-                limit = limit
-            ).map {
-                KottageEvent.from(it)
+    override suspend fun getEvents(afterUnixTimeMillisAt: Long, limit: Long?): List<KottageEvent> =
+        withContext(dispatcher) {
+            val operator = operator()
+            databaseManager.transactionWithResult {
+                operator.getEvents(
+                    afterUnixTimeMillisAt = afterUnixTimeMillisAt,
+                    itemType = itemType,
+                    limit = limit
+                ).map {
+                    KottageEvent.from(it)
+                }
             }
         }
-    }
 
     override fun eventFlow(afterUnixTimeMillisAt: Long?): KottageEventFlow {
         return databaseManager.eventFlow(afterUnixTimeMillisAt, itemType)

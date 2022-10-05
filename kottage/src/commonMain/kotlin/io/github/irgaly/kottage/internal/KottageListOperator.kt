@@ -2,6 +2,7 @@ package io.github.irgaly.kottage.internal
 
 import io.github.irgaly.kottage.KottageList
 import io.github.irgaly.kottage.KottageStorage
+import io.github.irgaly.kottage.internal.model.Item
 import io.github.irgaly.kottage.internal.model.ItemEventType
 import io.github.irgaly.kottage.internal.model.ItemListEntry
 import io.github.irgaly.kottage.internal.repository.KottageItemEventRepository
@@ -17,10 +18,10 @@ internal class KottageListOperator(
     private val storage: KottageStorage,
     private val operator: KottageOperator,
     private val storageOperator: KottageStorageOperator,
-    private val itemRepository: KottageItemRepository,
+    @Suppress("unused") private val itemRepository: KottageItemRepository,
     private val itemListRepository: KottageItemListRepository,
-    private val itemEventRepository: KottageItemEventRepository,
-    private val statsRepository: KottageStatsRepository
+    @Suppress("unused") private val itemEventRepository: KottageItemEventRepository,
+    @Suppress("unused") private val statsRepository: KottageStatsRepository
 ) {
     private val listType = kottageList.name
 
@@ -99,26 +100,6 @@ internal class KottageListOperator(
     /**
      * This should be called in transaction
      */
-    fun incrementStatsItemCount(count: Long) {
-        itemListRepository.incrementStatsCount(
-            type = listType,
-            count = count
-        )
-    }
-
-    /**
-     * This should be called in transaction
-     */
-    fun decrementStatsItemCount(count: Long) {
-        itemListRepository.decrementStatsCount(
-            type = listType,
-            count = count
-        )
-    }
-
-    /**
-     * This should be called in transaction
-     */
     fun removeListItem(positionId: String) {
         storageOperator.removeListItemInternal(positionId = positionId, listType = listType)
     }
@@ -140,26 +121,28 @@ internal class KottageListOperator(
     /**
      * This should be called in transaction
      */
-    fun updateEntryNextId(
+    fun updateItemKey(
         positionId: String,
-        nextId: String?
+        item: Item,
+        now: Long
     ) {
-        itemListRepository.updateNextId(
+        itemListRepository.updateItemKey(
             id = positionId,
-            nextId = nextId
+            itemType = item.type,
+            itemKey = item.key,
+            expireAt = kottageList.options.itemExpireTime?.let { duration ->
+                now + duration.inWholeMilliseconds
+            }
         )
-    }
-
-    /**
-     * This should be called in transaction
-     */
-    fun updateEntryPreviousId(
-        positionId: String,
-        previousId: String?
-    ) {
-        itemListRepository.updatePreviousId(
-            id = positionId,
-            previousId = previousId
+        operator.addEvent(
+            now = now,
+            eventType = ItemEventType.Update,
+            eventExpireTime = storage.options.eventExpireTime,
+            itemType = item.type,
+            itemKey = item.key,
+            itemListId = positionId,
+            itemListType = listType,
+            maxEventEntryCount = storage.options.maxEventEntryCount
         )
     }
 }

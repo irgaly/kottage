@@ -11,6 +11,7 @@ import kotlin.reflect.KType
 interface KottageList {
     val name: String
     val storage: KottageStorage
+    val options: KottageListOptions
 
     /**
      * @param positionId positionId of first item.
@@ -51,8 +52,17 @@ interface KottageList {
         metaData: KottageListMetaData? = null
     )
 
+    @Throws(
+        NoSuchElementException::class,
+        CancellationException::class
+    )
     suspend fun addKey(key: String, metaData: KottageListMetaData? = null)
     suspend fun <T : Any> addAll(values: List<KottageListEntry<T>>, type: KType)
+
+    @Throws(
+        NoSuchElementException::class,
+        CancellationException::class
+    )
     suspend fun addKeys(keys: List<String>, metaData: KottageListMetaData? = null)
     suspend fun <T : Any> addFirst(
         key: String,
@@ -61,8 +71,17 @@ interface KottageList {
         metaData: KottageListMetaData? = null
     )
 
+    @Throws(
+        NoSuchElementException::class,
+        CancellationException::class
+    )
     suspend fun addKeyFirst(key: String, metaData: KottageListMetaData? = null)
     suspend fun <T : Any> addAllFirst(values: List<KottageListEntry<T>>, type: KType)
+
+    @Throws(
+        NoSuchElementException::class,
+        CancellationException::class
+    )
     suspend fun addKeysFirst(keys: List<String>, metaData: KottageListMetaData? = null)
 
     @Throws(
@@ -76,6 +95,11 @@ interface KottageList {
         CancellationException::class
     )
     suspend fun updateKey(positionId: String, key: String)
+
+    @Throws(
+        NoSuchElementException::class,
+        CancellationException::class
+    )
     suspend fun <T : Any> insertAfter(
         positionId: String,
         key: String,
@@ -84,24 +108,40 @@ interface KottageList {
         metaData: KottageListMetaData? = null
     )
 
+    @Throws(
+        NoSuchElementException::class,
+        CancellationException::class
+    )
     suspend fun insertKeyAfter(
         positionId: String,
         key: String,
         metaData: KottageListMetaData? = null
     )
 
+    @Throws(
+        NoSuchElementException::class,
+        CancellationException::class
+    )
     suspend fun <T : Any> insertAllAfter(
         positionId: String,
         values: List<KottageListEntry<T>>,
         type: KType
     )
 
+    @Throws(
+        NoSuchElementException::class,
+        CancellationException::class
+    )
     suspend fun insertKeysAfter(
         positionId: String,
         keys: List<String>,
         metaData: KottageListMetaData? = null
     )
 
+    @Throws(
+        NoSuchElementException::class,
+        CancellationException::class
+    )
     suspend fun <T : Any> insertBefore(
         positionId: String,
         key: String,
@@ -110,18 +150,30 @@ interface KottageList {
         metaData: KottageListMetaData? = null
     )
 
+    @Throws(
+        NoSuchElementException::class,
+        CancellationException::class
+    )
     suspend fun insertKeyBefore(
         positionId: String,
         key: String,
         metaData: KottageListMetaData? = null
     )
 
+    @Throws(
+        NoSuchElementException::class,
+        CancellationException::class
+    )
     suspend fun <T : Any> insertAllBefore(
         positionId: String,
         values: List<KottageListEntry<T>>,
         type: KType
     )
 
+    @Throws(
+        NoSuchElementException::class,
+        CancellationException::class
+    )
     suspend fun insertKeysBefore(
         positionId: String,
         keys: List<String>,
