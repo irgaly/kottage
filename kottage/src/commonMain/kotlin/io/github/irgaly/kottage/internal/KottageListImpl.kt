@@ -853,6 +853,22 @@ internal class KottageListImpl(
         }
     }
 
+    override suspend fun compact() = withContext(dispatcher) {
+        val listOperator = listOperator.await()
+        val now = calendar.nowUnixTimeMillis()
+        databaseManager.transaction {
+            listOperator.evictExpiredEntries(now)
+        }
+        storage.compact()
+    }
+
+    override suspend fun clear() = withContext(dispatcher) {
+        val listOperator = listOperator.await()
+        databaseManager.transaction {
+            listOperator.clear()
+        }
+    }
+
     private fun createItemListEntry(
         id: String,
         itemKey: String,

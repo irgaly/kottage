@@ -181,4 +181,10 @@ interface KottageList {
     )
 
     suspend fun remove(positionId: String)
+
+    suspend fun compact()
+
+    suspend fun clear()
 }
+
+// TODO: reified type extension を追加する

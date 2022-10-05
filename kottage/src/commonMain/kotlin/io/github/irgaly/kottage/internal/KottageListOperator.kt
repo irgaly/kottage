@@ -145,4 +145,27 @@ internal class KottageListOperator(
             maxEventEntryCount = storage.options.maxEventEntryCount
         )
     }
+
+    /**
+     * This should be called in transaction
+     *
+     * * リストの先頭から、expired な entity を削除する
+     *     * 非削除対象の entity が現れたら処理を止める
+     * * リストの末尾から、expired な entity を削除する
+     *     * 非削除対象の entity が現れたら処理を止める
+     * * リスト全体から、無効な entity を取り除く
+     * * リストが空になれば item_list_stats を削除する
+     */
+    fun evictExpiredEntries(now: Long) {
+        TODO("implement")
+    }
+
+    /**
+     * This should be called in transaction
+     */
+    fun clear() {
+        itemListRepository.deleteAll(type = listType)
+        itemListRepository.deleteStats(type = listType)
+        itemEventRepository.deleteAllList(listType = listType)
+    }
 }

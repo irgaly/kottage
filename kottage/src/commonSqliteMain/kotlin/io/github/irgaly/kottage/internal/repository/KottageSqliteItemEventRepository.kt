@@ -116,6 +116,11 @@ internal class KottageSqliteItemEventRepository(
             .deleteAllByType(itemType)
     }
 
+    override fun deleteAllList(listType: String) {
+        database.item_eventQueries
+            .deleteAllByListType(item_list_type = listType)
+    }
+
     override fun getStatsCount(itemType: String): Long {
         return database.item_statsQueries
             .select(itemType)

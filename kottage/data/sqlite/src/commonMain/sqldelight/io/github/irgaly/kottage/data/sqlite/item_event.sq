@@ -55,5 +55,8 @@ DELETE FROM item_event WHERE created_at < ?;
 deleteAllByType:
 DELETE FROM item_event WHERE item_type = ?;
 
+deleteAllByListType:
+DELETE FROM item_event WHERE item_list_type = ?;
+
 deleteAll:
 DELETE FROM item_event;
