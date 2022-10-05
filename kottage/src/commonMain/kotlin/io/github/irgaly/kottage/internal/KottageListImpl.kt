@@ -61,7 +61,6 @@ internal class KottageListImpl(
     ): KottageListPage<T> = withContext(dispatcher) {
         val operator = operator()
         val storageOperator = storageOperator.await()
-        val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
         val items = databaseManager.transactionWithResult {
             val items = mutableListOf<KottageListItem<T>>()
@@ -130,7 +129,6 @@ internal class KottageListImpl(
         withContext(dispatcher) {
             val operator = operator()
             val storageOperator = storageOperator.await()
-            val listOperator = listOperator.await()
             val now = calendar.nowUnixTimeMillis()
             databaseManager.transactionWithResult {
                 operator.getListStats(listType)?.let { stats ->
@@ -161,7 +159,6 @@ internal class KottageListImpl(
         withContext(dispatcher) {
             val operator = operator()
             val storageOperator = storageOperator.await()
-            val listOperator = listOperator.await()
             val now = calendar.nowUnixTimeMillis()
             databaseManager.transactionWithResult {
                 operator.getListStats(listType)?.let { stats ->
@@ -192,7 +189,6 @@ internal class KottageListImpl(
         withContext(dispatcher) {
             val operator = operator()
             val storageOperator = storageOperator.await()
-            val listOperator = listOperator.await()
             val now = calendar.nowUnixTimeMillis()
             databaseManager.transactionWithResult {
                 operator.getAvailableListItem(
@@ -223,7 +219,6 @@ internal class KottageListImpl(
     ): KottageListItem<T>? = withContext(dispatcher) {
         val operator = operator()
         val storageOperator = storageOperator.await()
-        val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
         databaseManager.transactionWithResult {
             val initialPositionId = operator.getListStats(listType)?.let { stats ->
@@ -304,7 +299,6 @@ internal class KottageListImpl(
     }
 
     override suspend fun addKey(key: String, metaData: KottageListMetaData?) {
-        val operator = operator()
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
@@ -428,7 +422,6 @@ internal class KottageListImpl(
     }
 
     override suspend fun addKeyFirst(key: String, metaData: KottageListMetaData?) {
-        val operator = operator()
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
@@ -638,7 +631,6 @@ internal class KottageListImpl(
         key: String,
         metaData: KottageListMetaData?
     ) {
-        val operator = operator()
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
@@ -779,7 +771,6 @@ internal class KottageListImpl(
         key: String,
         metaData: KottageListMetaData?
     ) {
-        val operator = operator()
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
@@ -880,8 +871,6 @@ internal class KottageListImpl(
     }
 
     override suspend fun remove(positionId: String) = withContext(dispatcher) {
-        val operator = operator()
-        val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         databaseManager.transaction {
             listOperator.removeListItem(positionId = positionId)
