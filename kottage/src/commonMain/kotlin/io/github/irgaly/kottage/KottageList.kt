@@ -63,7 +63,7 @@ interface KottageList {
 
     suspend fun addKeyFirst(key: String, metaData: KottageListMetaData? = null)
     suspend fun <T : Any> addAllFirst(values: List<KottageListEntry<T>>, type: KType)
-    suspend fun addKeysFirst(keys: List<String>)
+    suspend fun addKeysFirst(keys: List<String>, metaData: KottageListMetaData? = null)
 
     @Throws(
         NoSuchElementException::class,
