@@ -3,6 +3,7 @@ package io.github.irgaly.kottage.internal
 import io.github.irgaly.kottage.KottageList
 import io.github.irgaly.kottage.KottageListDirection
 import io.github.irgaly.kottage.KottageListItem
+import io.github.irgaly.kottage.KottageListMetaData
 import io.github.irgaly.kottage.KottageListOptions
 import io.github.irgaly.kottage.KottageListPage
 import io.github.irgaly.kottage.KottageOptions
@@ -11,6 +12,7 @@ import io.github.irgaly.kottage.internal.encoder.Encoder
 import io.github.irgaly.kottage.internal.encoder.encodeItem
 import io.github.irgaly.kottage.internal.model.ItemEventType
 import io.github.irgaly.kottage.internal.model.ItemListEntry
+import io.github.irgaly.kottage.platform.Id
 import io.github.irgaly.kottage.platform.KottageCalendar
 import io.github.irgaly.kottage.strategy.KottageStrategy
 import kotlinx.coroutines.CoroutineDispatcher
@@ -266,8 +268,53 @@ internal class KottageListImpl(
         }
     }
 
-    override suspend fun <T : Any> add(key: String, value: T, type: KType) {
-        TODO("Not yet implemented")
+    override suspend fun <T : Any> add(
+        key: String,
+        value: T,
+        type: KType,
+        metaData: KottageListMetaData?
+    ) {
+        val operator = operator()
+        val storageOperator = storageOperator.await()
+        val listOperator = listOperator.await()
+        val now = calendar.nowUnixTimeMillis()
+        val item = encoder.encodeItem(storage, key, value, type, now)
+        val newPositionId = Id.generateUuidV4Short()
+        var compactionRequired = false
+        databaseManager.transaction {
+            val lastPositionId = listOperator.getLastItemPositionId()
+            storageOperator.upsertItem(item, now)
+            val entry = createItemListEntry(
+                id = newPositionId,
+                itemKey = item.key,
+                previousId = lastPositionId,
+                nextId = null,
+                now = now,
+                metaData = metaData
+            )
+            if (lastPositionId == null) {
+                listOperator.addInitialItem(entry)
+            } else {
+                listOperator.addLastItem(entry, lastPositionId)
+                listOperator.incrementStatsItemCount(1)
+            }
+            operator.addEvent(
+                now = now,
+                eventType = ItemEventType.Create,
+                eventExpireTime = storage.options.eventExpireTime,
+                itemType = item.type,
+                itemKey = item.key,
+                itemListId = entry.id,
+                itemListType = listType,
+                maxEventEntryCount = storage.options.maxEventEntryCount
+            )
+            compactionRequired =
+                operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
+        }
+        if (compactionRequired) {
+            onCompactionRequired()
+        }
+        databaseManager.onEventCreated()
     }
 
     override suspend fun addKey(key: String) {
@@ -282,8 +329,53 @@ internal class KottageListImpl(
         TODO("Not yet implemented")
     }
 
-    override suspend fun <T : Any> addFirst(key: String, value: T, type: KType) {
-        TODO("Not yet implemented")
+    override suspend fun <T : Any> addFirst(
+        key: String,
+        value: T,
+        type: KType,
+        metaData: KottageListMetaData?
+    ) {
+        val operator = operator()
+        val storageOperator = storageOperator.await()
+        val listOperator = listOperator.await()
+        val now = calendar.nowUnixTimeMillis()
+        val item = encoder.encodeItem(storage, key, value, type, now)
+        val newPositionId = Id.generateUuidV4Short()
+        var compactionRequired = false
+        databaseManager.transaction {
+            val firstPositionId = listOperator.getFirstItemPositionId()
+            storageOperator.upsertItem(item, now)
+            val entry = createItemListEntry(
+                id = newPositionId,
+                itemKey = item.key,
+                previousId = null,
+                nextId = firstPositionId,
+                now = now,
+                metaData = metaData
+            )
+            if (firstPositionId == null) {
+                listOperator.addInitialItem(entry)
+            } else {
+                listOperator.addFirstItem(entry)
+                listOperator.incrementStatsItemCount(1)
+            }
+            operator.addEvent(
+                now = now,
+                eventType = ItemEventType.Create,
+                eventExpireTime = storage.options.eventExpireTime,
+                itemType = item.type,
+                itemKey = item.key,
+                itemListId = entry.id,
+                itemListType = listType,
+                maxEventEntryCount = storage.options.maxEventEntryCount
+            )
+            compactionRequired =
+                operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
+        }
+        if (compactionRequired) {
+            onCompactionRequired()
+        }
+        databaseManager.onEventCreated()
     }
 
     override suspend fun addKeyFirst(key: String) {
@@ -427,5 +519,27 @@ internal class KottageListImpl(
         databaseManager.transaction {
             listOperator.removeListItem(positionId = positionId)
         }
+    }
+
+    private fun createItemListEntry(
+        id: String,
+        itemKey: String,
+        previousId: String?,
+        nextId: String?,
+        now: Long,
+        metaData: KottageListMetaData?
+    ): ItemListEntry {
+        return ItemListEntry(
+            id = id,
+            type = listType,
+            itemType = itemType,
+            itemKey = itemKey,
+            previousId = previousId,
+            nextId = nextId,
+            expireAt = options.itemExpireTime?.let { now + it.inWholeMilliseconds },
+            userPreviousKey = metaData?.previousKey,
+            userCurrentKey = metaData?.currentKey,
+            userNextKey = metaData?.nextKey
+        )
     }
 }

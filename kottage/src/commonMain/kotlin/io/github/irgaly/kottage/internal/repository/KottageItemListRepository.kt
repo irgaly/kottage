@@ -14,8 +14,9 @@ internal interface KottageItemListRepository {
     fun getCount(type: String): Long
     fun delete(id: String)
     fun deleteAll(type: String)
-    fun createStatsIfNotExists(
+    fun createStats(
         type: String,
+        count: Long,
         firstItemListEntryId: String,
         lastItemListEntryId: String
     )
@@ -25,5 +26,7 @@ internal interface KottageItemListRepository {
     fun incrementStatsCount(type: String, count: Long)
     fun decrementStatsCount(type: String, count: Long)
     fun updateStatsCount(type: String, count: Long)
+    fun updateStatsFirstItem(type: String, id: String)
+    fun updateStatsLastItem(type: String, id: String)
     fun deleteStats(type: String)
 }

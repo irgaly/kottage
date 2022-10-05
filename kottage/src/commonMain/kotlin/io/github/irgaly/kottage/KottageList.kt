@@ -44,11 +44,23 @@ interface KottageList {
         direction: KottageListDirection = KottageListDirection.Forward
     ): KottageListItem<T>?
 
-    suspend fun <T : Any> add(key: String, value: T, type: KType)
+    suspend fun <T : Any> add(
+        key: String,
+        value: T,
+        type: KType,
+        metaData: KottageListMetaData? = null
+    )
+
     suspend fun addKey(key: String)
     suspend fun <T : Any> addAll(values: List<Pair<String, T>>, type: KType)
     suspend fun addKeys(keys: List<String>)
-    suspend fun <T : Any> addFirst(key: String, value: T, type: KType)
+    suspend fun <T : Any> addFirst(
+        key: String,
+        value: T,
+        type: KType,
+        metaData: KottageListMetaData? = null
+    )
+
     suspend fun addKeyFirst(key: String)
     suspend fun <T : Any> addAllFirst(values: List<Pair<String, T>>, type: KType)
     suspend fun addKeysFirst(keys: List<String>)

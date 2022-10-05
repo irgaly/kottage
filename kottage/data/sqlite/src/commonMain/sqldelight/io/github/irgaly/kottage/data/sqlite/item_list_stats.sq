@@ -5,8 +5,8 @@ CREATE TABLE item_list_stats (
   last_item_list_id TEXT NOT NULL
 );
 
-insertIfNotExists:
-INSERT OR IGNORE INTO item_list_stats(item_list_type, first_item_list_id, last_item_list_id) VALUES(?, ?, ?);
+insert:
+INSERT INTO item_list_stats(item_list_type, count, first_item_list_id, last_item_list_id) VALUES(?, ?, ?, ?);
 
 updateFirstItemListId:
 UPDATE item_list_stats SET first_item_list_id = ? WHERE item_list_type = ?;

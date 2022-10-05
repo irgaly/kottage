@@ -73,14 +73,16 @@ internal class KottageSqliteItemListRepository(
             .deleteAllByType(type = type)
     }
 
-    override fun createStatsIfNotExists(
+    override fun createStats(
         type: String,
+        count: Long,
         firstItemListEntryId: String,
         lastItemListEntryId: String
     ) {
         database.item_list_statsQueries
-            .insertIfNotExists(
+            .insert(
                 item_list_type = type,
+                count = count,
                 first_item_list_id = firstItemListEntryId,
                 last_item_list_id = lastItemListEntryId
             )
@@ -118,6 +120,22 @@ internal class KottageSqliteItemListRepository(
         database.item_list_statsQueries
             .updateCount(
                 count = count,
+                item_list_type = type
+            )
+    }
+
+    override fun updateStatsFirstItem(type: String, id: String) {
+        database.item_list_statsQueries
+            .updateFirstItemListId(
+                first_item_list_id = id,
+                item_list_type = type
+            )
+    }
+
+    override fun updateStatsLastItem(type: String, id: String) {
+        database.item_list_statsQueries
+            .updateLastItemListId(
+                last_item_list_id = id,
                 item_list_type = type
             )
     }
