@@ -76,12 +76,26 @@ interface KottageList {
         CancellationException::class
     )
     suspend fun updateKey(positionId: String, key: String)
-    suspend fun <T : Any> insertAfter(positionId: String, key: String, value: T, type: KType)
-    suspend fun insertKeyAfter(positionId: String, key: String)
+    suspend fun <T : Any> insertAfter(
+        positionId: String,
+        key: String,
+        value: T,
+        type: KType,
+        metaData: KottageListMetaData?
+    )
+
+    suspend fun insertKeyAfter(positionId: String, key: String, metaData: KottageListMetaData?)
     suspend fun <T : Any> insertAllAfter(positionId: String, values: Pair<String, T>, type: KType)
     suspend fun insertKeysAfter(positionId: String, keys: List<String>)
-    suspend fun <T : Any> insertBefore(positionId: String, value: T, type: KType)
-    suspend fun insertKeyBefore(positionId: String, key: String)
+    suspend fun <T : Any> insertBefore(
+        positionId: String,
+        key: String,
+        value: T,
+        type: KType,
+        metaData: KottageListMetaData?
+    )
+
+    suspend fun insertKeyBefore(positionId: String, key: String, metaData: KottageListMetaData?)
     suspend fun <T : Any> insertAllBefore(positionId: String, values: Pair<String, T>, type: KType)
     suspend fun insertKeysBefore(positionId: String, keys: List<String>)
     suspend fun remove(positionId: String)

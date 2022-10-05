@@ -13,4 +13,6 @@ internal data class ItemListEntry(
     val userNextKey: String?
 ) {
     val itemExists: Boolean get() = (itemKey != null)
+    val isFirst: Boolean get() = (previousId == null)
+    val isLast: Boolean get() = (nextId == null)
 }

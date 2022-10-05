@@ -38,36 +38,31 @@ internal class KottageListOperator(
 
     /**
      * This should be called in transaction
+     *
+     * 前後のアイテムと item_list_stats の先頭末尾情報を更新しながらアイテムを追加する
+     *
+     * @param entry previousId, nextId が正しく設定された Entry
      */
-    fun addFirstItem(entry: ItemListEntry, currentFirstPositionId: String? = null) {
-        var oldPositionId = currentFirstPositionId
-        if (oldPositionId == null) {
-            oldPositionId = itemListRepository.getStats(listType)?.firstItemPositionId
-                ?: throw IllegalStateException("item_list_stats entry not exist: listType = $listType")
+    fun addItem(entry: ItemListEntry) {
+        entry.previousId?.let { previousId ->
+            itemListRepository.updateNextId(id = previousId, nextId = entry.id)
         }
-        itemListRepository.updatePreviousId(id = oldPositionId, previousId = entry.id)
-        itemListRepository.upsert(entry)
-        itemListRepository.updateStatsFirstItem(
-            type = listType,
-            id = entry.id
-        )
-    }
-
-    /**
-     * This should be called in transaction
-     */
-    fun addLastItem(entry: ItemListEntry, currentLastPositionId: String? = null) {
-        var oldPositionId = currentLastPositionId
-        if (oldPositionId == null) {
-            oldPositionId = itemListRepository.getStats(listType)?.lastItemPositionId
-                ?: throw IllegalStateException("item_list_stats entry not exist: listType = $listType")
+        entry.nextId?.let { nextId ->
+            itemListRepository.updateNextId(id = nextId, nextId = entry.id)
         }
-        itemListRepository.updateNextId(id = oldPositionId, nextId = entry.id)
         itemListRepository.upsert(entry)
-        itemListRepository.updateStatsLastItem(
-            type = listType,
-            id = entry.id
-        )
+        if (entry.isFirst) {
+            itemListRepository.updateStatsFirstItem(
+                type = listType,
+                id = entry.id
+            )
+        }
+        if (entry.isLast) {
+            itemListRepository.updateStatsLastItem(
+                type = listType,
+                id = entry.id
+            )
+        }
     }
 
     /**
