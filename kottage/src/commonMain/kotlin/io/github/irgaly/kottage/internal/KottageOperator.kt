@@ -120,6 +120,26 @@ internal class KottageOperator(
         }
     }
 
+    /**
+     * This should be called in transaction
+     */
+    fun evictExpiredListEntries(listType: String, now: Long, beforeExpireAt: Long?) {
+        invalidateExpiredListEntries(listType = listType, now = now)
+        var limit = 1000L
+        while (0 < limit) {
+            val invalidatedIds = itemListRepository.getInvalidatedItemIds(
+                type = listType,
+                beforeExpireAt = beforeExpireAt,
+                limit = limit
+            )
+            if (invalidatedIds.isNotEmpty()) {
+                removeListEntries(listType = listType, positionIds = invalidatedIds)
+            }
+            if (invalidatedIds.size < limit) {
+                limit = 0
+            }
+        }
+    }
 
     /**
      * This should be called in transaction
@@ -164,6 +184,124 @@ internal class KottageOperator(
             }
         }
         return entry
+    }
+
+    /**
+     * This should be called in transaction
+     *
+     * 前後のアイテムと item_list_stats の先頭末尾情報を更新しながらアイテムを取り除く
+     * 有効なアイテムを削除した場合は Delete Event を追加する
+     */
+    fun removeListEntries(listType: String, positionIds: List<String>) {
+        val entries = positionIds.map {
+            itemListRepository.get(it)
+        }.mapNotNull {
+            if (it?.type == listType) {
+                it.id to it
+            } else null
+        }.toMap()
+        if (entries.isNotEmpty()) {
+            val newPreviousIds = mutableMapOf<String, String?>()
+            val newNextIds = mutableMapOf<String, String?>()
+            var newFirstId: String? = null
+            var newLastId: String? = null
+            var deleted = 0
+            val remains = entries.toMutableMap()
+            while (remains.isNotEmpty()) {
+                // entries を取り除くために必要な更新アイテムを見つける
+                var previousId: String? = null
+                var nextId: String? = null
+                remains.remove(remains.keys.first())?.let {
+                    previousId = it.previousId
+                    nextId = it.nextId
+                }
+                while (entries.containsKey(previousId)) {
+                    remains.remove(previousId)
+                    previousId = entries[previousId]?.previousId
+                }
+                while (entries.containsKey(nextId)) {
+                    remains.remove(nextId)
+                    nextId = entries[nextId]?.nextId
+                }
+                when (val id = previousId) {
+                    null -> newFirstId = nextId
+                    else -> newNextIds[id] = nextId
+                }
+                when (val id = nextId) {
+                    null -> newLastId = previousId
+                    else -> newPreviousIds[id] = previousId
+                }
+            }
+            entries.values.forEach { entry ->
+                if (entry.itemExists) {
+                    deleted++
+                }
+                itemListRepository.delete(entry.id)
+            }
+            if (newPreviousIds.isEmpty() && newNextIds.isEmpty()) {
+                // アップデート対象が存在しない = List が空になった
+                itemListRepository.deleteStats(type = listType)
+            } else {
+                newPreviousIds.forEach { (id, previousId) ->
+                    itemListRepository.updatePreviousId(id = id, previousId = previousId)
+                }
+                newNextIds.forEach { (id, nextId) ->
+                    itemListRepository.updateNextId(id = id, nextId = nextId)
+                }
+                if (newFirstId != null) {
+                    itemListRepository.updateStatsFirstItem(
+                        type = listType,
+                        id = newFirstId
+                    )
+                }
+                if (newLastId != null) {
+                    itemListRepository.updateStatsLastItem(
+                        type = listType,
+                        id = newLastId
+                    )
+                }
+                if (0 < deleted) {
+                    itemListRepository.decrementStatsCount(
+                        type = listType,
+                        count = deleted.toLong()
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * This should be called in transaction
+     *
+     * * リストの先頭から、expired な entity を invalidate する
+     *     * 非削除対象の entity が現れたら処理を止める
+     * * リストの末尾から、expired な entity を invalidate する
+     *     * 非削除対象の entity が現れたら処理を止める
+     */
+    fun invalidateExpiredListEntries(listType: String, now: Long) {
+        itemListRepository.getStats(type = listType)?.let { stats ->
+            var invalidated = 0
+            val scanInvalidate = { startPositionId: String, block: (ItemListEntry) -> String? ->
+                var nextPositionId: String? = startPositionId
+                while ((nextPositionId != null) && (invalidated < stats.count)) {
+                    val entry = checkNotNull(itemListRepository.get(nextPositionId))
+                    val expired = entry.isExpired(now)
+                    if (entry.itemExists && expired) {
+                        itemListRepository.removeItemKey(entry.id)
+                        invalidated++
+                    }
+                    nextPositionId = if (entry.itemExists && !expired) null else block(entry)
+                }
+            }
+            scanInvalidate(stats.firstItemPositionId) { it.nextId }
+            scanInvalidate(stats.lastItemPositionId) { it.previousId }
+            if (0 < invalidated) {
+                itemListRepository.decrementStatsCount(
+                    type = listType,
+                    count = invalidated.toLong()
+                )
+            }
+        }
     }
 
     override fun updateItemLastRead(key: String, itemType: String, now: Long) {

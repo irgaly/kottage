@@ -65,6 +65,27 @@ internal class KottageSqliteItemListRepository(
             ).executeAsList()
     }
 
+    override fun getInvalidatedItemIds(
+        type: String,
+        beforeExpireAt: Long?,
+        limit: Long
+    ): List<String> {
+        return if (beforeExpireAt != null) {
+            database.item_listQueries
+                .selectInvalidatedItemBeforeExpireAt(
+                    type = type,
+                    expire_at = beforeExpireAt,
+                    limit = limit
+                ).executeAsList()
+        } else {
+            database.item_listQueries
+                .selectInvalidatedItem(
+                    type = type,
+                    limit = limit
+                ).executeAsList()
+        }
+    }
+
     override fun getCount(type: String): Long {
         return database.item_listQueries
             .countByType(type = type)

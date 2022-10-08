@@ -6,7 +6,8 @@ import kotlin.time.Duration
  * Kottage Options
  */
 data class KottageOptions(
-    val autoCompactionDuration: Duration?
+    val autoCompactionDuration: Duration?,
+    val garbageCollectionTimeOfInvalidatedListEntries: Duration?
 ) {
     data class Builder(
         /**
@@ -14,11 +15,13 @@ data class KottageOptions(
          * on each autoCompactionDuration time elapsed
          * if null, autoCompaction is disabled.
          */
-        var autoCompactionDuration: Duration?
+        var autoCompactionDuration: Duration?,
+        var garbageCollectionTimeOfInvalidatedListEntries: Duration?
     ) {
         fun build(): KottageOptions {
             return KottageOptions(
-                autoCompactionDuration = autoCompactionDuration
+                autoCompactionDuration = autoCompactionDuration,
+                garbageCollectionTimeOfInvalidatedListEntries = garbageCollectionTimeOfInvalidatedListEntries
             )
         }
     }
