@@ -79,6 +79,13 @@ internal class KottageOperator(
     }
 
     /**
+     * This should be called in transaction
+     */
+    fun getAllListType(receiver: (listType: String) -> Unit) {
+        itemListRepository.getAllTypes(receiver)
+    }
+
+    /**
      * Delete expired items
      * existing items in ItemList are ignored
      * This should be called in transaction
@@ -302,6 +309,13 @@ internal class KottageOperator(
                 )
             }
         }
+    }
+
+    /**
+     * This should be called in transaction
+     */
+    fun updateLastEvictAt(now: Long) {
+        statsRepository.updateLastEvictAt(now)
     }
 
     override fun updateItemLastRead(key: String, itemType: String, now: Long) {

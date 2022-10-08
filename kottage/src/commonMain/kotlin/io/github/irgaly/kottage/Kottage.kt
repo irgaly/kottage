@@ -43,10 +43,15 @@ class Kottage(
         }
     }
 
-    private val databaseManager =
-        KottageDatabaseManager(name, directoryPath, environment, dispatcher, scope)
+    val options: KottageOptions = KottageOptions.Builder(
+        autoCompactionDuration = 14.days,
+        garbageCollectionTimeOfInvalidatedListEntries = 10.days
+    ).apply {
+        optionsBuilder?.invoke(this)
+    }.build()
 
-    val options: KottageOptions
+    private val databaseManager: KottageDatabaseManager =
+        KottageDatabaseManager(name, directoryPath, options, environment, dispatcher, scope)
 
     /**
      * Simple KottageEvent Flow
@@ -59,12 +64,6 @@ class Kottage(
 
     init {
         require(!name.contains(Files.separator)) { "name contains separator: $name" }
-        options = KottageOptions.Builder(
-            autoCompactionDuration = 14.days,
-            garbageCollectionTimeOfInvalidatedListEntries = 10.days
-        ).apply {
-            optionsBuilder?.invoke(this)
-        }.build()
     }
 
     fun storage(

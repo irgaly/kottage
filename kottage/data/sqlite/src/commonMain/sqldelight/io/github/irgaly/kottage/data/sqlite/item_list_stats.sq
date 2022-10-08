@@ -26,6 +26,9 @@ UPDATE item_list_stats SET count = ? WHERE item_list_type = ?;
 select:
 SELECT * FROM item_list_stats WHERE item_list_type = ?;
 
+selectAllItemListType:
+SELECT item_list_type FROM item_list_stats;
+
 delete:
 DELETE FROM item_list_stats WHERE item_list_type = ?;
 

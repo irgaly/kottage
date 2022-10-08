@@ -1,5 +1,6 @@
 package io.github.irgaly.kottage.internal.repository
 
+import com.squareup.sqldelight.db.use
 import io.github.irgaly.kottage.data.sqlite.KottageDatabase
 import io.github.irgaly.kottage.internal.model.ItemListEntry
 import io.github.irgaly.kottage.internal.model.ItemListStats
@@ -90,6 +91,17 @@ internal class KottageSqliteItemListRepository(
         return database.item_listQueries
             .countByType(type = type)
             .executeAsOne()
+    }
+
+    override fun getAllTypes(receiver: (type: String) -> Unit) {
+        database.item_list_statsQueries
+            .selectAllItemListType()
+            .execute().use { cursor ->
+                while (cursor.next()) {
+                    val itemListType = checkNotNull(cursor.getString(0))
+                    receiver(itemListType)
+                }
+            }
     }
 
     override fun delete(id: String) {

@@ -3,6 +3,7 @@ package io.github.irgaly.kottage.internal
 import io.github.irgaly.kottage.KottageEnvironment
 import io.github.irgaly.kottage.KottageEventFlow
 import io.github.irgaly.kottage.KottageList
+import io.github.irgaly.kottage.KottageOptions
 import io.github.irgaly.kottage.KottageStorage
 import io.github.irgaly.kottage.internal.database.createDatabaseConnection
 import io.github.irgaly.kottage.internal.model.ItemEvent
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.Flow
 internal class KottageDatabaseManager(
     fileName: String,
     directoryPath: String,
+    private val options: KottageOptions,
     private val environment: KottageEnvironment,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
     private val scope: CoroutineScope = CoroutineScope(dispatcher + SupervisorJob())
@@ -104,13 +106,28 @@ internal class KottageDatabaseManager(
     }
 
     suspend fun compact() {
-        val statsRepository = statsRepository.await()
         val operator = operator.await()
         val now = calendar.nowUnixTimeMillis()
+        val beforeExpireAt = options.garbageCollectionTimeOfInvalidatedListEntries?.let {
+            now - it.inWholeMilliseconds
+        }
         databaseConnection.transaction {
+            operator.getAllListType { listType ->
+                if (beforeExpireAt != null) {
+                    // List Entry の自動削除が有効
+                    operator.evictExpiredListEntries(
+                        listType = listType,
+                        now = now,
+                        beforeExpireAt = beforeExpireAt
+                    )
+                } else {
+                    // List Entry Invalidate のみ
+                    operator.invalidateExpiredListEntries(listType = listType, now = now)
+                }
+            }
             operator.evictCaches(now)
             operator.evictEvents(now)
-            statsRepository.updateLastEvictAt(now)
+            operator.updateLastEvictAt(now)
         }
         databaseConnection.compact()
     }
