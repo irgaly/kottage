@@ -130,8 +130,12 @@ internal class KottageListOperator(
     /**
      * This should be called in transaction
      */
-    fun removeListItem(positionId: String) {
-        storageOperator.removeListItemInternal(positionId = positionId, listType = listType)
+    fun removeListItem(positionId: String): Boolean {
+        val exists = (itemListRepository.get(positionId) != null)
+        if (exists) {
+            storageOperator.removeListItemInternal(positionId = positionId, listType = listType)
+        }
+        return exists
     }
 
     /**

@@ -777,8 +777,11 @@ internal class KottageListImpl(
 
     override suspend fun remove(positionId: String) = withContext(dispatcher) {
         val listOperator = listOperator.await()
-        transactionWithAutoCompaction { _, _ ->
+        val removed = transactionWithAutoCompaction { _, _ ->
             listOperator.removeListItem(positionId = positionId)
+        }
+        if (removed) {
+            databaseManager.onEventCreated()
         }
     }
 
