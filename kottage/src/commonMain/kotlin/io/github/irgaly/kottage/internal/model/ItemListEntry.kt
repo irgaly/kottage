@@ -15,4 +15,8 @@ internal data class ItemListEntry(
     val itemExists: Boolean get() = (itemKey != null)
     val isFirst: Boolean get() = (previousId == null)
     val isLast: Boolean get() = (nextId == null)
+
+    fun isExpired(time: Long): Boolean {
+        return expireAt?.let { it <= time } ?: false
+    }
 }

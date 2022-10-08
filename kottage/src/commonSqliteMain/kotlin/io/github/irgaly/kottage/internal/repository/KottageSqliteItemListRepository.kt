@@ -38,6 +38,14 @@ internal class KottageSqliteItemListRepository(
             )
     }
 
+    override fun updateExpireAt(id: String, expireAt: Long?) {
+        database.item_listQueries
+            .updateExpireAt(
+                expire_at = expireAt,
+                id = id
+            )
+    }
+
     override fun removeItemKey(id: String) {
         database.item_listQueries
             .removeItemKey(id = id)

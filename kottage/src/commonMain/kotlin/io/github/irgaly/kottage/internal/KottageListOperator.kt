@@ -233,11 +233,7 @@ internal class KottageListOperator(
     /**
      * This should be called in transaction
      *
-     * * リストの先頭から、expired な entity を削除する
-     *     * 非削除対象の entity が現れたら処理を止める
-     * * リストの末尾から、expired な entity を削除する
-     *     * 非削除対象の entity が現れたら処理を止める
-     * * リスト全体から、無効な entity を取り除く
+     * * リスト全体から、削除可能な entity を取り除く
      * * リストが空になれば item_list_stats を削除する
      */
     fun evictExpiredEntries(now: Long) {
@@ -251,5 +247,39 @@ internal class KottageListOperator(
         itemListRepository.deleteAll(type = listType)
         itemListRepository.deleteStats(type = listType)
         itemEventRepository.deleteAllList(listType = listType)
+    }
+
+    /**
+     * This should be called in transaction
+     *
+     * * リストの先頭から、expired な entity を invalidate する
+     *     * 非削除対象の entity が現れたら処理を止める
+     * * リストの末尾から、expired な entity を invalidate する
+     *     * 非削除対象の entity が現れたら処理を止める
+     */
+    private fun invalidateExpiredEntries(now: Long) {
+        itemListRepository.getStats(type = listType)?.let { stats ->
+            var invalidated = 0
+            val scanInvalidate = { startPositionId: String, block: (ItemListEntry) -> String? ->
+                var nextPositionId: String? = startPositionId
+                while ((nextPositionId != null) && (invalidated < stats.count)) {
+                    val entry = checkNotNull(itemListRepository.get(nextPositionId))
+                    val expired = entry.isExpired(now)
+                    if (entry.itemExists && expired) {
+                        itemListRepository.removeItemKey(entry.id)
+                        invalidated++
+                    }
+                    nextPositionId = if (entry.itemExists && !expired) null else block(entry)
+                }
+            }
+            scanInvalidate(stats.firstItemPositionId) { it.nextId }
+            scanInvalidate(stats.lastItemPositionId) { it.previousId }
+            if (0 < invalidated) {
+                itemListRepository.decrementStatsCount(
+                    type = listType,
+                    count = invalidated.toLong()
+                )
+            }
+        }
     }
 }

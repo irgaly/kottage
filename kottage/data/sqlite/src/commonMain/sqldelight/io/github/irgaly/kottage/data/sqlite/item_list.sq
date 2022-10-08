@@ -25,6 +25,9 @@ UPDATE item_list SET next_id = ? WHERE id = ?;
 updateItemKey:
 UPDATE item_list SET item_key = ?, item_type = ?, expire_at = ? WHERE id = ?;
 
+updateExpireAt:
+UPDATE item_list SET expire_at = ? WHERE id = ?;
+
 removeItemKey:
 UPDATE item_list SET item_key = NULL WHERE id = ?;
 
