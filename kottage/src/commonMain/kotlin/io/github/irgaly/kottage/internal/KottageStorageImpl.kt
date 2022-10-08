@@ -199,6 +199,7 @@ internal class KottageStorageImpl(
         val itemRepository = itemRepository()
         val itemEventRepository = itemEventRepository()
         databaseManager.transaction {
+            // TODO: List の item = null とする
             itemRepository.deleteAll(itemType)
             itemEventRepository.deleteAll(itemType)
             itemRepository.deleteStats(itemType)
