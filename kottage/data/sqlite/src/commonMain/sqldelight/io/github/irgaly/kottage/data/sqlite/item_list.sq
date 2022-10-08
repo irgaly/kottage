@@ -52,3 +52,6 @@ DELETE FROM item_list WHERE id = ?;
 
 deleteAllByType:
 DELETE FROM item_list WHERE type = ?;
+
+deleteAll:
+DELETE FROM item_list;
