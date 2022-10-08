@@ -97,12 +97,23 @@ storage.clear()
 
 // Delete Kottage
 Kottage.clear()
-
 ```
 
 ---
 
 # List Cache
+
+* List Cache の expiration
+  * リストの先頭・末尾から expire しているものが invalidate される
+  * expireAt は add, update で設定される
+  * invalidate のタイミング
+    * KottageList.size(): その時刻で expire してからアイテム数を返す
+    * KottageList.getPage, get~(): expire してからアイテムを返す
+    * KottageList.compact(): expire してから、compaction する
+    * KottageStorage evict cache: expire してから Storage evict する
+    * KottageStorage.remove(): List の expireAt を更新する
+  * auto compaction:
+    * invalidate 後、一定時間が経過した Entry を List から取り除く
 
 ```kotlin
 data class Item(val positionId: String)
