@@ -173,14 +173,19 @@ internal class KottageStorageImpl(
         val storageOperator = storageOperator.await()
         val now = calendar.nowUnixTimeMillis()
         var eventCreated = false
+        var compactionRequired = false
         databaseManager.transaction {
             itemRepository.getAllKeys(itemType) { key ->
                 storageOperator.deleteItem(key = key, now = now) {
                     eventCreated = true
                 }
             }
+            compactionRequired =
+                operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
         }
-        // TODO: remove 同様に Compaction 判定と実行
+        if (compactionRequired) {
+            onCompactionRequired()
+        }
         if (eventCreated) {
             databaseManager.onEventCreated()
         }
