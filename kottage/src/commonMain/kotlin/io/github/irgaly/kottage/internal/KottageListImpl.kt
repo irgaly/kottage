@@ -56,10 +56,8 @@ internal class KottageListImpl(
         type: KType,
         direction: KottageListDirection
     ): KottageListPage<T> = withContext(dispatcher) {
-        val operator = operator()
         val storageOperator = storageOperator.await()
-        val now = calendar.nowUnixTimeMillis()
-        val items = databaseManager.transactionWithResult {
+        val items = transactionWithAutoCompaction { operator, now ->
             val items = mutableListOf<KottageListItem<T>>()
             var initialPositionId = positionId
             if (initialPositionId == null) {
@@ -116,19 +114,16 @@ internal class KottageListImpl(
     }
 
     override suspend fun getSize(): Long = withContext(dispatcher) {
-        val operator = operator()
-        databaseManager.transactionWithResult {
-            operator.getListCount(listType)
+        transactionWithAutoCompaction { operator, now ->
+            operator.getListCount(listType = listType, now = now)
         }
     }
 
     override suspend fun <T : Any> getFirst(
         type: KType
     ): KottageListItem<T>? = withContext(dispatcher) {
-        val operator = operator()
         val storageOperator = storageOperator.await()
-        val now = calendar.nowUnixTimeMillis()
-        databaseManager.transactionWithResult {
+        transactionWithAutoCompaction { operator, now ->
             operator.getListStats(listType)?.let { stats ->
                 operator.getAvailableListItem(
                     listType, stats.firstItemPositionId,
@@ -156,10 +151,8 @@ internal class KottageListImpl(
     override suspend fun <T : Any> getLast(
         type: KType
     ): KottageListItem<T>? = withContext(dispatcher) {
-        val operator = operator()
         val storageOperator = storageOperator.await()
-        val now = calendar.nowUnixTimeMillis()
-        databaseManager.transactionWithResult {
+        transactionWithAutoCompaction { operator, now ->
             operator.getListStats(listType)?.let { stats ->
                 operator.getAvailableListItem(
                     listType, stats.lastItemPositionId,
@@ -187,10 +180,8 @@ internal class KottageListImpl(
     override suspend fun <T : Any> get(
         positionId: String, type: KType
     ): KottageListItem<T>? = withContext(dispatcher) {
-        val operator = operator()
         val storageOperator = storageOperator.await()
-        val now = calendar.nowUnixTimeMillis()
-        databaseManager.transactionWithResult {
+        transactionWithAutoCompaction { operator, now ->
             operator.getAvailableListItem(
                 listType, positionId,
                 KottageListDirection.Forward
@@ -216,10 +207,8 @@ internal class KottageListImpl(
         type: KType,
         direction: KottageListDirection
     ): KottageListItem<T>? = withContext(dispatcher) {
-        val operator = operator()
         val storageOperator = storageOperator.await()
-        val now = calendar.nowUnixTimeMillis()
-        databaseManager.transactionWithResult {
+        transactionWithAutoCompaction { operator, now ->
             val initialPositionId = operator.getListStats(listType)?.let { stats ->
                 when (direction) {
                     KottageListDirection.Forward -> {
@@ -269,14 +258,12 @@ internal class KottageListImpl(
         type: KType,
         metaData: KottageListMetaData?
     ) = withContext(dispatcher) {
-        val operator = operator()
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
         val item = encoder.encodeItem(storage, key, value, type, now)
         val newPositionId = Id.generateUuidV4Short()
-        var compactionRequired = false
-        databaseManager.transaction {
+        transactionWithAutoCompaction(now) { _, _ ->
             val lastPositionId = listOperator.getLastItemPositionId()
             storageOperator.upsertItem(item, now)
             val entry = createItemListEntry(
@@ -288,11 +275,6 @@ internal class KottageListImpl(
                 metaData = metaData
             )
             listOperator.addListEntries(listOf(entry), now)
-            compactionRequired =
-                operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
-        }
-        if (compactionRequired) {
-            onCompactionRequired()
         }
         databaseManager.onEventCreated()
     }
@@ -304,7 +286,7 @@ internal class KottageListImpl(
         val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
         val newPositionId = Id.generateUuidV4Short()
-        databaseManager.transaction {
+        transactionWithAutoCompaction(now) { _, _ ->
             val item = storageOperator.getOrNull(key = key, now = null)
                 ?: throw NoSuchElementException("storage = ${storage.name}, key = $key")
             val lastPositionId = listOperator.getLastItemPositionId()
@@ -324,7 +306,6 @@ internal class KottageListImpl(
     override suspend fun <T : Any> addAll(
         values: List<KottageListEntry<T>>, type: KType
     ) = withContext(dispatcher) {
-        val operator = operator()
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
@@ -333,8 +314,7 @@ internal class KottageListImpl(
             val item = encoder.encodeItem(storage, it.key, it.value, type, now)
             Triple(id, item, it.metaData)
         }
-        var compactionRequired = false
-        databaseManager.transaction {
+        transactionWithAutoCompaction(now) { _, _ ->
             val lastPositionId = listOperator.getLastItemPositionId()
             val entries = items.mapIndexed { index, (id, item, metaData) ->
                 createItemListEntry(
@@ -350,11 +330,6 @@ internal class KottageListImpl(
                 storageOperator.upsertItem(item, now)
             }
             listOperator.addListEntries(entries, now)
-            compactionRequired =
-                operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
-        }
-        if (compactionRequired) {
-            onCompactionRequired()
         }
         if (values.isNotEmpty()) {
             databaseManager.onEventCreated()
@@ -366,8 +341,7 @@ internal class KottageListImpl(
     ) = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
-        val now = calendar.nowUnixTimeMillis()
-        databaseManager.transaction {
+        transactionWithAutoCompaction { _, now ->
             val lastPositionId = listOperator.getLastItemPositionId()
             val items = keys.map { key ->
                 val id = Id.generateUuidV4Short()
@@ -398,14 +372,12 @@ internal class KottageListImpl(
         type: KType,
         metaData: KottageListMetaData?
     ) = withContext(dispatcher) {
-        val operator = operator()
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
         val item = encoder.encodeItem(storage, key, value, type, now)
         val newPositionId = Id.generateUuidV4Short()
-        var compactionRequired = false
-        databaseManager.transaction {
+        transactionWithAutoCompaction(now) { _, _ ->
             val firstPositionId = listOperator.getFirstItemPositionId()
             storageOperator.upsertItem(item, now)
             val entry = createItemListEntry(
@@ -417,11 +389,6 @@ internal class KottageListImpl(
                 metaData = metaData
             )
             listOperator.addListEntries(listOf(entry), now)
-            compactionRequired =
-                operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
-        }
-        if (compactionRequired) {
-            onCompactionRequired()
         }
         databaseManager.onEventCreated()
     }
@@ -431,9 +398,8 @@ internal class KottageListImpl(
     ) = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
-        val now = calendar.nowUnixTimeMillis()
         val newPositionId = Id.generateUuidV4Short()
-        databaseManager.transaction {
+        transactionWithAutoCompaction { _, now ->
             val item = storageOperator.getOrNull(key = key, now = null)
                 ?: throw NoSuchElementException("storage = ${storage.name}, key = $key")
             val firstPositionId = listOperator.getFirstItemPositionId()
@@ -454,7 +420,6 @@ internal class KottageListImpl(
         values: List<KottageListEntry<T>>,
         type: KType
     ) = withContext(dispatcher) {
-        val operator = operator()
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
@@ -463,8 +428,7 @@ internal class KottageListImpl(
             val item = encoder.encodeItem(storage, it.key, it.value, type, now)
             Triple(id, item, it.metaData)
         }
-        var compactionRequired = false
-        databaseManager.transaction {
+        transactionWithAutoCompaction(now) { _, _ ->
             val firstPositionId = listOperator.getFirstItemPositionId()
             val entries = items.mapIndexed { index, (id, item, metaData) ->
                 createItemListEntry(
@@ -480,11 +444,6 @@ internal class KottageListImpl(
                 storageOperator.upsertItem(item, now)
             }
             listOperator.addListEntries(entries, now)
-            compactionRequired =
-                operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
-        }
-        if (compactionRequired) {
-            onCompactionRequired()
         }
         if (values.isNotEmpty()) {
             databaseManager.onEventCreated()
@@ -497,8 +456,7 @@ internal class KottageListImpl(
     ) = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
-        val now = calendar.nowUnixTimeMillis()
-        databaseManager.transaction {
+        transactionWithAutoCompaction { _, now ->
             val firstPositionId = listOperator.getFirstItemPositionId()
             val items = keys.map { key ->
                 val id = Id.generateUuidV4Short()
@@ -529,22 +487,15 @@ internal class KottageListImpl(
         value: T,
         type: KType
     ) = withContext(dispatcher) {
-        val operator = operator()
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
         val item = encoder.encodeItem(storage, key, value, type, now)
-        var compactionRequired = false
-        databaseManager.transaction {
+        transactionWithAutoCompaction(now) { _, _ ->
             val entry = listOperator.getListItem(positionId = positionId)
                 ?: throw NoSuchElementException("positionId = $positionId")
             storageOperator.upsertItem(item, now)
             listOperator.updateItemKey(entry.id, item, now)
-            compactionRequired =
-                operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
-        }
-        if (compactionRequired) {
-            onCompactionRequired()
         }
         databaseManager.onEventCreated()
     }
@@ -555,8 +506,7 @@ internal class KottageListImpl(
     ) = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
-        val now = calendar.nowUnixTimeMillis()
-        databaseManager.transaction {
+        transactionWithAutoCompaction { _, now ->
             val item = storageOperator.getOrNull(key = key, now = null)
                 ?: throw NoSuchElementException("storage = ${storage.name}, key = $key")
             val entry = listOperator.getListItem(positionId = positionId)
@@ -573,14 +523,12 @@ internal class KottageListImpl(
         type: KType,
         metaData: KottageListMetaData?
     ) = withContext(dispatcher) {
-        val operator = operator()
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
         val item = encoder.encodeItem(storage, key, value, type, now)
         val newPositionId = Id.generateUuidV4Short()
-        var compactionRequired = false
-        databaseManager.transaction {
+        transactionWithAutoCompaction(now) { _, _ ->
             val anchorEntry = listOperator.getListItem(positionId)
                 ?: throw NoSuchElementException("list = $listType, positionId = $positionId")
             storageOperator.upsertItem(item, now)
@@ -593,11 +541,6 @@ internal class KottageListImpl(
                 metaData = metaData
             )
             listOperator.addListEntries(listOf(entry), now)
-            compactionRequired =
-                operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
-        }
-        if (compactionRequired) {
-            onCompactionRequired()
         }
         databaseManager.onEventCreated()
     }
@@ -609,9 +552,8 @@ internal class KottageListImpl(
     ) = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
-        val now = calendar.nowUnixTimeMillis()
         val newPositionId = Id.generateUuidV4Short()
-        databaseManager.transaction {
+        transactionWithAutoCompaction { _, now ->
             val item = storageOperator.getOrNull(key = key, now = null)
                 ?: throw NoSuchElementException("storage = ${storage.name}, key = $key")
             val anchorEntry = listOperator.getListItem(positionId)
@@ -634,7 +576,6 @@ internal class KottageListImpl(
         values: List<KottageListEntry<T>>,
         type: KType
     ) = withContext(dispatcher) {
-        val operator = operator()
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
@@ -643,8 +584,7 @@ internal class KottageListImpl(
             val item = encoder.encodeItem(storage, it.key, it.value, type, now)
             Triple(id, item, it.metaData)
         }
-        var compactionRequired = false
-        databaseManager.transaction {
+        transactionWithAutoCompaction(now) { _, _ ->
             val anchorEntry = listOperator.getListItem(positionId)
                 ?: throw NoSuchElementException("list = $listType, positionId = $positionId")
             val entries = items.mapIndexed { index, (id, item, metaData) ->
@@ -661,11 +601,6 @@ internal class KottageListImpl(
                 storageOperator.upsertItem(item, now)
             }
             listOperator.addListEntries(entries, now)
-            compactionRequired =
-                operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
-        }
-        if (compactionRequired) {
-            onCompactionRequired()
         }
         if (values.isNotEmpty()) {
             databaseManager.onEventCreated()
@@ -679,8 +614,7 @@ internal class KottageListImpl(
     ) = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
-        val now = calendar.nowUnixTimeMillis()
-        databaseManager.transaction {
+        transactionWithAutoCompaction { _, now ->
             val anchorEntry = listOperator.getListItem(positionId)
                 ?: throw NoSuchElementException("list = $listType, positionId = $positionId")
             val items = keys.map { key ->
@@ -713,14 +647,12 @@ internal class KottageListImpl(
         type: KType,
         metaData: KottageListMetaData?
     ) = withContext(dispatcher) {
-        val operator = operator()
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
         val item = encoder.encodeItem(storage, key, value, type, now)
         val newPositionId = Id.generateUuidV4Short()
-        var compactionRequired = false
-        databaseManager.transaction {
+        transactionWithAutoCompaction(now) { _, _ ->
             val anchorEntry = listOperator.getListItem(positionId)
                 ?: throw NoSuchElementException("list = $listType, positionId = $positionId")
             storageOperator.upsertItem(item, now)
@@ -733,11 +665,6 @@ internal class KottageListImpl(
                 metaData = metaData
             )
             listOperator.addListEntries(listOf(entry), now)
-            compactionRequired =
-                operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
-        }
-        if (compactionRequired) {
-            onCompactionRequired()
         }
         databaseManager.onEventCreated()
     }
@@ -749,9 +676,8 @@ internal class KottageListImpl(
     ) = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
-        val now = calendar.nowUnixTimeMillis()
         val newPositionId = Id.generateUuidV4Short()
-        databaseManager.transaction {
+        transactionWithAutoCompaction { _, now ->
             val item = storageOperator.getOrNull(key = key, now = null)
                 ?: throw NoSuchElementException("storage = ${storage.name}, key = $key")
             val anchorEntry = listOperator.getListItem(positionId)
@@ -774,7 +700,6 @@ internal class KottageListImpl(
         values: List<KottageListEntry<T>>,
         type: KType
     ) = withContext(dispatcher) {
-        val operator = operator()
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
@@ -783,8 +708,7 @@ internal class KottageListImpl(
             val item = encoder.encodeItem(storage, it.key, it.value, type, now)
             Triple(id, item, it.metaData)
         }
-        var compactionRequired = false
-        databaseManager.transaction {
+        transactionWithAutoCompaction(now) { _, _ ->
             val anchorEntry = listOperator.getListItem(positionId)
                 ?: throw NoSuchElementException("list = $listType, positionId = $positionId")
             val entries = items.mapIndexed { index, (id, item, metaData) ->
@@ -801,11 +725,6 @@ internal class KottageListImpl(
                 storageOperator.upsertItem(item, now)
             }
             listOperator.addListEntries(entries, now)
-            compactionRequired =
-                operator.getAutoCompactionNeeded(now, kottageOptions.autoCompactionDuration)
-        }
-        if (compactionRequired) {
-            onCompactionRequired()
         }
         if (values.isNotEmpty()) {
             databaseManager.onEventCreated()
@@ -819,8 +738,7 @@ internal class KottageListImpl(
     ) = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
-        val now = calendar.nowUnixTimeMillis()
-        databaseManager.transaction {
+        transactionWithAutoCompaction { _, now ->
             val anchorEntry = listOperator.getListItem(positionId)
                 ?: throw NoSuchElementException("list = $listType, positionId = $positionId")
             val items = keys.map { key ->
@@ -848,7 +766,7 @@ internal class KottageListImpl(
 
     override suspend fun remove(positionId: String) = withContext(dispatcher) {
         val listOperator = listOperator.await()
-        databaseManager.transaction {
+        transactionWithAutoCompaction { _, _ ->
             listOperator.removeListItem(positionId = positionId)
         }
     }
@@ -889,5 +807,23 @@ internal class KottageListImpl(
             userCurrentKey = metaData?.currentKey,
             userNextKey = metaData?.nextKey
         )
+    }
+
+    private suspend fun <R> transactionWithAutoCompaction(
+        now: Long? = null,
+        bodyWithReturn: (operator: KottageOperator, now: Long) -> R
+    ): R {
+        val operator = operator()
+        val receivedNow = now ?: calendar.nowUnixTimeMillis()
+        var compactionRequired = false
+        val result = databaseManager.transactionWithResult {
+            compactionRequired =
+                operator.getAutoCompactionNeeded(receivedNow, kottageOptions.autoCompactionDuration)
+            bodyWithReturn(operator, receivedNow)
+        }
+        if (compactionRequired) {
+            onCompactionRequired()
+        }
+        return result
     }
 }

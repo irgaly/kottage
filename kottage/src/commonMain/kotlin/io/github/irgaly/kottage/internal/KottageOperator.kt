@@ -159,7 +159,8 @@ internal class KottageOperator(
      * Get List Item Count
      * This should be called in transaction
      */
-    fun getListCount(listType: String): Long {
+    fun getListCount(listType: String, now: Long): Long {
+        invalidateExpiredListEntries(listType = listType, now = now)
         return itemListRepository.getStatsCount(type = listType)
     }
 
