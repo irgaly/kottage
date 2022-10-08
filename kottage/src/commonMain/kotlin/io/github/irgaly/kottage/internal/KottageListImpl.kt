@@ -27,7 +27,6 @@ import kotlin.reflect.KType
 internal class KottageListImpl(
     override val name: String,
     override val storage: KottageStorage,
-    private val strategy: KottageStrategy,
     private val encoder: Encoder,
     override val options: KottageListOptions,
     private val kottageOptions: KottageOptions,
@@ -38,6 +37,7 @@ internal class KottageListImpl(
 ): KottageList {
     private val itemType: String = storage.name
     private val listType: String = name
+    private val strategy: KottageStrategy = storage.options.strategy
     private suspend fun operator() = databaseManager.operator.await()
 
     @OptIn(DelicateCoroutinesApi::class)
@@ -57,47 +57,47 @@ internal class KottageListImpl(
         direction: KottageListDirection
     ): KottageListPage<T> = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
+        val listOperator = listOperator.await()
         val items = transactionWithAutoCompaction { operator, now ->
             val items = mutableListOf<KottageListItem<T>>()
             var initialPositionId = positionId
             if (initialPositionId == null) {
                 initialPositionId = operator.getListStats(listType)?.let { stats ->
                     when (direction) {
-                        KottageListDirection.Forward -> {
-                            stats.firstItemPositionId
-                        }
-
-                        KottageListDirection.Backward -> {
-                            stats.lastItemPositionId
-                        }
+                        KottageListDirection.Forward -> stats.firstItemPositionId
+                        KottageListDirection.Backward -> stats.lastItemPositionId
                     }
                 }
             }
             if (initialPositionId != null) {
+                listOperator.invalidateExpiredListEntries(now)
                 var nextPositionId: String? = initialPositionId
                 while (
                     (pageSize?.let { items.size < it } != false)
-                    && (nextPositionId != null)) {
-                    operator.getAvailableListItem(listType, nextPositionId, direction)
-                        ?.let { entry ->
-                            nextPositionId = entry.nextId
-                            val itemKey = checkNotNull(entry.itemKey)
-                            val item = checkNotNull(
-                                storageOperator.getOrNull(key = itemKey, now = null)
+                    && (nextPositionId != null)
+                ) {
+                    listOperator.getAvailableListItem(
+                        positionId = nextPositionId,
+                        direction = direction
+                    )?.let { entry ->
+                        nextPositionId = entry.nextId
+                        val itemKey = checkNotNull(entry.itemKey)
+                        val item = checkNotNull(
+                            storageOperator.getOrNull(key = itemKey, now = null)
+                        )
+                        strategy.onItemRead(
+                            key = itemKey, itemType = itemType, now = now, operator = operator
+                        )
+                        items.add(
+                            KottageListItem.from(
+                                entry = entry,
+                                itemKey = itemKey,
+                                item = item,
+                                type = type,
+                                encoder = encoder
                             )
-                            strategy.onItemRead(
-                                key = itemKey, itemType = itemType, now = now, operator = operator
-                            )
-                            items.add(
-                                KottageListItem.from(
-                                    entry = entry,
-                                    itemKey = itemKey,
-                                    item = item,
-                                    type = type,
-                                    encoder = encoder
-                                )
-                            )
-                        }
+                        )
+                    }
                 }
             }
             if (direction == KottageListDirection.Backward) {
@@ -123,11 +123,13 @@ internal class KottageListImpl(
         type: KType
     ): KottageListItem<T>? = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
+        val listOperator = listOperator.await()
         transactionWithAutoCompaction { operator, now ->
             operator.getListStats(listType)?.let { stats ->
-                operator.getAvailableListItem(
-                    listType, stats.firstItemPositionId,
-                    KottageListDirection.Forward
+                listOperator.invalidateExpiredListEntries(now)
+                listOperator.getAvailableListItem(
+                    positionId = stats.firstItemPositionId,
+                    direction = KottageListDirection.Forward
                 )?.let { entry ->
                     val itemKey = checkNotNull(entry.itemKey)
                     val item = checkNotNull(
@@ -152,11 +154,13 @@ internal class KottageListImpl(
         type: KType
     ): KottageListItem<T>? = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
+        val listOperator = listOperator.await()
         transactionWithAutoCompaction { operator, now ->
             operator.getListStats(listType)?.let { stats ->
-                operator.getAvailableListItem(
-                    listType, stats.lastItemPositionId,
-                    KottageListDirection.Backward
+                listOperator.invalidateExpiredListEntries(now)
+                listOperator.getAvailableListItem(
+                    positionId = stats.lastItemPositionId,
+                    direction = KottageListDirection.Backward
                 )?.let { entry ->
                     val itemKey = checkNotNull(entry.itemKey)
                     val item = checkNotNull(
@@ -181,10 +185,12 @@ internal class KottageListImpl(
         positionId: String, type: KType
     ): KottageListItem<T>? = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
+        val listOperator = listOperator.await()
         transactionWithAutoCompaction { operator, now ->
-            operator.getAvailableListItem(
-                listType, positionId,
-                KottageListDirection.Forward
+            listOperator.invalidateExpiredListEntries(now)
+            listOperator.getAvailableListItem(
+                positionId = positionId,
+                direction = KottageListDirection.Forward
             )?.let { entry ->
                 val itemKey = checkNotNull(entry.itemKey)
                 val item = checkNotNull(storageOperator.getOrNull(key = itemKey, now = null))
@@ -208,6 +214,7 @@ internal class KottageListImpl(
         direction: KottageListDirection
     ): KottageListItem<T>? = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
+        val listOperator = listOperator.await()
         transactionWithAutoCompaction { operator, now ->
             val initialPositionId = operator.getListStats(listType)?.let { stats ->
                 when (direction) {
@@ -224,11 +231,15 @@ internal class KottageListImpl(
             var currentEntry: ItemListEntry? = null
             var nextIndex = 0L
             var nextPositionId = initialPositionId
+            listOperator.invalidateExpiredListEntries(now)
             while (
                 (nextIndex <= index)
                 && (nextPositionId != null)
             ) {
-                currentEntry = operator.getAvailableListItem(listType, nextPositionId, direction)
+                currentEntry = listOperator.getAvailableListItem(
+                    positionId = nextPositionId,
+                    direction = direction
+                )
                 currentIndex = nextIndex
                 nextIndex++
                 nextPositionId = currentEntry?.nextId

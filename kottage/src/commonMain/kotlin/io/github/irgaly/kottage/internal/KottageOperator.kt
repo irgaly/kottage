@@ -1,6 +1,5 @@
 package io.github.irgaly.kottage.internal
 
-import io.github.irgaly.kottage.KottageListDirection
 import io.github.irgaly.kottage.internal.model.ItemEvent
 import io.github.irgaly.kottage.internal.model.ItemEventType
 import io.github.irgaly.kottage.internal.model.ItemListEntry
@@ -162,36 +161,6 @@ internal class KottageOperator(
     fun getListCount(listType: String, now: Long): Long {
         invalidateExpiredListEntries(listType = listType, now = now)
         return itemListRepository.getStatsCount(type = listType)
-    }
-
-    /**
-     * This should be called in transaction
-     *
-     * positionId からたどり、有効な Entry があればそれを返す
-     */
-    fun getAvailableListItem(
-        listType: String,
-        positionId: String,
-        direction: KottageListDirection
-    ): ItemListEntry? {
-        var nextId: String? = positionId
-        var entry: ItemListEntry? = null
-        while (entry == null && nextId != null) {
-            val current = itemListRepository.get(nextId)
-            nextId = when (direction) {
-                KottageListDirection.Forward -> current?.nextId
-                KottageListDirection.Backward -> current?.previousId
-            }
-            if (current != null) {
-                if (current.type != listType) {
-                    // positionId と listType　が不一致のとき
-                    nextId = null
-                } else if (current.itemExists) {
-                    entry = current
-                }
-            }
-        }
-        return entry
     }
 
     /**

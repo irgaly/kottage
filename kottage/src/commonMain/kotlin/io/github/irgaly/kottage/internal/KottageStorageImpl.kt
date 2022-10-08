@@ -203,7 +203,6 @@ internal class KottageStorageImpl(
         return KottageListImpl(
             name,
             this,
-            this.options.strategy,
             encoder,
             options,
             kottageOptions,

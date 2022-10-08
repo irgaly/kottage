@@ -1,6 +1,7 @@
 package io.github.irgaly.kottage.internal
 
 import io.github.irgaly.kottage.KottageList
+import io.github.irgaly.kottage.KottageListDirection
 import io.github.irgaly.kottage.KottageStorage
 import io.github.irgaly.kottage.internal.model.Item
 import io.github.irgaly.kottage.internal.model.ItemEventType
@@ -99,6 +100,35 @@ internal class KottageListOperator(
 
     /**
      * This should be called in transaction
+     *
+     * positionId からたどり、有効な Entry があればそれを返す
+     */
+    fun getAvailableListItem(
+        positionId: String,
+        direction: KottageListDirection
+    ): ItemListEntry? {
+        var nextId: String? = positionId
+        var entry: ItemListEntry? = null
+        while (entry == null && nextId != null) {
+            val current = itemListRepository.get(nextId)
+            nextId = when (direction) {
+                KottageListDirection.Forward -> current?.nextId
+                KottageListDirection.Backward -> current?.previousId
+            }
+            if (current != null) {
+                if (current.type != listType) {
+                    // positionId と listType　が不一致のとき
+                    nextId = null
+                } else if (current.itemExists) {
+                    entry = current
+                }
+            }
+        }
+        return entry
+    }
+
+    /**
+     * This should be called in transaction
      */
     fun removeListItem(positionId: String) {
         storageOperator.removeListItemInternal(positionId = positionId, listType = listType)
@@ -162,10 +192,16 @@ internal class KottageListOperator(
     /**
      * This should be called in transaction
      */
+    fun invalidateExpiredListEntries(now: Long) {
+        operator.invalidateExpiredListEntries(listType = listType, now = now)
+    }
+
+    /**
+     * This should be called in transaction
+     */
     fun clear() {
         itemListRepository.deleteAll(type = listType)
         itemListRepository.deleteStats(type = listType)
         itemEventRepository.deleteAllList(listType = listType)
     }
-
 }
