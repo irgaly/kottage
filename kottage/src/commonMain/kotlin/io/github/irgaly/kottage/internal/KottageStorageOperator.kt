@@ -52,10 +52,12 @@ internal class KottageStorageOperator(
     fun getOrNull(key: String, now: Long?): Item? {
         var item = itemRepository.get(key, itemType)
         if ((now != null) && (item != null) && item.isExpired(now)) {
-            // delete cache
-            item = null
-            itemRepository.delete(key, itemType)
-            itemRepository.decrementStatsCount(itemType, 1)
+            val itemListEntryIds = itemListRepository.getIds(itemType = itemType, itemKey = key)
+            if (itemListEntryIds.isEmpty()) {
+                // ItemList に存在しなければ削除可能
+                item = null
+                operator.deleteItemInternal(key = key, itemType = itemType)
+            }
         }
         return item
     }
