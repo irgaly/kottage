@@ -43,6 +43,7 @@ internal fun io.github.irgaly.kottage.data.sqlite.Item_list.toDomain(): ItemList
         previousId = previous_id,
         nextId = next_id,
         expireAt = expire_at,
+        userInfo = user_info,
         userPreviousKey = user_previous_key,
         userCurrentKey = user_current_key,
         userNextKey = user_next_key
@@ -58,6 +59,7 @@ internal fun ItemListEntry.toEntity(): io.github.irgaly.kottage.data.sqlite.Item
         previous_id = previousId,
         next_id = nextId,
         expire_at = expireAt,
+        user_info = userInfo,
         user_previous_key = userPreviousKey,
         user_current_key = userCurrentKey,
         user_next_key = userNextKey

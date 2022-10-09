@@ -831,6 +831,7 @@ internal class KottageListImpl(
             previousId = previousId,
             nextId = nextId,
             expireAt = options.itemExpireTime?.let { now + it.inWholeMilliseconds },
+            userInfo = metaData?.info,
             userPreviousKey = metaData?.previousKey,
             userCurrentKey = metaData?.currentKey,
             userNextKey = metaData?.nextKey
