@@ -5,13 +5,17 @@ import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
 import io.github.irgaly.kottage.platform.Context
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import java.util.*
+import java.util.Properties
 
 actual class DriverFactory actual constructor(
     private val context: Context,
     private val dispatcher: CoroutineDispatcher
 ) {
-    actual suspend fun createDriver(fileName: String, directoryPath: String): SqlDriver {
+    actual suspend fun createDriver(
+        fileName: String,
+        directoryPath: String,
+        schema: SqlDriver.Schema
+    ): SqlDriver {
         // SQLDelight + SQLiter + JDBC:
         // * journal_size_limit = -1 (default)
         //   * 524288 bytes = 512 KB に設定
@@ -36,24 +40,24 @@ actual class DriverFactory actual constructor(
                 put("busy_timeout", "3000")
             }
         )
-        migrateIfNeeded(driver)
+        migrateIfNeeded(driver, schema)
         return driver
     }
 
-    private suspend fun migrateIfNeeded(driver: JdbcSqliteDriver) {
+    private suspend fun migrateIfNeeded(driver: JdbcSqliteDriver, schema: SqlDriver.Schema) {
         withContext(dispatcher) {
             val oldVersion = driver.executeQuery(null, "PRAGMA user_version", 0).use { cursor ->
                 if (cursor.next()) {
                     cursor.getLong(0)?.toInt()
                 } else null
             } ?: 0
-            val newVersion = KottageDatabase.Schema.version
+            val newVersion = schema.version
             if (oldVersion == 0) {
-                KottageDatabase.Schema.create(driver)
+                schema.create(driver)
                 driver.execute(null, "PRAGMA user_version = $newVersion", 0)
             } else if (oldVersion < newVersion) {
                 // migrate oldVersion -> newVersion
-                KottageDatabase.Schema.migrate(driver, oldVersion, newVersion)
+                schema.migrate(driver, oldVersion, newVersion)
                 driver.execute(null, "PRAGMA user_version = $newVersion", 0)
             }
         }

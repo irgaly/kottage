@@ -11,7 +11,11 @@ actual class DriverFactory actual constructor(
     private val context: Context,
     private val dispatcher: CoroutineDispatcher
 ) {
-    actual suspend fun createDriver(fileName: String, directoryPath: String): SqlDriver {
+    actual suspend fun createDriver(
+        fileName: String,
+        directoryPath: String,
+        schema: SqlDriver.Schema
+    ): SqlDriver {
         // SQLiteOpenHelper:
         // * journal_size_limit = ? (default)
         //   * 524288 bytes = 512 KB に設定
@@ -33,11 +37,11 @@ actual class DriverFactory actual constructor(
         //     * 単発クエリはどのスレッドからでも呼び出し可能
         //     * Transaction 開始~終了の間では同一スレッドである必要がある
         return AndroidSqliteDriver(
-            KottageDatabase.Schema,
+            schema,
             context.context,
             "$fileName.db",
             FrameworkSQLiteOpenHelperFactory(directoryPath),
-            object : AndroidSqliteDriver.Callback(KottageDatabase.Schema) {
+            object : AndroidSqliteDriver.Callback(schema) {
                 override fun onOpen(db: SupportSQLiteDatabase) {
                     super.onOpen(db)
                     db.query("PRAGMA journal_size_limit = 524288")

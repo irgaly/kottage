@@ -41,6 +41,26 @@ class Kottage(
                 shmFile = "$databaseFile-shm"
             )
         }
+
+        /**
+         * for Debug,
+         * create an old version Database
+         */
+        suspend fun createOldDatabase(
+            name: String,
+            directoryPath: String,
+            environment: KottageEnvironment,
+            version: Int,
+            dispatcher: CoroutineDispatcher = Dispatchers.Default
+        ) {
+            io.github.irgaly.kottage.internal.database.createOldDatabase(
+                fileName = name,
+                directoryPath = directoryPath,
+                environment = environment,
+                dispatcher = dispatcher,
+                version = version
+            )
+        }
     }
 
     val options: KottageOptions = KottageOptions.Builder(

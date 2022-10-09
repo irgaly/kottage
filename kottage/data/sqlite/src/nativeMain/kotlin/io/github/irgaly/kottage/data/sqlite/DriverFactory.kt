@@ -14,7 +14,11 @@ actual class DriverFactory actual constructor(
     private val context: Context,
     private val dispatcher: CoroutineDispatcher
 ) {
-    actual suspend fun createDriver(fileName: String, directoryPath: String): SqlDriver {
+    actual suspend fun createDriver(
+        fileName: String,
+        directoryPath: String,
+        schema: SqlDriver.Schema
+    ): SqlDriver {
         // SQLiter:
         // * journal_size_limit = 32768 (default)
         //   * 524288 bytes = 512 KB に設定
@@ -28,7 +32,6 @@ actual class DriverFactory actual constructor(
         //   * SQLiter supports single connection by concurrency access with lock
         //     * https://github.com/touchlab/SQLiter/blob/main/sqliter-driver/src/nativeCommonMain/kotlin/co/touchlab/sqliter/native/NativeDatabaseManager.kt
         //     * https://github.com/touchlab/SQLiter/blob/main/sqliter-driver/src/nativeCommonMain/kotlin/co/touchlab/sqliter/concurrency/ConcurrentDatabaseConnection.kt
-        val schema = KottageDatabase.Schema
         return NativeSqliteDriver(
             DatabaseConfiguration(
                 name = "$fileName.db",

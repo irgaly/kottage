@@ -41,3 +41,11 @@ internal expect fun createDatabaseConnection(
     environment: KottageEnvironment,
     dispatcher: CoroutineDispatcher = Dispatchers.Default
 ): DatabaseConnection
+
+internal expect suspend fun createOldDatabase(
+    fileName: String,
+    directoryPath: String,
+    environment: KottageEnvironment,
+    version: Int,
+    dispatcher: CoroutineDispatcher = Dispatchers.Default
+)

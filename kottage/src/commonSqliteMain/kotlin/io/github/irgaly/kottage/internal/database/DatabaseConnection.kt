@@ -7,6 +7,7 @@ import io.github.irgaly.kottage.KottageEnvironment
 import io.github.irgaly.kottage.data.sqlite.DriverFactory
 import io.github.irgaly.kottage.data.sqlite.Item_event
 import io.github.irgaly.kottage.data.sqlite.KottageDatabase
+import io.github.irgaly.kottage.data.sqlite.createDriver
 import io.github.irgaly.kottage.platform.Files
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineStart
@@ -224,4 +225,20 @@ internal actual fun createDatabaseConnection(
     }, { sqlDriver ->
         KottageDatabase(sqlDriver, Item_event.Adapter(EnumColumnAdapter()))
     }, dispatcher)
+}
+
+internal actual suspend fun createOldDatabase(
+    fileName: String,
+    directoryPath: String,
+    environment: KottageEnvironment,
+    version: Int,
+    dispatcher: CoroutineDispatcher
+) {
+    withContext(dispatcher) {
+        require(!fileName.contains(Files.separator)) { "fileName contains separator: $fileName" }
+        DriverFactory(
+            environment.context.context,
+            dispatcher
+        ).createDriver(fileName, directoryPath, version)
+    }
 }
