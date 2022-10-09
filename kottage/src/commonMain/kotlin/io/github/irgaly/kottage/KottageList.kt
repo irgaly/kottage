@@ -2,6 +2,7 @@ package io.github.irgaly.kottage
 
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 
 /**
  * List operations
@@ -187,4 +188,130 @@ interface KottageList {
     suspend fun clear()
 }
 
-// TODO: reified type extension を追加する
+@Suppress("unused")
+suspend inline fun <reified T : Any> KottageList.getPageFrom(
+    positionId: String?,
+    pageSize: Long?,
+    direction: KottageListDirection = KottageListDirection.Forward
+): KottageListPage<T> = getPageFrom(
+    positionId = positionId,
+    pageSize = pageSize,
+    type = typeOf<T>(),
+    direction = direction
+)
+
+@Suppress("unused")
+suspend inline fun <reified T : Any> KottageList.getFirst(): KottageListItem<T>? =
+    getFirst(type = typeOf<T>())
+
+@Suppress("unused")
+suspend inline fun <reified T : Any> KottageList.getLast(): KottageListItem<T>? =
+    getLast(type = typeOf<T>())
+
+@Suppress("unused")
+suspend inline fun <reified T : Any> KottageList.get(positionId: String): KottageListItem<T>? =
+    get(positionId = positionId, type = typeOf<T>())
+
+/**
+ * Get item with iteration.
+ */
+@Suppress("unused")
+@Throws(
+    IndexOutOfBoundsException::class,
+    CancellationException::class
+)
+suspend inline fun <reified T : Any> KottageList.getByIndex(
+    index: Long,
+    direction: KottageListDirection = KottageListDirection.Forward
+): KottageListItem<T>? = getByIndex(index = index, type = typeOf<T>(), direction = direction)
+
+@Suppress("unused")
+suspend inline fun <reified T : Any> KottageList.add(
+    key: String,
+    value: T,
+    metaData: KottageListMetaData? = null
+) = add(key = key, value = value, type = typeOf<T>(), metaData = metaData)
+
+@Suppress("unused")
+suspend inline fun <reified T : Any> KottageList.addAll(
+    values: List<KottageListEntry<T>>
+) = addAll(values = values, type = typeOf<T>())
+
+@Suppress("unused")
+suspend inline fun <reified T : Any> KottageList.addFirst(
+    key: String,
+    value: T,
+    metaData: KottageListMetaData? = null
+) = addFirst(key = key, value = value, type = typeOf<T>(), metaData = metaData)
+
+@Suppress("unused")
+suspend inline fun <reified T : Any> KottageList.addAllFirst(
+    values: List<KottageListEntry<T>>
+) = addAllFirst(values = values, type = typeOf<T>())
+
+@Suppress("unused")
+@Throws(
+    NoSuchElementException::class,
+    CancellationException::class
+)
+suspend inline fun <reified T : Any> KottageList.update(
+    positionId: String,
+    key: String,
+    value: T,
+) = update(positionId = positionId, key = key, value = value, type = typeOf<T>())
+
+@Suppress("unused")
+@Throws(
+    NoSuchElementException::class,
+    CancellationException::class
+)
+suspend inline fun <reified T : Any> KottageList.insertAfter(
+    positionId: String,
+    key: String,
+    value: T,
+    metaData: KottageListMetaData? = null
+) = insertAfter(
+    positionId = positionId,
+    key = key,
+    value = value,
+    type = typeOf<T>(),
+    metaData = metaData
+)
+
+@Suppress("unused")
+@Throws(
+    NoSuchElementException::class,
+    CancellationException::class
+)
+suspend inline fun <reified T : Any> KottageList.insertAllAfter(
+    positionId: String,
+    values: List<KottageListEntry<T>>,
+) = insertAllAfter(positionId = positionId, values = values, type = typeOf<T>())
+
+@Suppress("unused")
+@Throws(
+    NoSuchElementException::class,
+    CancellationException::class
+)
+suspend inline fun <reified T : Any> KottageList.insertBefore(
+    positionId: String,
+    key: String,
+    value: T,
+    metaData: KottageListMetaData? = null
+) = insertBefore(
+    positionId = positionId,
+    key = key,
+    value = value,
+    type = typeOf<T>(),
+    metaData = metaData
+)
+
+@Suppress("unused")
+@Throws(
+    NoSuchElementException::class,
+    CancellationException::class
+)
+suspend inline fun <reified T : Any> KottageList.insertAllBefore(
+    positionId: String,
+    values: List<KottageListEntry<T>>
+) = insertAllBefore(positionId = positionId, values = values, type = typeOf<T>())
