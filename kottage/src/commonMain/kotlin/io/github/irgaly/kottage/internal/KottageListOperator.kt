@@ -25,6 +25,7 @@ internal class KottageListOperator(
     @Suppress("unused") private val statsRepository: KottageStatsRepository
 ) {
     private val listType = kottageList.name
+    private val itemType = storage.name
 
     /**
      * This should be called in transaction
@@ -130,12 +131,23 @@ internal class KottageListOperator(
     /**
      * This should be called in transaction
      */
-    fun removeListItem(positionId: String): Boolean {
-        val exists = (itemListRepository.get(positionId) != null)
-        if (exists) {
+    fun removeListItem(positionId: String, now: Long): Boolean {
+        val entry = itemListRepository.get(positionId)
+        return if (entry != null && entry.itemExists) {
+            val itemKey = checkNotNull(entry.itemKey)
             storageOperator.removeListItemInternal(positionId = positionId, listType = listType)
-        }
-        return exists
+            operator.addEvent(
+                now = now,
+                eventType = ItemEventType.Delete,
+                eventExpireTime = storage.options.eventExpireTime,
+                itemType = entry.itemType,
+                itemKey = itemKey,
+                itemListId = entry.id,
+                itemListType = entry.type,
+                maxEventEntryCount = storage.options.maxEventEntryCount
+            )
+            true
+        } else false
     }
 
     /**
