@@ -182,7 +182,7 @@ internal class KottageOperator(
             val newNextIds = mutableMapOf<String, String?>()
             var newFirstId: String? = null
             var newLastId: String? = null
-            var deleted = 0
+            var deleted = 0L
             val remains = entries.toMutableMap()
             while (remains.isNotEmpty()) {
                 // entries を取り除くために必要な更新アイテムを見つける
@@ -240,7 +240,7 @@ internal class KottageOperator(
                 if (0 < deleted) {
                     itemListRepository.decrementStatsCount(
                         type = listType,
-                        count = deleted.toLong()
+                        count = deleted
                     )
                 }
             }
@@ -257,7 +257,7 @@ internal class KottageOperator(
      */
     fun invalidateExpiredListEntries(listType: String, now: Long) {
         itemListRepository.getStats(type = listType)?.let { stats ->
-            var invalidated = 0
+            var invalidated = 0L
             val scanInvalidate = { startPositionId: String, block: (ItemListEntry) -> String? ->
                 var nextPositionId: String? = startPositionId
                 while ((nextPositionId != null) && (invalidated < stats.count)) {
@@ -275,7 +275,7 @@ internal class KottageOperator(
             if (0 < invalidated) {
                 itemListRepository.decrementStatsCount(
                     type = listType,
-                    count = invalidated.toLong()
+                    count = invalidated
                 )
             }
         }
