@@ -1,5 +1,4 @@
 CREATE TABLE item (
-  -- "{type}+{key}"
   key TEXT PRIMARY KEY,
   type TEXT NOT NULL,
   string_value TEXT,
