@@ -197,7 +197,7 @@ internal class KottageListOperator(
      * This should be called in transaction
      */
     fun invalidateExpiredListEntries(now: Long) {
-        operator.invalidateExpiredListEntries(listType = listType, now = now)
+        operator.invalidateExpiredListEntries(now = now, listType = listType)
     }
 
     /**

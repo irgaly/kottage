@@ -112,18 +112,15 @@ internal class KottageDatabaseManager(
             now - it.inWholeMilliseconds
         }
         databaseConnection.transaction {
-            operator.getAllListType { listType ->
-                if (beforeExpireAt != null) {
-                    // List Entry の自動削除が有効
-                    operator.evictExpiredListEntries(
-                        listType = listType,
-                        now = now,
-                        beforeExpireAt = beforeExpireAt
-                    )
-                } else {
-                    // List Entry Invalidate のみ
-                    operator.invalidateExpiredListEntries(listType = listType, now = now)
-                }
+            if (beforeExpireAt != null) {
+                // List Entry の自動削除が有効
+                operator.evictExpiredListEntries(
+                    now = now,
+                    beforeExpireAt = beforeExpireAt
+                )
+            } else {
+                // List Entry Invalidate のみ
+                operator.invalidateExpiredListEntries(now = now)
             }
             operator.evictCaches(now)
             operator.evictEvents(now)

@@ -129,21 +129,28 @@ internal class KottageOperator(
     /**
      * This should be called in transaction
      */
-    fun evictExpiredListEntries(listType: String, now: Long, beforeExpireAt: Long?) {
-        invalidateExpiredListEntries(listType = listType, now = now)
-        var limit = 1000L
-        while (0 < limit) {
-            val invalidatedIds = itemListRepository.getInvalidatedItemIds(
-                type = listType,
-                beforeExpireAt = beforeExpireAt,
-                limit = limit
-            )
-            if (invalidatedIds.isNotEmpty()) {
-                removeListEntries(listType = listType, positionIds = invalidatedIds)
+    fun evictExpiredListEntries(now: Long, beforeExpireAt: Long?, listType: String? = null) {
+        fun evict(listType: String) {
+            invalidateExpiredListEntries(now = now, listType = listType)
+            var limit = 1000L
+            while (0 < limit) {
+                val invalidatedIds = itemListRepository.getInvalidatedItemIds(
+                    type = listType,
+                    beforeExpireAt = beforeExpireAt,
+                    limit = limit
+                )
+                if (invalidatedIds.isNotEmpty()) {
+                    removeListEntries(listType = listType, positionIds = invalidatedIds)
+                }
+                if (invalidatedIds.size < limit) {
+                    limit = 0
+                }
             }
-            if (invalidatedIds.size < limit) {
-                limit = 0
-            }
+        }
+        if (listType != null) {
+            evict(listType = listType)
+        } else {
+            getAllListType { evict(listType = it) }
         }
     }
 
@@ -159,7 +166,7 @@ internal class KottageOperator(
      * This should be called in transaction
      */
     fun getListCount(listType: String, now: Long): Long {
-        invalidateExpiredListEntries(listType = listType, now = now)
+        invalidateExpiredListEntries(now = now, listType = listType)
         return itemListRepository.getStatsCount(type = listType)
     }
 
@@ -255,29 +262,36 @@ internal class KottageOperator(
      * * リストの末尾から、expired な entity を invalidate する
      *     * 非削除対象の entity が現れたら処理を止める
      */
-    fun invalidateExpiredListEntries(listType: String, now: Long) {
-        itemListRepository.getStats(type = listType)?.let { stats ->
-            var invalidated = 0L
-            val scanInvalidate = { startPositionId: String, block: (ItemListEntry) -> String? ->
-                var nextPositionId: String? = startPositionId
-                while ((nextPositionId != null) && (invalidated < stats.count)) {
-                    val entry = checkNotNull(itemListRepository.get(nextPositionId))
-                    val expired = entry.isExpired(now)
-                    if (entry.itemExists && expired) {
-                        itemListRepository.removeItemKey(entry.id)
-                        invalidated++
+    fun invalidateExpiredListEntries(now: Long, listType: String? = null) {
+        fun invalidate(listType: String) {
+            itemListRepository.getStats(type = listType)?.let { stats ->
+                var invalidated = 0L
+                val scanInvalidate = { startPositionId: String, block: (ItemListEntry) -> String? ->
+                    var nextPositionId: String? = startPositionId
+                    while ((nextPositionId != null) && (invalidated < stats.count)) {
+                        val entry = checkNotNull(itemListRepository.get(nextPositionId))
+                        val expired = entry.isExpired(now)
+                        if (entry.itemExists && expired) {
+                            itemListRepository.removeItemKey(entry.id)
+                            invalidated++
+                        }
+                        nextPositionId = if (entry.itemExists && !expired) null else block(entry)
                     }
-                    nextPositionId = if (entry.itemExists && !expired) null else block(entry)
+                }
+                scanInvalidate(stats.firstItemPositionId) { it.nextId }
+                scanInvalidate(stats.lastItemPositionId) { it.previousId }
+                if (0 < invalidated) {
+                    itemListRepository.decrementStatsCount(
+                        type = listType,
+                        count = invalidated
+                    )
                 }
             }
-            scanInvalidate(stats.firstItemPositionId) { it.nextId }
-            scanInvalidate(stats.lastItemPositionId) { it.previousId }
-            if (0 < invalidated) {
-                itemListRepository.decrementStatsCount(
-                    type = listType,
-                    count = invalidated
-                )
-            }
+        }
+        if (listType != null) {
+            invalidate(listType = listType)
+        } else {
+            getAllListType { invalidate(listType = it) }
         }
     }
 
@@ -314,6 +328,8 @@ internal class KottageOperator(
 
     override fun deleteExpiredItems(itemType: String, now: Long): Long {
         var deleted = 0L
+        // List Invalidate を処理しておく
+        invalidateExpiredListEntries(now)
         itemRepository.getExpiredKeys(now, itemType) { key, _ ->
             val itemListEntryIds = itemListRepository.getIds(itemType = itemType, itemKey = key)
             if (itemListEntryIds.isEmpty()) {
