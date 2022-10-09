@@ -93,6 +93,12 @@ internal class KottageSqliteItemListRepository(
             .executeAsOne()
     }
 
+    override fun getInvalidatedItemCount(type: String): Long {
+        return database.item_listQueries
+            .countInvalidatedItem(type = type)
+            .executeAsOne()
+    }
+
     override fun getAllTypes(receiver: (type: String) -> Unit) {
         database.item_list_statsQueries
             .selectAllItemListType()

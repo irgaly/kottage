@@ -14,6 +14,7 @@ internal interface KottageItemListRepository {
     fun getIds(itemType: String, itemKey: String): List<String>
     fun getInvalidatedItemIds(type: String, beforeExpireAt: Long?, limit: Long): List<String>
     fun getCount(type: String): Long
+    fun getInvalidatedItemCount(type: String): Long
     fun getAllTypes(receiver: (type: String) -> Unit)
     fun delete(id: String)
     fun deleteAll(type: String)

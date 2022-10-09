@@ -801,6 +801,20 @@ internal class KottageListImpl(
         }
     }
 
+    override suspend fun getDebugStatus(): String = withContext(dispatcher) {
+        val listOperator = listOperator.await()
+        databaseManager.transactionWithResult {
+            listOperator.getDebugStatus()
+        }
+    }
+
+    override suspend fun getDebugListRawData(): String = withContext(dispatcher) {
+        val listOperator = listOperator.await()
+        databaseManager.transactionWithResult {
+            listOperator.getDebugListRawData()
+        }
+    }
+
     private fun createItemListEntry(
         id: String,
         itemKey: String,

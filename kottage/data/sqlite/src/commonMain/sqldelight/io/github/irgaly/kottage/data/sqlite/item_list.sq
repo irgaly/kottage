@@ -47,6 +47,9 @@ SELECT id FROM item_list WHERE type = ? AND item_key ISNULL ORDER BY expire_at L
 countByType:
 SELECT count(*) FROM item_list WHERE type = ?;
 
+countInvalidatedItem:
+SELECT count(*) FROM item_list WHERE type = ? AND item_key ISNULL;
+
 delete:
 DELETE FROM item_list WHERE id = ?;
 

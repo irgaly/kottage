@@ -208,4 +208,49 @@ internal class KottageListOperator(
         itemListRepository.deleteStats(type = listType)
         itemEventRepository.deleteAllList(listType = listType)
     }
+
+    /**
+     * This should be called in transaction
+     */
+    fun getDebugStatus(): String {
+        val stats = itemListRepository.getStats(type = listType)
+        val invalidatedItemsCount = itemListRepository.getInvalidatedItemCount(type = listType)
+        val itemsCount = itemListRepository.getCount(type = listType)
+        return """
+        available items: ${stats?.count ?: "(no stats)"}
+        invalidated items: $invalidatedItemsCount
+        total = $itemsCount
+        """.trimIndent()
+    }
+
+    /**
+     * This should be called in transaction
+     */
+    fun getDebugListRawData(): String {
+        val data = StringBuilder()
+        val stats = itemListRepository.getStats(type = listType)
+        if (stats != null) {
+            var nextId: String? = stats.firstItemPositionId
+            data.appendLine("[first] ${stats.firstItemPositionId}")
+            while (nextId != null) {
+                val entry = itemListRepository.get(nextId)
+                if (entry != null) {
+                    val item = entry.itemKey?.let { itemKey ->
+                        itemRepository.get(key = itemKey, itemType = entry.itemType)
+                    }
+                    data.appendLine(
+                        "-> [${entry.id} : expireAt = ${entry.expireAt}]"
+                                + (item?.let {
+                            " => [${item.key} : expireAt = ${item.expireAt}]"
+                        } ?: "")
+                    )
+                }
+                nextId = entry?.nextId
+            }
+            data.appendLine("[last] ${stats.lastItemPositionId}")
+        } else {
+            data.appendLine("(no stats)")
+        }
+        return data.toString()
+    }
 }

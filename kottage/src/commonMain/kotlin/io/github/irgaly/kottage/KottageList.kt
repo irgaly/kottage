@@ -186,6 +186,10 @@ interface KottageList {
     suspend fun compact()
 
     suspend fun clear()
+
+    suspend fun getDebugStatus(): String
+
+    suspend fun getDebugListRawData(): String
 }
 
 @Suppress("unused")
