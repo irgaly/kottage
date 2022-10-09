@@ -162,13 +162,9 @@ internal class KottageStorageImpl(
     }
 
     override suspend fun clear() = withContext(dispatcher) {
-        val itemRepository = itemRepository()
-        val itemEventRepository = itemEventRepository()
+        val storageOperator = storageOperator.await()
         databaseManager.transaction {
-            // TODO: List の item = null とする
-            itemRepository.deleteAll(itemType)
-            itemEventRepository.deleteAll(itemType)
-            itemRepository.deleteStats(itemType)
+            storageOperator.clear()
         }
     }
 

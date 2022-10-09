@@ -113,6 +113,27 @@ internal class KottageStorageOperator(
     /**
      * This should be called in transaction
      */
+    fun clear() {
+        itemRepository.getAllKeys(itemType) { key ->
+            itemListRepository.getIds(
+                itemType = itemType,
+                itemKey = key
+            ).forEach { itemListEntryId ->
+                val entry = checkNotNull(itemListRepository.get(itemListEntryId))
+                removeListItemInternal(
+                    positionId = entry.id,
+                    listType = entry.type
+                )
+            }
+        }
+        itemRepository.deleteAll(itemType)
+        itemEventRepository.deleteAll(itemType)
+        itemRepository.deleteStats(itemType)
+    }
+
+    /**
+     * This should be called in transaction
+     */
     fun removeListItemInternal(positionId: String, listType: String) {
         itemListRepository.removeItemKey(id = positionId)
         itemListRepository.decrementStatsCount(listType, 1)
