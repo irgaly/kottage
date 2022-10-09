@@ -10,6 +10,7 @@ import io.kotest.matchers.shouldBe
 class KottageListTest : DescribeSpec({
     val tempDirectory = tempdir()
     val calendar = TestCalendar(DateTime(2022, 1, 1).utc)
+    val printListStatus = false
     describe("Kottage List Test") {
         val kottage = Kottage(
             "test",
@@ -22,9 +23,9 @@ class KottageListTest : DescribeSpec({
             }
         }
         context("List 基本操作") {
-            val cache = kottage.cache("list_basic")
-            val list = cache.list("list_list_basic")
             it("List への add, get") {
+                val cache = kottage.cache("add_get")
+                val list = cache.list("list_add_get")
                 list.add("key1", "value1")
                 list.add("key2", "value2")
                 list.addAll(
@@ -41,6 +42,25 @@ class KottageListTest : DescribeSpec({
                 list.getByIndex<String>(1)?.entry?.get() shouldBe "value2"
                 list.getByIndex<String>(2)?.entry?.get() shouldBe "value3"
                 list.getByIndex<String>(3)?.entry?.get() shouldBe "value4"
+                if (printListStatus) {
+                    println(list.getDebugStatus())
+                    println(list.getDebugListRawData())
+                }
+            }
+            it("List: remove") {
+                val cache = kottage.cache("remove")
+                val list = cache.list("list_remove")
+                list.add("key1", "value1")
+                list.add("key2", "value2")
+                val first = checkNotNull(list.getFirst<String>())
+                list.remove(first.positionId)
+                cache.get<String>("key1") shouldBe "value1"
+                cache.get<String>("key2") shouldBe "value2"
+                list.getFirst<String>()?.entry?.get() shouldBe "value2"
+                if (printListStatus) {
+                    println(list.getDebugStatus())
+                    println(list.getDebugListRawData())
+                }
             }
         }
     }
