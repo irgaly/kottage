@@ -9,6 +9,7 @@ import kotlin.reflect.typeOf
  *
  * Item List is implemented by Linked List in Database.
  */
+@Suppress("unused")
 interface KottageList {
     val name: String
     val storage: KottageStorage
@@ -20,18 +21,17 @@ interface KottageList {
      *                       direction = Forward: get First Page
      *                       direction = Backward: get Last Page
      */
-    suspend fun <T : Any> getPageFrom(
+    suspend fun getPageFrom(
         positionId: String?,
         pageSize: Long?,
-        type: KType,
         direction: KottageListDirection = KottageListDirection.Forward
-    ): KottageListPage<T>
+    ): KottageListPage
 
     suspend fun getSize(): Long
-    suspend fun <T : Any> getFirst(type: KType): KottageListItem<T>?
-    suspend fun <T : Any> getLast(type: KType): KottageListItem<T>?
+    suspend fun getFirst(): KottageListItem?
+    suspend fun getLast(): KottageListItem?
 
-    suspend fun <T : Any> get(positionId: String, type: KType): KottageListItem<T>?
+    suspend fun get(positionId: String): KottageListItem?
 
     /**
      * Get item with iteration.
@@ -40,11 +40,10 @@ interface KottageList {
         IndexOutOfBoundsException::class,
         CancellationException::class
     )
-    suspend fun <T : Any> getByIndex(
+    suspend fun getByIndex(
         index: Long,
-        type: KType,
         direction: KottageListDirection = KottageListDirection.Forward
-    ): KottageListItem<T>?
+    ): KottageListItem?
 
     suspend fun <T : Any> add(
         key: String,
@@ -58,7 +57,7 @@ interface KottageList {
         CancellationException::class
     )
     suspend fun addKey(key: String, metaData: KottageListMetaData? = null)
-    suspend fun <T : Any> addAll(values: List<KottageListEntry<T>>, type: KType)
+    suspend fun addAll(values: List<KottageListEntry<*>>)
 
     @Throws(
         NoSuchElementException::class,
@@ -77,7 +76,7 @@ interface KottageList {
         CancellationException::class
     )
     suspend fun addKeyFirst(key: String, metaData: KottageListMetaData? = null)
-    suspend fun <T : Any> addAllFirst(values: List<KottageListEntry<T>>, type: KType)
+    suspend fun addAllFirst(values: List<KottageListEntry<*>>)
 
     @Throws(
         NoSuchElementException::class,
@@ -123,10 +122,9 @@ interface KottageList {
         NoSuchElementException::class,
         CancellationException::class
     )
-    suspend fun <T : Any> insertAllAfter(
+    suspend fun insertAllAfter(
         positionId: String,
-        values: List<KottageListEntry<T>>,
-        type: KType
+        values: List<KottageListEntry<*>>
     )
 
     @Throws(
@@ -165,10 +163,9 @@ interface KottageList {
         NoSuchElementException::class,
         CancellationException::class
     )
-    suspend fun <T : Any> insertAllBefore(
+    suspend fun insertAllBefore(
         positionId: String,
-        values: List<KottageListEntry<T>>,
-        type: KType
+        values: List<KottageListEntry<*>>
     )
 
     @Throws(
@@ -193,43 +190,6 @@ interface KottageList {
 }
 
 @Suppress("unused")
-suspend inline fun <reified T : Any> KottageList.getPageFrom(
-    positionId: String?,
-    pageSize: Long?,
-    direction: KottageListDirection = KottageListDirection.Forward
-): KottageListPage<T> = getPageFrom(
-    positionId = positionId,
-    pageSize = pageSize,
-    type = typeOf<T>(),
-    direction = direction
-)
-
-@Suppress("unused")
-suspend inline fun <reified T : Any> KottageList.getFirst(): KottageListItem<T>? =
-    getFirst(type = typeOf<T>())
-
-@Suppress("unused")
-suspend inline fun <reified T : Any> KottageList.getLast(): KottageListItem<T>? =
-    getLast(type = typeOf<T>())
-
-@Suppress("unused")
-suspend inline fun <reified T : Any> KottageList.get(positionId: String): KottageListItem<T>? =
-    get(positionId = positionId, type = typeOf<T>())
-
-/**
- * Get item with iteration.
- */
-@Suppress("unused")
-@Throws(
-    IndexOutOfBoundsException::class,
-    CancellationException::class
-)
-suspend inline fun <reified T : Any> KottageList.getByIndex(
-    index: Long,
-    direction: KottageListDirection = KottageListDirection.Forward
-): KottageListItem<T>? = getByIndex(index = index, type = typeOf<T>(), direction = direction)
-
-@Suppress("unused")
 suspend inline fun <reified T : Any> KottageList.add(
     key: String,
     value: T,
@@ -237,21 +197,11 @@ suspend inline fun <reified T : Any> KottageList.add(
 ) = add(key = key, value = value, type = typeOf<T>(), metaData = metaData)
 
 @Suppress("unused")
-suspend inline fun <reified T : Any> KottageList.addAll(
-    values: List<KottageListEntry<T>>
-) = addAll(values = values, type = typeOf<T>())
-
-@Suppress("unused")
 suspend inline fun <reified T : Any> KottageList.addFirst(
     key: String,
     value: T,
     metaData: KottageListMetaData? = null
 ) = addFirst(key = key, value = value, type = typeOf<T>(), metaData = metaData)
-
-@Suppress("unused")
-suspend inline fun <reified T : Any> KottageList.addAllFirst(
-    values: List<KottageListEntry<T>>
-) = addAllFirst(values = values, type = typeOf<T>())
 
 @Suppress("unused")
 @Throws(
@@ -287,16 +237,6 @@ suspend inline fun <reified T : Any> KottageList.insertAfter(
     NoSuchElementException::class,
     CancellationException::class
 )
-suspend inline fun <reified T : Any> KottageList.insertAllAfter(
-    positionId: String,
-    values: List<KottageListEntry<T>>,
-) = insertAllAfter(positionId = positionId, values = values, type = typeOf<T>())
-
-@Suppress("unused")
-@Throws(
-    NoSuchElementException::class,
-    CancellationException::class
-)
 suspend inline fun <reified T : Any> KottageList.insertBefore(
     positionId: String,
     key: String,
@@ -309,13 +249,3 @@ suspend inline fun <reified T : Any> KottageList.insertBefore(
     type = typeOf<T>(),
     metaData = metaData
 )
-
-@Suppress("unused")
-@Throws(
-    NoSuchElementException::class,
-    CancellationException::class
-)
-suspend inline fun <reified T : Any> KottageList.insertAllBefore(
-    positionId: String,
-    values: List<KottageListEntry<T>>
-) = insertAllBefore(positionId = positionId, values = values, type = typeOf<T>())

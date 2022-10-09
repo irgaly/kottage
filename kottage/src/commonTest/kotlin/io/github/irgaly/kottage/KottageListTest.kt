@@ -30,18 +30,18 @@ class KottageListTest : DescribeSpec({
                 list.add("key2", "value2")
                 list.addAll(
                     listOf(
-                        KottageListEntry("key3", "value3"),
-                        KottageListEntry("key4", "value4")
+                        kottageListEntry("key3", "value3"),
+                        kottageListEntry("key4", "value4")
                     )
                 )
                 cache.get<String>("key1") shouldBe "value1"
                 cache.get<String>("key2") shouldBe "value2"
                 cache.get<String>("key3") shouldBe "value3"
                 cache.get<String>("key4") shouldBe "value4"
-                list.getFirst<String>()?.entry?.get() shouldBe "value1"
-                list.getByIndex<String>(1)?.entry?.get() shouldBe "value2"
-                list.getByIndex<String>(2)?.entry?.get() shouldBe "value3"
-                list.getByIndex<String>(3)?.entry?.get() shouldBe "value4"
+                list.getFirst()?.entry<String>()?.get() shouldBe "value1"
+                list.getByIndex(1)?.entry<String>()?.get() shouldBe "value2"
+                list.getByIndex(2)?.entry<String>()?.get() shouldBe "value3"
+                list.getByIndex(3)?.entry<String>()?.get() shouldBe "value4"
                 if (printListStatus) {
                     println(list.getDebugStatus())
                     println(list.getDebugListRawData())
@@ -52,11 +52,11 @@ class KottageListTest : DescribeSpec({
                 val list = cache.list("list_remove")
                 list.add("key1", "value1")
                 list.add("key2", "value2")
-                val first = checkNotNull(list.getFirst<String>())
+                val first = checkNotNull(list.getFirst())
                 list.remove(first.positionId)
                 cache.get<String>("key1") shouldBe "value1"
                 cache.get<String>("key2") shouldBe "value2"
-                list.getFirst<String>()?.entry?.get() shouldBe "value2"
+                list.getFirst()?.entry<String>()?.get() shouldBe "value2"
                 if (printListStatus) {
                     println(list.getDebugStatus())
                     println(list.getDebugListRawData())

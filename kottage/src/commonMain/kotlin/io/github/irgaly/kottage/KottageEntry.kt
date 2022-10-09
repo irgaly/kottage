@@ -1,9 +1,10 @@
 package io.github.irgaly.kottage
 
-import kotlinx.serialization.SerializationException
 import io.github.irgaly.kottage.internal.encoder.Encoder
 import io.github.irgaly.kottage.internal.model.Item
+import kotlinx.serialization.SerializationException
 import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 
 class KottageEntry<T : Any> internal constructor(
     private val item: Item,
@@ -17,4 +18,14 @@ class KottageEntry<T : Any> internal constructor(
     fun get(): T {
         return encoder.decode(item, type)
     }
+
+    fun <T : Any> withType(type: KType): KottageEntry<T> {
+        return KottageEntry(
+            item = item,
+            type = type,
+            encoder = encoder
+        )
+    }
+
+    inline fun <reified T : Any> getWithType(): KottageEntry<T> = withType(type = typeOf<T>())
 }

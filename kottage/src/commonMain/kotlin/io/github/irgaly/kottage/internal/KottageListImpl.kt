@@ -50,16 +50,15 @@ internal class KottageListImpl(
         databaseManager.getListOperator(this@KottageListImpl, storage)
     }
 
-    override suspend fun <T : Any> getPageFrom(
+    override suspend fun getPageFrom(
         positionId: String?,
         pageSize: Long?,
-        type: KType,
         direction: KottageListDirection
-    ): KottageListPage<T> = withContext(dispatcher) {
+    ): KottageListPage = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val items = transactionWithAutoCompaction { operator, now ->
-            val items = mutableListOf<KottageListItem<T>>()
+            val items = mutableListOf<KottageListItem>()
             var initialPositionId = positionId
             if (initialPositionId == null) {
                 initialPositionId = operator.getListStats(listType)?.let { stats ->
@@ -93,7 +92,6 @@ internal class KottageListImpl(
                                 entry = entry,
                                 itemKey = itemKey,
                                 item = item,
-                                type = type,
                                 encoder = encoder
                             )
                         )
@@ -119,9 +117,7 @@ internal class KottageListImpl(
         }
     }
 
-    override suspend fun <T : Any> getFirst(
-        type: KType
-    ): KottageListItem<T>? = withContext(dispatcher) {
+    override suspend fun getFirst(): KottageListItem? = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         transactionWithAutoCompaction { operator, now ->
@@ -142,7 +138,6 @@ internal class KottageListImpl(
                         entry = entry,
                         itemKey = itemKey,
                         item = item,
-                        type = type,
                         encoder = encoder
                     )
                 }
@@ -150,9 +145,7 @@ internal class KottageListImpl(
         }
     }
 
-    override suspend fun <T : Any> getLast(
-        type: KType
-    ): KottageListItem<T>? = withContext(dispatcher) {
+    override suspend fun getLast(): KottageListItem? = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         transactionWithAutoCompaction { operator, now ->
@@ -173,7 +166,6 @@ internal class KottageListImpl(
                         entry = entry,
                         itemKey = itemKey,
                         item = item,
-                        type = type,
                         encoder = encoder
                     )
                 }
@@ -181,9 +173,7 @@ internal class KottageListImpl(
         }
     }
 
-    override suspend fun <T : Any> get(
-        positionId: String, type: KType
-    ): KottageListItem<T>? = withContext(dispatcher) {
+    override suspend fun get(positionId: String): KottageListItem? = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         transactionWithAutoCompaction { operator, now ->
@@ -201,18 +191,16 @@ internal class KottageListImpl(
                     entry = entry,
                     itemKey = itemKey,
                     item = item,
-                    type = type,
                     encoder = encoder
                 )
             }
         }
     }
 
-    override suspend fun <T : Any> getByIndex(
+    override suspend fun getByIndex(
         index: Long,
-        type: KType,
         direction: KottageListDirection
-    ): KottageListItem<T>? = withContext(dispatcher) {
+    ): KottageListItem? = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         transactionWithAutoCompaction { operator, now ->
@@ -256,7 +244,6 @@ internal class KottageListImpl(
                     entry = currentEntry,
                     itemKey = itemKey,
                     item = item,
-                    type = type,
                     encoder = encoder
                 )
             } else null
@@ -314,15 +301,15 @@ internal class KottageListImpl(
         databaseManager.onEventCreated()
     }
 
-    override suspend fun <T : Any> addAll(
-        values: List<KottageListEntry<T>>, type: KType
+    override suspend fun addAll(
+        values: List<KottageListEntry<*>>
     ) = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
         val items = values.map {
             val id = Id.generateUuidV4Short()
-            val item = encoder.encodeItem(storage, it.key, it.value, type, now)
+            val item = encoder.encodeItem(storage, it.key, it.value, it.type, now)
             Triple(id, item, it.metaData)
         }
         transactionWithAutoCompaction(now) { _, _ ->
@@ -427,16 +414,15 @@ internal class KottageListImpl(
         databaseManager.onEventCreated()
     }
 
-    override suspend fun <T : Any> addAllFirst(
-        values: List<KottageListEntry<T>>,
-        type: KType
+    override suspend fun addAllFirst(
+        values: List<KottageListEntry<*>>
     ) = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
         val items = values.map {
             val id = Id.generateUuidV4Short()
-            val item = encoder.encodeItem(storage, it.key, it.value, type, now)
+            val item = encoder.encodeItem(storage, it.key, it.value, it.type, now)
             Triple(id, item, it.metaData)
         }
         transactionWithAutoCompaction(now) { _, _ ->
@@ -582,17 +568,16 @@ internal class KottageListImpl(
         databaseManager.onEventCreated()
     }
 
-    override suspend fun <T : Any> insertAllAfter(
+    override suspend fun insertAllAfter(
         positionId: String,
-        values: List<KottageListEntry<T>>,
-        type: KType
+        values: List<KottageListEntry<*>>
     ) = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
         val items = values.map {
             val id = Id.generateUuidV4Short()
-            val item = encoder.encodeItem(storage, it.key, it.value, type, now)
+            val item = encoder.encodeItem(storage, it.key, it.value, it.type, now)
             Triple(id, item, it.metaData)
         }
         transactionWithAutoCompaction(now) { _, _ ->
@@ -706,17 +691,16 @@ internal class KottageListImpl(
         databaseManager.onEventCreated()
     }
 
-    override suspend fun <T : Any> insertAllBefore(
+    override suspend fun insertAllBefore(
         positionId: String,
-        values: List<KottageListEntry<T>>,
-        type: KType
+        values: List<KottageListEntry<*>>
     ) = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
         val items = values.map {
             val id = Id.generateUuidV4Short()
-            val item = encoder.encodeItem(storage, it.key, it.value, type, now)
+            val item = encoder.encodeItem(storage, it.key, it.value, it.type, now)
             Triple(id, item, it.metaData)
         }
         transactionWithAutoCompaction(now) { _, _ ->
