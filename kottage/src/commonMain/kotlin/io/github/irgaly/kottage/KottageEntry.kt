@@ -6,6 +6,7 @@ import kotlinx.serialization.SerializationException
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
+@Suppress("unused")
 class KottageEntry<T : Any> internal constructor(
     private val item: Item,
     private val type: KType,
