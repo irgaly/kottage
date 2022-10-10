@@ -77,6 +77,5 @@ class KottageListTest : DescribeSpec({
                 }
             }
         }
-        }
     }
 })
