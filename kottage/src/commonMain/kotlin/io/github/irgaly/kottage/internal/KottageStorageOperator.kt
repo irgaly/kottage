@@ -3,6 +3,7 @@ package io.github.irgaly.kottage.internal
 import io.github.irgaly.kottage.KottageStorage
 import io.github.irgaly.kottage.internal.model.Item
 import io.github.irgaly.kottage.internal.model.ItemEventType
+import io.github.irgaly.kottage.internal.model.ItemListEntry
 import io.github.irgaly.kottage.internal.repository.KottageItemEventRepository
 import io.github.irgaly.kottage.internal.repository.KottageItemListRepository
 import io.github.irgaly.kottage.internal.repository.KottageItemRepository
@@ -82,7 +83,9 @@ internal class KottageStorageOperator(
             // ItemList から削除
             removeListItemInternal(
                 positionId = entry.id,
-                listType = entry.type
+                listType = entry.type,
+                now = now,
+                entry = entry
             )
             val eventId = operator.addEvent(
                 now = now,
@@ -113,7 +116,7 @@ internal class KottageStorageOperator(
     /**
      * This should be called in transaction
      */
-    fun clear() {
+    fun clear(now: Long) {
         itemRepository.getAllKeys(itemType) { key ->
             itemListRepository.getIds(
                 itemType = itemType,
@@ -122,7 +125,9 @@ internal class KottageStorageOperator(
                 val entry = checkNotNull(itemListRepository.get(itemListEntryId))
                 removeListItemInternal(
                     positionId = entry.id,
-                    listType = entry.type
+                    listType = entry.type,
+                    now = now,
+                    entry = entry
                 )
             }
         }
@@ -134,7 +139,20 @@ internal class KottageStorageOperator(
     /**
      * This should be called in transaction
      */
-    fun removeListItemInternal(positionId: String, listType: String) {
+    fun removeListItemInternal(
+        positionId: String,
+        listType: String,
+        now: Long,
+        entry: ItemListEntry? = null
+    ) {
+        val current = entry
+            ?: itemListRepository.get(positionId)
+            ?: throw IllegalStateException("no entry: id = $positionId")
+        if (current.expireAt?.let { now < it } != false) {
+            // 削除時に expireAt を設定する
+            // expireAt が未来の時刻なら上書きする
+            itemListRepository.updateExpireAt(id = positionId, expireAt = now)
+        }
         itemListRepository.removeItemKey(id = positionId)
         itemListRepository.decrementStatsCount(listType, 1)
     }

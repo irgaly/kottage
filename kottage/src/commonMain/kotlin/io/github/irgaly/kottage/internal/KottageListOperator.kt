@@ -135,7 +135,12 @@ internal class KottageListOperator(
         val entry = itemListRepository.get(positionId)
         return if (entry != null && entry.itemExists) {
             val itemKey = checkNotNull(entry.itemKey)
-            storageOperator.removeListItemInternal(positionId = positionId, listType = listType)
+            storageOperator.removeListItemInternal(
+                positionId = positionId,
+                listType = listType,
+                now = now,
+                entry = entry
+            )
             operator.addEvent(
                 now = now,
                 eventType = ItemEventType.Delete,
