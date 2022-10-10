@@ -10,6 +10,8 @@ data class KottageEvent(
     val expireAt: Long?,
     val itemType: String,
     val itemKey: String,
+    val listType: String?,
+    val listPositionId: String?,
     val eventType: KottageEventType
 ) {
     companion object {
@@ -20,6 +22,8 @@ data class KottageEvent(
                 expireAt = itemEvent.expireAt,
                 itemType = itemEvent.itemType,
                 itemKey = itemEvent.itemKey,
+                listType = itemEvent.itemListType,
+                listPositionId = itemEvent.itemListId,
                 eventType = KottageEventType.from(itemEvent.eventType)
             )
         }
