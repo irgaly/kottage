@@ -1,7 +1,6 @@
 package io.github.irgaly.kottage
 
-import com.soywiz.klock.DateTime
-import io.github.irgaly.kottage.platform.KottageContext
+import io.github.irgaly.kottage.extension.buildKottage
 import io.github.irgaly.kottage.platform.TestCalendar
 import io.github.irgaly.test.extension.tempdir
 import io.kotest.core.spec.style.DescribeSpec
@@ -9,14 +8,11 @@ import io.kotest.matchers.shouldBe
 
 class KottageListTest : DescribeSpec({
     val tempDirectory = tempdir()
-    val calendar = TestCalendar(DateTime(2022, 1, 1).utc)
-    val printListStatus = false
+    val printListStatus = true
+    fun kottage(
+        name: String = "test", builder: (KottageOptions.Builder.() -> Unit)? = null
+    ): Pair<Kottage, TestCalendar> = buildKottage(name, tempDirectory, builder)
     describe("Kottage List Test") {
-        val kottage = Kottage(
-            "test",
-            tempDirectory,
-            KottageEnvironment(KottageContext(), calendar)
-        )
         context("debug 機能") {
             it("tempDirectory 表示") {
                 println("tempDirectory = $tempDirectory")
@@ -24,7 +20,7 @@ class KottageListTest : DescribeSpec({
         }
         context("List 基本操作") {
             it("List への add, get") {
-                val cache = kottage.cache("add_get")
+                val cache = kottage().first.cache("add_get")
                 val list = cache.list("list_add_get")
                 list.add("key1", "value1")
                 list.add("key2", "value2")
@@ -48,7 +44,7 @@ class KottageListTest : DescribeSpec({
                 }
             }
             it("List: remove") {
-                val cache = kottage.cache("remove")
+                val cache = kottage().first.cache("remove")
                 val list = cache.list("list_remove")
                 list.add("key1", "value1")
                 list.add("key2", "value2")
@@ -62,6 +58,25 @@ class KottageListTest : DescribeSpec({
                     println(list.getDebugListRawData())
                 }
             }
+            it("MetaData の読み書き") {
+                val cache = kottage().first.cache("metadata")
+                val list = cache.list("list_metadata")
+                list.add(
+                    "key1", "value1", KottageListMetaData(
+                        "info", "prev", "current", "next"
+                    )
+                )
+                val item = checkNotNull(list.getFirst())
+                item.info shouldBe "info"
+                item.previousKey shouldBe "prev"
+                item.currentKey shouldBe "current"
+                item.nextKey shouldBe "next"
+                if (printListStatus) {
+                    println(list.getDebugStatus())
+                    println(list.getDebugListRawData())
+                }
+            }
+        }
         }
     }
 })
