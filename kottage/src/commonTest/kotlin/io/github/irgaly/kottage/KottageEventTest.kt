@@ -3,12 +3,15 @@ package io.github.irgaly.kottage
 import app.cash.turbine.test
 import com.soywiz.klock.DateTime
 import com.soywiz.klock.seconds
+import io.github.irgaly.kottage.extension.buildKottage
 import io.github.irgaly.kottage.platform.KottageContext
 import io.github.irgaly.kottage.platform.TestCalendar
 import io.github.irgaly.test.extension.tempdir
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.days
@@ -18,6 +21,10 @@ import kotlin.time.Duration.Companion.days
  */
 class KottageEventTest : DescribeSpec({
     val tempDirectory = tempdir()
+    fun kottage(
+        name: String = "test", builder: (KottageOptions.Builder.() -> Unit)? = null
+    ): Pair<Kottage, TestCalendar> = buildKottage(name, tempDirectory, builder)
+
     val calendar = TestCalendar(DateTime(2022, 1, 1).utc)
     describe("Kottage Event Test") {
         val kottage = Kottage(
@@ -80,6 +87,26 @@ class KottageEventTest : DescribeSpec({
                     calendar2.now += 1.seconds
                     storage.remove("key1")
                     awaitItem().eventType shouldBe KottageEventType.Delete
+                }
+            }
+            it("List Event を受け取れること") {
+                val (kottage, calendar) = kottage("event_list")
+                val cache = kottage.cache("event_list")
+                val list = cache.list("list_event_list")
+                cache.eventFlow().filter { it.listType != null }.test {
+                    list.add("key1", "value1")
+                    awaitItem().let {
+                        it.listPositionId shouldNotBe null
+                        it.listType shouldBe "list_event_list"
+                        it.eventType shouldBe KottageEventType.Create
+                    }
+                    calendar.now += 1.seconds
+                    list.remove(checkNotNull(list.getFirst()).positionId)
+                    awaitItem().let {
+                        it.listPositionId shouldNotBe null
+                        it.listType shouldBe "list_event_list"
+                        it.eventType shouldBe KottageEventType.Delete
+                    }
                 }
             }
         }
