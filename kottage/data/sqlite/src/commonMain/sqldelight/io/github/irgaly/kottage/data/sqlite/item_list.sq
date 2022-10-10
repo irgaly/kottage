@@ -33,6 +33,9 @@ UPDATE item_list SET expire_at = ? WHERE id = ?;
 removeItemKey:
 UPDATE item_list SET item_key = NULL WHERE id = ?;
 
+removeUserData:
+UPDATE item_list SET user_info = NULL, user_previous_key = NULL, user_current_key = NULL, user_next_key = NULL WHERE id = ?;
+
 select:
 SELECT * FROM item_list WHERE id = ?;
 

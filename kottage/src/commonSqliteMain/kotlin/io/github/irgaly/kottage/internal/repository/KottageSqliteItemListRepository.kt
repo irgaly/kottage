@@ -52,6 +52,11 @@ internal class KottageSqliteItemListRepository(
             .removeItemKey(id = id)
     }
 
+    override fun removeUserData(id: String) {
+        database.item_listQueries
+            .removeUserData(id = id)
+    }
+
     override fun get(id: String): ItemListEntry? {
         return database.item_listQueries
             .select(id = id)

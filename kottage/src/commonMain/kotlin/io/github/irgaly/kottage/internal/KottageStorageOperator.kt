@@ -154,6 +154,7 @@ internal class KottageStorageOperator(
             itemListRepository.updateExpireAt(id = positionId, expireAt = now)
         }
         itemListRepository.removeItemKey(id = positionId)
+        itemListRepository.removeUserData(id = positionId)
         itemListRepository.decrementStatsCount(listType, 1)
     }
 }

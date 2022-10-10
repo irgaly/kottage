@@ -273,6 +273,7 @@ internal class KottageOperator(
                         val expired = entry.isExpired(now)
                         if (entry.itemExists && expired) {
                             itemListRepository.removeItemKey(entry.id)
+                            itemListRepository.removeUserData(entry.id)
                             invalidated++
                         }
                         nextPositionId = if (entry.itemExists && !expired) null else block(entry)
