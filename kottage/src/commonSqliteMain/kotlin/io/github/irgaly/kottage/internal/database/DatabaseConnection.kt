@@ -240,5 +240,6 @@ internal actual suspend fun createOldDatabase(
             environment.context.context,
             dispatcher
         ).createDriver(fileName, directoryPath, version)
+            .execute(null, "PRAGMA no_operation /* execution for opening connection */", 0)
     }
 }
