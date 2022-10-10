@@ -19,7 +19,7 @@ class KottageListTest : DescribeSpec({
             }
         }
         context("List 基本操作") {
-            it("List への add, get") {
+            it("add, get") {
                 val cache = kottage().first.cache("add_get")
                 val list = cache.list("list_add_get")
                 list.add("key1", "value1")
@@ -43,7 +43,7 @@ class KottageListTest : DescribeSpec({
                     println(list.getDebugListRawData())
                 }
             }
-            it("List: remove") {
+            it("remove") {
                 val cache = kottage().first.cache("remove")
                 val list = cache.list("list_remove")
                 list.add("key1", "value1")
