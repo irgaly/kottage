@@ -3,12 +3,27 @@ package io.github.irgaly.kottage
 import io.github.irgaly.kottage.internal.KottageOperator
 import io.github.irgaly.kottage.internal.database.DatabaseConnection
 import io.github.irgaly.kottage.internal.model.ItemEventFlow
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flattenConcat
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onSubscription
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 
 /**
- * Resumeable Event Flow
+ * Resumable Event Flow
  */
 class KottageEventFlow internal constructor(
     initialTime: Long?,
@@ -55,7 +70,11 @@ class KottageEventFlow internal constructor(
                 }
                 CoroutineScope(currentCoroutineContext()).launch(start = CoroutineStart.UNDISPATCHED) {
                     // collect を開始した状態で eventFlow.withLock を抜ける
-                    eventFlow.flow.collect {
+                    eventFlow.flow.let { flow ->
+                        if (itemType != null) {
+                            flow.filter { it.itemType == itemType }
+                        } else flow
+                    }.collect {
                         bridgeFlow.emit(KottageEvent.from(it))
                     }
                 }
