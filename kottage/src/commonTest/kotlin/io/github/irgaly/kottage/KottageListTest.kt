@@ -113,6 +113,33 @@ class KottageListTest : DescribeSpec({
                     println(list.getDebugListRawData())
                 }
             }
+
+            it("先頭・末尾ではない有効期限切れ Entry にアクセスできる") {
+                list.add("key1", "value1")
+                val entry1 = checkNotNull(list.getLast())
+                list.add("key2", "value2")
+                val entry2 = checkNotNull(list.getLast())
+                list.add("key3", "value3")
+                val entry3 = checkNotNull(list.getLast())
+                calendar.now += 1.hours
+                list.insertAfter(entry1.positionId, "key4", "value4")
+                val entry4 = checkNotNull(list.getByIndex(1))
+                list.insertAfter(entry2.positionId, "key5", "value5")
+                val entry5 = checkNotNull(list.getByIndex(3))
+                calendar.now += 23.hours
+                list.get(entry1.positionId)?.itemKey shouldBe "key4"
+                list.get(entry2.positionId)?.itemKey shouldBe "key2"
+                list.get(entry3.positionId) shouldBe null
+                list.get(entry4.positionId)?.itemKey shouldBe "key4"
+                list.get(entry5.positionId)?.itemKey shouldBe "key5"
+                calendar.now += 1.hours
+                list.get(entry1.positionId) shouldBe null
+                list.get(entry4.positionId) shouldBe null
+                if (printListStatus) {
+                    println(list.getDebugStatus())
+                    println(list.getDebugListRawData())
+                }
+            }
         }
     }
 })
