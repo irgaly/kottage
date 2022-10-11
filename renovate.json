@@ -29,6 +29,9 @@
       "groupName": "Kotest",
       "matchPackagePrefixes": [
         "io.kotest:kotest-"
+      ],
+      "matchPackageNames": [
+        "io.kotest.multiplatform"
       ]
     }
   ]
