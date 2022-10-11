@@ -133,7 +133,10 @@ internal class KottageListOperator(
      */
     fun removeListItem(positionId: String, now: Long): Boolean {
         val entry = itemListRepository.get(positionId)
-        return if (entry != null && entry.itemExists) {
+        return if ((entry != null) &&
+            entry.itemExists &&
+            (entry.type == listType)
+        ) {
             val itemKey = checkNotNull(entry.itemKey)
             storageOperator.removeListItemInternal(
                 positionId = positionId,

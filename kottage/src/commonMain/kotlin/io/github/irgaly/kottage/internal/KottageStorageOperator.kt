@@ -162,6 +162,9 @@ internal class KottageStorageOperator(
         val current = entry
             ?: itemListRepository.get(positionId)
             ?: throw IllegalStateException("no entry: id = $positionId")
+        if (listType != current.type) {
+            throw IllegalStateException("invalid list type: listType = $listType, entry.type = ${current.type}")
+        }
         if (current.expireAt?.let { now < it } != false) {
             // 削除時に expireAt を設定する
             // expireAt が未来の時刻なら上書きする
