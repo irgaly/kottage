@@ -79,7 +79,10 @@ internal class KottageListImpl(
                         positionId = nextPositionId,
                         direction = direction
                     )?.let { entry ->
-                        nextPositionId = entry.nextId
+                        nextPositionId = when (direction) {
+                            KottageListDirection.Forward -> entry.nextId
+                            KottageListDirection.Backward -> entry.previousId
+                        }
                         val itemKey = checkNotNull(entry.itemKey)
                         val item = checkNotNull(
                             storageOperator.getOrNull(key = itemKey, now = null)
@@ -220,13 +223,8 @@ internal class KottageListImpl(
         transactionWithAutoCompaction { operator, now ->
             val initialPositionId = operator.getListStats(listType)?.let { stats ->
                 when (direction) {
-                    KottageListDirection.Forward -> {
-                        stats.firstItemPositionId
-                    }
-
-                    KottageListDirection.Backward -> {
-                        stats.lastItemPositionId
-                    }
+                    KottageListDirection.Forward -> stats.firstItemPositionId
+                    KottageListDirection.Backward -> stats.lastItemPositionId
                 }
             }
             var currentIndex = -1L
@@ -244,7 +242,10 @@ internal class KottageListImpl(
                 )
                 currentIndex = nextIndex
                 nextIndex++
-                nextPositionId = currentEntry?.nextId
+                nextPositionId = when (direction) {
+                    KottageListDirection.Forward -> currentEntry?.nextId
+                    KottageListDirection.Backward -> currentEntry?.previousId
+                }
             }
             if (currentEntry != null && currentIndex == index) {
                 // index のアイテムを見つけた
