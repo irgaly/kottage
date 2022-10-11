@@ -117,6 +117,20 @@ internal class KottageListImpl(
         }
     }
 
+    override suspend fun isEmpty(): Boolean = withContext(dispatcher) {
+        val count = transactionWithAutoCompaction { operator, now ->
+            operator.getListCount(listType = listType, now = now)
+        }
+        (count <= 0)
+    }
+
+    override suspend fun isNotEmpty(): Boolean = withContext(dispatcher) {
+        val count = transactionWithAutoCompaction { operator, now ->
+            operator.getListCount(listType = listType, now = now)
+        }
+        (0 < count)
+    }
+
     override suspend fun getFirst(): KottageListEntry? = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()

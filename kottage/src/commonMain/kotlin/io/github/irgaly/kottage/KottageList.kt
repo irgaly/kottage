@@ -28,6 +28,8 @@ interface KottageList {
     ): KottageListPage
 
     suspend fun getSize(): Long
+    suspend fun isEmpty(): Boolean
+    suspend fun isNotEmpty(): Boolean
     suspend fun getFirst(): KottageListEntry?
     suspend fun getLast(): KottageListEntry?
 
