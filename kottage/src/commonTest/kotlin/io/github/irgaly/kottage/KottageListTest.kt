@@ -53,6 +53,15 @@ class KottageListTest : DescribeSpec({
                     println(list.getDebugListRawData())
                 }
             }
+            it("update") {
+                val cache = kottage().first.cache("update")
+                val list = cache.list("list_update")
+                list.add("key1", "value1")
+                list.update(checkNotNull(list.getFirst()).positionId, "key2", "value2")
+                cache.get<String>("key1") shouldBe "value1"
+                cache.get<String>("key2") shouldBe "value2"
+                list.getFirst()?.value<String>() shouldBe "value2"
+            }
             it("remove") {
                 val cache = kottage().first.cache("remove")
                 val list = cache.list("list_remove")
