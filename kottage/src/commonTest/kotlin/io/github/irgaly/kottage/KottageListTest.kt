@@ -48,6 +48,10 @@ class KottageListTest : DescribeSpec({
                 list.getByIndex(4)?.value<String>() shouldBe "value4"
                 list.getByIndex(5)?.value<String>() shouldBe "value1"
                 list.getByIndex(6)?.value<String>() shouldBe "value2"
+                list.getByIndex(
+                    1,
+                    direction = KottageListDirection.Backward
+                )?.value<String>() shouldBe "value1"
                 if (printListStatus) {
                     println(list.getDebugStatus())
                     println(list.getDebugListRawData())
