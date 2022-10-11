@@ -132,7 +132,7 @@ internal class KottageOperator(
     fun evictExpiredListEntries(now: Long, beforeExpireAt: Long?, listType: String? = null) {
         fun evict(listType: String) {
             invalidateExpiredListEntries(now = now, listType = listType)
-            var limit = 1000L
+            var limit = 100L
             while (0 < limit) {
                 val invalidatedIds = itemListRepository.getInvalidatedItemIds(
                     type = listType,
