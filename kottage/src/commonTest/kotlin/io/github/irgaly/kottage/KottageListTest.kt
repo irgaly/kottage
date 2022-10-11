@@ -80,6 +80,65 @@ class KottageListTest : DescribeSpec({
                     println(list.getDebugListRawData())
                 }
             }
+            it("Page 読み込み") {
+                val cache = kottage().first.cache("page")
+                val list = cache.list("list_page")
+                list.addAll(
+                    listOf(
+                        kottageListValue("key1", "value1"),
+                        kottageListValue("key2", "value2"),
+                        kottageListValue("key3", "value3"),
+                        kottageListValue("keyX", "valueX"),
+                        kottageListValue("key4", "value4"),
+                        kottageListValue("key5", "value5"),
+                        kottageListValue("key6", "value6")
+                    )
+                )
+                list.remove(checkNotNull(list.getByIndex(3)).positionId)
+                val page0 = list.getPageFrom(null, 1)
+                val page1 = list.getPageFrom(checkNotNull(page0.nextPositionId), 2)
+                var page2 = list.getPageFrom(checkNotNull(page1.nextPositionId), 3)
+                page0.hasPrevious shouldBe false
+                page0.items[0].itemKey shouldBe "key1"
+                page1.items[0].itemKey shouldBe "key2"
+                page2.items[0].itemKey shouldBe "key4"
+                page2.hasNext shouldBe false
+                list.add("key7", "value7")
+                page2 = list.getPageFrom(checkNotNull(page1.nextPositionId), 5)
+                page2.items[0].itemKey shouldBe "key4"
+                page2.items.last().itemKey shouldBe "key7"
+                page2.hasNext shouldBe false
+            }
+            it("Page 読み込み: Reverse") {
+                val cache = kottage().first.cache("page_reverse")
+                val list = cache.list("list_page_reverse")
+                list.addAll(
+                    listOf(
+                        kottageListValue("key1", "value1"),
+                        kottageListValue("key2", "value2"),
+                        kottageListValue("key3", "value3"),
+                        kottageListValue("key4", "value4"),
+                        kottageListValue("key5", "value5"),
+                        kottageListValue("key6", "value6")
+                    )
+                )
+                val page = list.getPageFrom(
+                    checkNotNull(list.getByIndex(4)).positionId,
+                    2,
+                    direction = KottageListDirection.Backward
+                )
+                val lastPage = list.getPageFrom(
+                    null,
+                    2,
+                    direction = KottageListDirection.Backward
+                )
+                page.hasPrevious shouldBe true
+                page.hasNext shouldBe true
+                page.items[0].itemKey shouldBe "key4"
+                lastPage.hasPrevious shouldBe true
+                lastPage.hasNext shouldBe false
+                lastPage.items[0].itemKey shouldBe "key5"
+            }
             it("MetaData の読み書き") {
                 val cache = kottage().first.cache("metadata")
                 val list = cache.list("list_metadata")
