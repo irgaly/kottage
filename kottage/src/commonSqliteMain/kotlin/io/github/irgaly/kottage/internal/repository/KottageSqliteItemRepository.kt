@@ -4,6 +4,7 @@ import com.squareup.sqldelight.db.use
 import io.github.irgaly.kottage.data.sqlite.KottageDatabase
 import io.github.irgaly.kottage.data.sqlite.extension.executeAsExists
 import io.github.irgaly.kottage.internal.model.Item
+import io.github.irgaly.kottage.internal.model.ItemStats
 
 internal class KottageSqliteItemRepository(
     private val database: KottageDatabase
@@ -107,6 +108,12 @@ internal class KottageSqliteItemRepository(
                     receiver(Item.keyFromEntityKey(key, itemType), itemType)
                 }
             }
+    }
+
+    override fun getStats(itemType: String): ItemStats? {
+        return database.item_statsQueries
+            .select(item_type = itemType)
+            .executeAsOneOrNull()?.toDomain()
     }
 
     override fun delete(key: String, itemType: String) {

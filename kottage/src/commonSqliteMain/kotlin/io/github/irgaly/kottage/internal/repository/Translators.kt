@@ -5,6 +5,7 @@ import io.github.irgaly.kottage.internal.model.ItemEvent
 import io.github.irgaly.kottage.internal.model.ItemEventType
 import io.github.irgaly.kottage.internal.model.ItemListEntry
 import io.github.irgaly.kottage.internal.model.ItemListStats
+import io.github.irgaly.kottage.internal.model.ItemStats
 
 internal fun io.github.irgaly.kottage.data.sqlite.Item.toDomain(): Item {
     return Item(
@@ -63,6 +64,14 @@ internal fun ItemListEntry.toEntity(): io.github.irgaly.kottage.data.sqlite.Item
         user_previous_key = userPreviousKey,
         user_current_key = userCurrentKey,
         user_next_key = userNextKey
+    )
+}
+
+internal fun io.github.irgaly.kottage.data.sqlite.Item_stats.toDomain(): ItemStats {
+    return ItemStats(
+        itemType = item_type,
+        count = count,
+        eventCount = event_count
     )
 }
 

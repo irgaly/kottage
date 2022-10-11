@@ -214,6 +214,13 @@ internal class KottageStorageImpl(
         )
     }
 
+    override suspend fun getDebugStatus(): String = withContext(dispatcher) {
+        val storageOperator = storageOperator.await()
+        databaseManager.transactionWithResult {
+            storageOperator.getDebugStatus()
+        }
+    }
+
     private suspend fun <R> transactionWithAutoCompaction(
         now: Long? = null,
         bodyWithReturn: (operator: KottageOperator, now: Long) -> R

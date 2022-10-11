@@ -1,6 +1,7 @@
 package io.github.irgaly.kottage.internal.repository
 
 import io.github.irgaly.kottage.internal.model.Item
+import io.github.irgaly.kottage.internal.model.ItemStats
 
 internal interface KottageItemRepository {
     fun upsert(item: Item)
@@ -27,6 +28,8 @@ internal interface KottageItemRepository {
         limit: Long,
         receiver: (key: String, itemType: String) -> Unit
     )
+
+    fun getStats(itemType: String): ItemStats?
 
     fun delete(key: String, itemType: String)
     fun deleteAll(itemType: String)

@@ -157,4 +157,18 @@ internal class KottageStorageOperator(
         itemListRepository.removeUserData(id = positionId)
         itemListRepository.decrementStatsCount(listType, 1)
     }
+
+    /**
+     * This should be called in transaction
+     */
+    fun getDebugStatus(): String {
+        val stats = itemRepository.getStats(itemType)
+        val count = itemRepository.getCount(itemType)
+        return """
+        [ storage "$itemType" ]
+        Stats count: ${stats?.count ?: "(no stats)"}
+        Stats event count: ${stats?.eventCount ?: "(no stats)"}
+        SQL item count: $count
+        """.trimIndent()
+    }
 }

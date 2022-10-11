@@ -94,6 +94,8 @@ interface KottageStorage {
         name: String,
         optionsBuilder: (KottageListOptions.Builder.() -> Unit)? = null
     ): KottageList
+
+    suspend fun getDebugStatus(): String
 }
 
 /**
