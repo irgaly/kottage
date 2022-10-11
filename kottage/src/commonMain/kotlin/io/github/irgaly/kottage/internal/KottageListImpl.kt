@@ -278,7 +278,6 @@ internal class KottageListImpl(
         val newPositionId = Id.generateUuidV4Short()
         val entry = transactionWithAutoCompaction(now) { _, _ ->
             val lastPositionId = listOperator.getLastItemPositionId()
-            storageOperator.upsertItem(item, now)
             val entry = createItemListEntry(
                 id = newPositionId,
                 itemKey = item.key,
@@ -288,6 +287,7 @@ internal class KottageListImpl(
                 metaData = metaData
             )
             listOperator.addListEntries(listOf(entry), now)
+            storageOperator.upsertItem(item, now)
             KottageListEntry.from(
                 entry = entry,
                 itemKey = item.key,
@@ -353,10 +353,10 @@ internal class KottageListImpl(
                     metaData = metaData
                 )
             }
+            listOperator.addListEntries(entries, now)
             items.forEach { (_, item, _) ->
                 storageOperator.upsertItem(item, now)
             }
-            listOperator.addListEntries(entries, now)
         }
         if (values.isNotEmpty()) {
             databaseManager.onEventCreated()
@@ -406,7 +406,6 @@ internal class KottageListImpl(
         val newPositionId = Id.generateUuidV4Short()
         val entry = transactionWithAutoCompaction(now) { _, _ ->
             val firstPositionId = listOperator.getFirstItemPositionId()
-            storageOperator.upsertItem(item, now)
             val entry = createItemListEntry(
                 id = newPositionId,
                 itemKey = item.key,
@@ -416,6 +415,7 @@ internal class KottageListImpl(
                 metaData = metaData
             )
             listOperator.addListEntries(listOf(entry), now)
+            storageOperator.upsertItem(item, now)
             KottageListEntry.from(
                 entry = entry,
                 itemKey = item.key,
@@ -480,10 +480,10 @@ internal class KottageListImpl(
                     metaData = metaData
                 )
             }
+            listOperator.addListEntries(entries, now)
             items.forEach { (_, item, _) ->
                 storageOperator.upsertItem(item, now)
             }
-            listOperator.addListEntries(entries, now)
         }
         if (values.isNotEmpty()) {
             databaseManager.onEventCreated()
@@ -534,8 +534,8 @@ internal class KottageListImpl(
         val entry = transactionWithAutoCompaction(now) { _, _ ->
             val entry = listOperator.getListItem(positionId = positionId)
                 ?: throw NoSuchElementException("positionId = $positionId")
-            storageOperator.upsertItem(item, now)
             listOperator.updateItemKey(entry.id, item, now)
+            storageOperator.upsertItem(item, now)
             KottageListEntry.from(
                 entry = entry,
                 itemKey = item.key,
@@ -585,7 +585,6 @@ internal class KottageListImpl(
         val entry = transactionWithAutoCompaction(now) { _, _ ->
             val anchorEntry = listOperator.getListItem(positionId)
                 ?: throw NoSuchElementException("list = $listType, positionId = $positionId")
-            storageOperator.upsertItem(item, now)
             val entry = createItemListEntry(
                 id = newPositionId,
                 itemKey = item.key,
@@ -595,6 +594,7 @@ internal class KottageListImpl(
                 metaData = metaData
             )
             listOperator.addListEntries(listOf(entry), now)
+            storageOperator.upsertItem(item, now)
             KottageListEntry.from(
                 entry = entry,
                 itemKey = item.key,
@@ -664,10 +664,10 @@ internal class KottageListImpl(
                     metaData = metaData
                 )
             }
+            listOperator.addListEntries(entries, now)
             items.forEach { (_, item, _) ->
                 storageOperator.upsertItem(item, now)
             }
-            listOperator.addListEntries(entries, now)
         }
         if (values.isNotEmpty()) {
             databaseManager.onEventCreated()
@@ -722,7 +722,6 @@ internal class KottageListImpl(
         val entry = transactionWithAutoCompaction(now) { _, _ ->
             val anchorEntry = listOperator.getListItem(positionId)
                 ?: throw NoSuchElementException("list = $listType, positionId = $positionId")
-            storageOperator.upsertItem(item, now)
             val entry = createItemListEntry(
                 id = newPositionId,
                 itemKey = item.key,
@@ -732,6 +731,7 @@ internal class KottageListImpl(
                 metaData = metaData
             )
             listOperator.addListEntries(listOf(entry), now)
+            storageOperator.upsertItem(item, now)
             KottageListEntry.from(
                 entry = entry,
                 itemKey = item.key,
@@ -801,10 +801,10 @@ internal class KottageListImpl(
                     metaData = metaData
                 )
             }
+            listOperator.addListEntries(entries, now)
             items.forEach { (_, item, _) ->
                 storageOperator.upsertItem(item, now)
             }
-            listOperator.addListEntries(entries, now)
         }
         if (values.isNotEmpty()) {
             databaseManager.onEventCreated()

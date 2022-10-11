@@ -82,32 +82,58 @@ internal class KottageSqliteItemRepository(
 
     override fun getLeastRecentlyUsedKeys(
         itemType: String,
-        limit: Long,
-        receiver: (key: String, itemType: String) -> Unit
+        limit: Long?,
+        receiver: (key: String) -> Boolean
     ) {
-        database.itemQueries
-            .selectLeastRecentlyUsedKeys(itemType, limit)
-            .execute().use { cursor ->
-                while (cursor.next()) {
-                    val key = checkNotNull(cursor.getString(0))
-                    receiver(Item.keyFromEntityKey(key, itemType), itemType)
+        if (limit != null) {
+            database.itemQueries
+                .selectLeastRecentlyUsedKeysLimit(type = itemType, limit = limit)
+                .execute().use { cursor ->
+                    var canNext = true
+                    while (canNext && cursor.next()) {
+                        val key = checkNotNull(cursor.getString(0))
+                        canNext = receiver(Item.keyFromEntityKey(key, itemType))
+                    }
                 }
-            }
+        } else {
+            database.itemQueries
+                .selectLeastRecentlyUsedKeys(type = itemType)
+                .execute().use { cursor ->
+                    var canNext = true
+                    while (canNext && cursor.next()) {
+                        val key = checkNotNull(cursor.getString(0))
+                        canNext = receiver(Item.keyFromEntityKey(key, itemType))
+                    }
+                }
+        }
     }
 
     override fun getOlderKeys(
         itemType: String,
-        limit: Long,
-        receiver: (key: String, itemType: String) -> Unit
+        limit: Long?,
+        receiver: (key: String) -> Boolean
     ) {
-        database.itemQueries
-            .selectOlderCreatedKeys(itemType, limit)
-            .execute().use { cursor ->
-                while (cursor.next()) {
-                    val key = checkNotNull(cursor.getString(0))
-                    receiver(Item.keyFromEntityKey(key, itemType), itemType)
+        if (limit != null) {
+            database.itemQueries
+                .selectOlderCreatedKeysLimit(type = itemType, limit = limit)
+                .execute().use { cursor ->
+                    var canNext = true
+                    while (canNext && cursor.next()) {
+                        val key = checkNotNull(cursor.getString(0))
+                        canNext = receiver(Item.keyFromEntityKey(key, itemType))
+                    }
                 }
-            }
+        } else {
+            database.itemQueries
+                .selectOlderCreatedKeys(type = itemType)
+                .execute().use { cursor ->
+                    var canNext = true
+                    while (canNext && cursor.next()) {
+                        val key = checkNotNull(cursor.getString(0))
+                        canNext = receiver(Item.keyFromEntityKey(key, itemType))
+                    }
+                }
+        }
     }
 
     override fun getStats(itemType: String): ItemStats? {

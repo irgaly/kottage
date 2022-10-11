@@ -308,22 +308,28 @@ internal class KottageOperator(
     }
 
     override fun deleteLeastRecentlyUsed(itemType: String, limit: Long) {
-        itemRepository.getLeastRecentlyUsedKeys(itemType, limit) { key, _ ->
+        var deleted = 0L
+        itemRepository.getLeastRecentlyUsedKeys(itemType, null) { key ->
             val itemListEntryIds = itemListRepository.getIds(itemType = itemType, itemKey = key)
             if (itemListEntryIds.isEmpty()) {
                 // ItemList に存在しなければ削除可能
                 deleteItemInternal(key, itemType)
+                deleted++
             }
+            (deleted < limit)
         }
     }
 
     override fun deleteOlderItems(itemType: String, limit: Long) {
-        itemRepository.getOlderKeys(itemType, limit) { key, _ ->
+        var deleted = 0L
+        itemRepository.getOlderKeys(itemType, null) { key ->
             val itemListEntryIds = itemListRepository.getIds(itemType = itemType, itemKey = key)
             if (itemListEntryIds.isEmpty()) {
                 // ItemList に存在しなければ削除可能
                 deleteItemInternal(key, itemType)
+                deleted++
             }
+            (deleted < limit)
         }
     }
 

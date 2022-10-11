@@ -19,14 +19,14 @@ internal interface KottageItemRepository {
 
     fun getLeastRecentlyUsedKeys(
         itemType: String,
-        limit: Long,
-        receiver: (key: String, itemType: String) -> Unit
+        limit: Long?,
+        receiver: (key: String) -> Boolean
     )
 
     fun getOlderKeys(
         itemType: String,
-        limit: Long,
-        receiver: (key: String, itemType: String) -> Unit
+        limit: Long?,
+        receiver: (key: String) -> Boolean
     )
 
     fun getStats(itemType: String): ItemStats?

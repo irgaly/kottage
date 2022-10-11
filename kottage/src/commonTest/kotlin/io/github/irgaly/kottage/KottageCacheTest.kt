@@ -157,5 +157,28 @@ class KottageCacheTest : DescribeSpec({
                 cache.getOrNull<String>("Key1") shouldBe null
             }
         }
+        context("Strategy + List") {
+            val (kottage, calendar) = kottage()
+            val cache = kottage.cache("strategy_list") {
+                strategy = KottageFifoStrategy(3, 2)
+            }
+            val list = cache.list("list_strategy_list")
+            it("List にデータがあれば maxEntryCount を超えても削除されない") {
+                list.add("1", "")
+                calendar.now += 1.milliseconds
+                cache.put("2", "")
+                calendar.now += 1.milliseconds
+                list.add("3", "")
+                calendar.now += 1.milliseconds
+                list.add("4", "")
+                calendar.now += 1.milliseconds
+                cache.put("5", "")
+                cache.exists("1") shouldBe true
+                cache.exists("2") shouldBe false
+                cache.exists("3") shouldBe true
+                cache.exists("4") shouldBe true
+                cache.exists("5") shouldBe false
+            }
+        }
     }
 })
