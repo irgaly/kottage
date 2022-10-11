@@ -269,13 +269,13 @@ internal class KottageListImpl(
         value: T,
         type: KType,
         metaData: KottageListMetaData?
-    ) = withContext(dispatcher) {
+    ): KottageListEntry = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
         val item = encoder.encodeItem(storage, key, value, type, now)
         val newPositionId = Id.generateUuidV4Short()
-        transactionWithAutoCompaction(now) { _, _ ->
+        val entry = transactionWithAutoCompaction(now) { _, _ ->
             val lastPositionId = listOperator.getLastItemPositionId()
             storageOperator.upsertItem(item, now)
             val entry = createItemListEntry(
@@ -287,18 +287,25 @@ internal class KottageListImpl(
                 metaData = metaData
             )
             listOperator.addListEntries(listOf(entry), now)
+            KottageListEntry.from(
+                entry = entry,
+                itemKey = item.key,
+                item = item,
+                encoder = encoder
+            )
         }
         databaseManager.onEventCreated()
+        entry
     }
 
     override suspend fun addKey(
         key: String, metaData: KottageListMetaData?
-    ) = withContext(dispatcher) {
+    ): KottageListEntry = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
         val newPositionId = Id.generateUuidV4Short()
-        transactionWithAutoCompaction(now) { _, _ ->
+        val entry = transactionWithAutoCompaction(now) { _, _ ->
             val item = storageOperator.getOrNull(key = key, now = null)
                 ?: throw NoSuchElementException("storage = ${storage.name}, key = $key")
             val lastPositionId = listOperator.getLastItemPositionId()
@@ -311,8 +318,15 @@ internal class KottageListImpl(
                 metaData = metaData
             )
             listOperator.addListEntries(listOf(entry), now)
+            KottageListEntry.from(
+                entry = entry,
+                itemKey = item.key,
+                item = item,
+                encoder = encoder
+            )
         }
         databaseManager.onEventCreated()
+        entry
     }
 
     override suspend fun addAll(
@@ -383,13 +397,13 @@ internal class KottageListImpl(
         value: T,
         type: KType,
         metaData: KottageListMetaData?
-    ) = withContext(dispatcher) {
+    ): KottageListEntry = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
         val item = encoder.encodeItem(storage, key, value, type, now)
         val newPositionId = Id.generateUuidV4Short()
-        transactionWithAutoCompaction(now) { _, _ ->
+        val entry = transactionWithAutoCompaction(now) { _, _ ->
             val firstPositionId = listOperator.getFirstItemPositionId()
             storageOperator.upsertItem(item, now)
             val entry = createItemListEntry(
@@ -401,17 +415,24 @@ internal class KottageListImpl(
                 metaData = metaData
             )
             listOperator.addListEntries(listOf(entry), now)
+            KottageListEntry.from(
+                entry = entry,
+                itemKey = item.key,
+                item = item,
+                encoder = encoder
+            )
         }
         databaseManager.onEventCreated()
+        entry
     }
 
     override suspend fun addKeyFirst(
         key: String, metaData: KottageListMetaData?
-    ) = withContext(dispatcher) {
+    ): KottageListEntry = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val newPositionId = Id.generateUuidV4Short()
-        transactionWithAutoCompaction { _, now ->
+        val entry = transactionWithAutoCompaction { _, now ->
             val item = storageOperator.getOrNull(key = key, now = null)
                 ?: throw NoSuchElementException("storage = ${storage.name}, key = $key")
             val firstPositionId = listOperator.getFirstItemPositionId()
@@ -424,8 +445,15 @@ internal class KottageListImpl(
                 metaData = metaData
             )
             listOperator.addListEntries(listOf(entry), now)
+            KottageListEntry.from(
+                entry = entry,
+                itemKey = item.key,
+                item = item,
+                encoder = encoder
+            )
         }
         databaseManager.onEventCreated()
+        entry
     }
 
     override suspend fun addAllFirst(
@@ -497,34 +525,48 @@ internal class KottageListImpl(
         key: String,
         value: T,
         type: KType
-    ) = withContext(dispatcher) {
+    ): KottageListEntry = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
         val item = encoder.encodeItem(storage, key, value, type, now)
-        transactionWithAutoCompaction(now) { _, _ ->
+        val entry = transactionWithAutoCompaction(now) { _, _ ->
             val entry = listOperator.getListItem(positionId = positionId)
                 ?: throw NoSuchElementException("positionId = $positionId")
             storageOperator.upsertItem(item, now)
             listOperator.updateItemKey(entry.id, item, now)
+            KottageListEntry.from(
+                entry = entry,
+                itemKey = item.key,
+                item = item,
+                encoder = encoder
+            )
         }
         databaseManager.onEventCreated()
+        entry
     }
 
     override suspend fun updateKey(
         positionId: String,
         key: String
-    ) = withContext(dispatcher) {
+    ): KottageListEntry = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
-        transactionWithAutoCompaction { _, now ->
+        val entry = transactionWithAutoCompaction { _, now ->
             val item = storageOperator.getOrNull(key = key, now = null)
                 ?: throw NoSuchElementException("storage = ${storage.name}, key = $key")
             val entry = listOperator.getListItem(positionId = positionId)
                 ?: throw NoSuchElementException("positionId = $positionId")
             listOperator.updateItemKey(entry.id, item, now)
+            KottageListEntry.from(
+                entry = entry,
+                itemKey = item.key,
+                item = item,
+                encoder = encoder
+            )
         }
         databaseManager.onEventCreated()
+        entry
     }
 
     override suspend fun <T : Any> insertAfter(
@@ -533,13 +575,13 @@ internal class KottageListImpl(
         value: T,
         type: KType,
         metaData: KottageListMetaData?
-    ) = withContext(dispatcher) {
+    ): KottageListEntry = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
         val item = encoder.encodeItem(storage, key, value, type, now)
         val newPositionId = Id.generateUuidV4Short()
-        transactionWithAutoCompaction(now) { _, _ ->
+        val entry = transactionWithAutoCompaction(now) { _, _ ->
             val anchorEntry = listOperator.getListItem(positionId)
                 ?: throw NoSuchElementException("list = $listType, positionId = $positionId")
             storageOperator.upsertItem(item, now)
@@ -552,19 +594,26 @@ internal class KottageListImpl(
                 metaData = metaData
             )
             listOperator.addListEntries(listOf(entry), now)
+            KottageListEntry.from(
+                entry = entry,
+                itemKey = item.key,
+                item = item,
+                encoder = encoder
+            )
         }
         databaseManager.onEventCreated()
+        entry
     }
 
     override suspend fun insertKeyAfter(
         positionId: String,
         key: String,
         metaData: KottageListMetaData?
-    ) = withContext(dispatcher) {
+    ): KottageListEntry = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val newPositionId = Id.generateUuidV4Short()
-        transactionWithAutoCompaction { _, now ->
+        val entry = transactionWithAutoCompaction { _, now ->
             val item = storageOperator.getOrNull(key = key, now = null)
                 ?: throw NoSuchElementException("storage = ${storage.name}, key = $key")
             val anchorEntry = listOperator.getListItem(positionId)
@@ -578,8 +627,15 @@ internal class KottageListImpl(
                 metaData = metaData
             )
             listOperator.addListEntries(listOf(entry), now)
+            KottageListEntry.from(
+                entry = entry,
+                itemKey = item.key,
+                item = item,
+                encoder = encoder
+            )
         }
         databaseManager.onEventCreated()
+        entry
     }
 
     override suspend fun insertAllAfter(
@@ -656,13 +712,13 @@ internal class KottageListImpl(
         value: T,
         type: KType,
         metaData: KottageListMetaData?
-    ) = withContext(dispatcher) {
+    ): KottageListEntry = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
         val item = encoder.encodeItem(storage, key, value, type, now)
         val newPositionId = Id.generateUuidV4Short()
-        transactionWithAutoCompaction(now) { _, _ ->
+        val entry = transactionWithAutoCompaction(now) { _, _ ->
             val anchorEntry = listOperator.getListItem(positionId)
                 ?: throw NoSuchElementException("list = $listType, positionId = $positionId")
             storageOperator.upsertItem(item, now)
@@ -675,19 +731,26 @@ internal class KottageListImpl(
                 metaData = metaData
             )
             listOperator.addListEntries(listOf(entry), now)
+            KottageListEntry.from(
+                entry = entry,
+                itemKey = item.key,
+                item = item,
+                encoder = encoder
+            )
         }
         databaseManager.onEventCreated()
+        entry
     }
 
     override suspend fun insertKeyBefore(
         positionId: String,
         key: String,
         metaData: KottageListMetaData?
-    ) = withContext(dispatcher) {
+    ): KottageListEntry = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val newPositionId = Id.generateUuidV4Short()
-        transactionWithAutoCompaction { _, now ->
+        val entry = transactionWithAutoCompaction { _, now ->
             val item = storageOperator.getOrNull(key = key, now = null)
                 ?: throw NoSuchElementException("storage = ${storage.name}, key = $key")
             val anchorEntry = listOperator.getListItem(positionId)
@@ -701,8 +764,15 @@ internal class KottageListImpl(
                 metaData = metaData
             )
             listOperator.addListEntries(listOf(entry), now)
+            KottageListEntry.from(
+                entry = entry,
+                itemKey = item.key,
+                item = item,
+                encoder = encoder
+            )
         }
         databaseManager.onEventCreated()
+        entry
     }
 
     override suspend fun insertAllBefore(

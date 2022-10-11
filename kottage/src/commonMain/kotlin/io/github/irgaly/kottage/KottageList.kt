@@ -52,13 +52,13 @@ interface KottageList {
         value: T,
         type: KType,
         metaData: KottageListMetaData? = null
-    )
+    ): KottageListEntry
 
     @Throws(
         NoSuchElementException::class,
         CancellationException::class
     )
-    suspend fun addKey(key: String, metaData: KottageListMetaData? = null)
+    suspend fun addKey(key: String, metaData: KottageListMetaData? = null): KottageListEntry
     suspend fun addAll(values: List<KottageListValue<*>>)
 
     @Throws(
@@ -71,13 +71,13 @@ interface KottageList {
         value: T,
         type: KType,
         metaData: KottageListMetaData? = null
-    )
+    ): KottageListEntry
 
     @Throws(
         NoSuchElementException::class,
         CancellationException::class
     )
-    suspend fun addKeyFirst(key: String, metaData: KottageListMetaData? = null)
+    suspend fun addKeyFirst(key: String, metaData: KottageListMetaData? = null): KottageListEntry
     suspend fun addAllFirst(values: List<KottageListValue<*>>)
 
     @Throws(
@@ -90,13 +90,18 @@ interface KottageList {
         NoSuchElementException::class,
         CancellationException::class
     )
-    suspend fun <T : Any> update(positionId: String, key: String, value: T, type: KType)
+    suspend fun <T : Any> update(
+        positionId: String,
+        key: String,
+        value: T,
+        type: KType
+    ): KottageListEntry
 
     @Throws(
         NoSuchElementException::class,
         CancellationException::class
     )
-    suspend fun updateKey(positionId: String, key: String)
+    suspend fun updateKey(positionId: String, key: String): KottageListEntry
 
     @Throws(
         NoSuchElementException::class,
@@ -108,7 +113,7 @@ interface KottageList {
         value: T,
         type: KType,
         metaData: KottageListMetaData? = null
-    )
+    ): KottageListEntry
 
     @Throws(
         NoSuchElementException::class,
@@ -118,7 +123,7 @@ interface KottageList {
         positionId: String,
         key: String,
         metaData: KottageListMetaData? = null
-    )
+    ): KottageListEntry
 
     @Throws(
         NoSuchElementException::class,
@@ -149,7 +154,7 @@ interface KottageList {
         value: T,
         type: KType,
         metaData: KottageListMetaData? = null
-    )
+    ): KottageListEntry
 
     @Throws(
         NoSuchElementException::class,
@@ -159,7 +164,7 @@ interface KottageList {
         positionId: String,
         key: String,
         metaData: KottageListMetaData? = null
-    )
+    ): KottageListEntry
 
     @Throws(
         NoSuchElementException::class,

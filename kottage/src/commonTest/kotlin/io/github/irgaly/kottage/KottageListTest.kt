@@ -11,7 +11,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 
 class KottageListTest : DescribeSpec({
-    val tempDirectory = tempdir(false)
+    val tempDirectory = tempdir()
     val printListStatus = false
     fun kottage(
         name: String = "kottage_list", builder: (KottageOptions.Builder.() -> Unit)? = null
@@ -52,8 +52,7 @@ class KottageListTest : DescribeSpec({
                 val list = cache.list("list_remove")
                 list.add("key1", "value1")
                 list.add("key2", "value2")
-                val first = checkNotNull(list.getFirst())
-                list.remove(first.positionId)
+                list.remove(checkNotNull(list.getFirst()).positionId)
                 cache.get<String>("key1") shouldBe "value1"
                 cache.get<String>("key2") shouldBe "value2"
                 list.getFirst()?.value<String>() shouldBe "value2"
@@ -70,11 +69,11 @@ class KottageListTest : DescribeSpec({
                         "info", "prev", "current", "next"
                     )
                 )
-                val item = checkNotNull(list.getFirst())
-                item.info shouldBe "info"
-                item.previousKey shouldBe "prev"
-                item.currentKey shouldBe "current"
-                item.nextKey shouldBe "next"
+                val entry = checkNotNull(list.getFirst())
+                entry.info shouldBe "info"
+                entry.previousKey shouldBe "prev"
+                entry.currentKey shouldBe "current"
+                entry.nextKey shouldBe "next"
                 if (printListStatus) {
                     println(list.getDebugStatus())
                     println(list.getDebugListRawData())
@@ -88,18 +87,13 @@ class KottageListTest : DescribeSpec({
                 itemExpireTime = 1.days.duration
             }
             it("先頭・末尾の有効期限切れ Entry にアクセスできないこと") {
-                list.add("key1", "value1")
-                val entry1 = checkNotNull(list.getLast())
-                list.add("key2", "value2")
-                val entry2 = checkNotNull(list.getLast())
+                val entry1 = list.add("key1", "value1")
+                val entry2 = list.add("key2", "value2")
                 calendar.now += 1.hours
-                list.add("key3", "value3")
-                val entry3 = checkNotNull(list.getLast())
-                list.add("key4", "value4")
-                val entry4 = checkNotNull(list.getLast())
+                val entry3 = list.add("key3", "value3")
+                val entry4 = list.add("key4", "value4")
                 calendar.now += 1.hours
-                list.insertAfter(entry2.positionId, "key5", "value5")
-                val entry5 = checkNotNull(list.getByIndex(2))
+                val entry5 = list.insertAfter(entry2.positionId, "key5", "value5")
                 calendar.now += 22.hours
                 list.get(entry1.positionId)?.itemKey shouldBe "key5"
                 list.get(entry2.positionId)?.itemKey shouldBe "key5"
@@ -116,17 +110,12 @@ class KottageListTest : DescribeSpec({
             }
 
             it("先頭・末尾ではない有効期限切れ Entry にアクセスできる") {
-                list.add("key1", "value1")
-                val entry1 = checkNotNull(list.getLast())
-                list.add("key2", "value2")
-                val entry2 = checkNotNull(list.getLast())
-                list.add("key3", "value3")
-                val entry3 = checkNotNull(list.getLast())
+                val entry1 = list.add("key1", "value1")
+                val entry2 = list.add("key2", "value2")
+                val entry3 = list.add("key3", "value3")
                 calendar.now += 1.hours
-                list.insertAfter(entry1.positionId, "key4", "value4")
-                val entry4 = checkNotNull(list.getByIndex(1))
-                list.insertAfter(entry2.positionId, "key5", "value5")
-                val entry5 = checkNotNull(list.getByIndex(3))
+                val entry4 = list.insertAfter(entry1.positionId, "key4", "value4")
+                val entry5 = list.insertAfter(entry2.positionId, "key5", "value5")
                 calendar.now += 23.hours
                 list.get(entry1.positionId)?.itemKey shouldBe "key4"
                 list.get(entry2.positionId)?.itemKey shouldBe "key2"
