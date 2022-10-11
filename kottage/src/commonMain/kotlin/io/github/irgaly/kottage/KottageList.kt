@@ -44,6 +44,7 @@ interface KottageList {
     )
     suspend fun getByIndex(
         index: Long,
+        fromPositionId: String? = null,
         direction: KottageListDirection = KottageListDirection.Forward
     ): KottageListEntry?
 

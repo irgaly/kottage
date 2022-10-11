@@ -27,7 +27,7 @@ class KottageListTest : DescribeSpec({
                 val cache = kottage().first.cache("add_get")
                 val list = cache.list("list_add_get")
                 list.add("key1", "value1")
-                list.add("key2", "value2")
+                val entry2 = list.add("key2", "value2")
                 list.addAll(
                     listOf(
                         kottageListValue("key3", "value3"),
@@ -48,6 +48,10 @@ class KottageListTest : DescribeSpec({
                 list.getByIndex(4)?.value<String>() shouldBe "value4"
                 list.getByIndex(5)?.value<String>() shouldBe "value1"
                 list.getByIndex(6)?.value<String>() shouldBe "value2"
+                list.getByIndex(
+                    2,
+                    fromPositionId = entry2.positionId
+                )?.value<String>() shouldBe "value4"
                 list.getByIndex(
                     1,
                     direction = KottageListDirection.Backward

@@ -216,17 +216,19 @@ internal class KottageListImpl(
 
     override suspend fun getByIndex(
         index: Long,
+        fromPositionId: String?,
         direction: KottageListDirection
     ): KottageListEntry? = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         transactionWithAutoCompaction { operator, now ->
-            val initialPositionId = operator.getListStats(listType)?.let { stats ->
-                when (direction) {
-                    KottageListDirection.Forward -> stats.firstItemPositionId
-                    KottageListDirection.Backward -> stats.lastItemPositionId
+            val initialPositionId =
+                fromPositionId ?: operator.getListStats(listType)?.let { stats ->
+                    when (direction) {
+                        KottageListDirection.Forward -> stats.firstItemPositionId
+                        KottageListDirection.Backward -> stats.lastItemPositionId
+                    }
                 }
-            }
             var currentIndex = -1L
             var currentEntry: ItemListEntry? = null
             var nextIndex = 0L
