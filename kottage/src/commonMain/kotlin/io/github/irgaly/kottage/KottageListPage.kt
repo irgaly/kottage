@@ -2,7 +2,7 @@ package io.github.irgaly.kottage
 
 @Suppress("unused")
 data class KottageListPage(
-    val items: List<KottageListItem>,
+    val items: List<KottageListEntry>,
     val previousPositionId: String?,
     val nextPositionId: String?
 ) {

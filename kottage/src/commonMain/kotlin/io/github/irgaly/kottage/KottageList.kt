@@ -28,10 +28,10 @@ interface KottageList {
     ): KottageListPage
 
     suspend fun getSize(): Long
-    suspend fun getFirst(): KottageListItem?
-    suspend fun getLast(): KottageListItem?
+    suspend fun getFirst(): KottageListEntry?
+    suspend fun getLast(): KottageListEntry?
 
-    suspend fun get(positionId: String): KottageListItem?
+    suspend fun get(positionId: String): KottageListEntry?
 
     /**
      * Get item with iteration.
@@ -43,7 +43,7 @@ interface KottageList {
     suspend fun getByIndex(
         index: Long,
         direction: KottageListDirection = KottageListDirection.Forward
-    ): KottageListItem?
+    ): KottageListEntry?
 
     suspend fun <T : Any> add(
         key: String,
@@ -57,7 +57,7 @@ interface KottageList {
         CancellationException::class
     )
     suspend fun addKey(key: String, metaData: KottageListMetaData? = null)
-    suspend fun addAll(values: List<KottageListEntry<*>>)
+    suspend fun addAll(values: List<KottageListValue<*>>)
 
     @Throws(
         NoSuchElementException::class,
@@ -76,7 +76,7 @@ interface KottageList {
         CancellationException::class
     )
     suspend fun addKeyFirst(key: String, metaData: KottageListMetaData? = null)
-    suspend fun addAllFirst(values: List<KottageListEntry<*>>)
+    suspend fun addAllFirst(values: List<KottageListValue<*>>)
 
     @Throws(
         NoSuchElementException::class,
@@ -124,7 +124,7 @@ interface KottageList {
     )
     suspend fun insertAllAfter(
         positionId: String,
-        values: List<KottageListEntry<*>>
+        values: List<KottageListValue<*>>
     )
 
     @Throws(
@@ -165,7 +165,7 @@ interface KottageList {
     )
     suspend fun insertAllBefore(
         positionId: String,
-        values: List<KottageListEntry<*>>
+        values: List<KottageListValue<*>>
     )
 
     @Throws(

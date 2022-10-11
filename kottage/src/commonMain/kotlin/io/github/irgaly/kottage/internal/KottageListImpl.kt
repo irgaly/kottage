@@ -3,10 +3,10 @@ package io.github.irgaly.kottage.internal
 import io.github.irgaly.kottage.KottageList
 import io.github.irgaly.kottage.KottageListDirection
 import io.github.irgaly.kottage.KottageListEntry
-import io.github.irgaly.kottage.KottageListItem
 import io.github.irgaly.kottage.KottageListMetaData
 import io.github.irgaly.kottage.KottageListOptions
 import io.github.irgaly.kottage.KottageListPage
+import io.github.irgaly.kottage.KottageListValue
 import io.github.irgaly.kottage.KottageOptions
 import io.github.irgaly.kottage.KottageStorage
 import io.github.irgaly.kottage.internal.encoder.Encoder
@@ -58,7 +58,7 @@ internal class KottageListImpl(
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val items = transactionWithAutoCompaction { operator, now ->
-            val items = mutableListOf<KottageListItem>()
+            val items = mutableListOf<KottageListEntry>()
             var initialPositionId = positionId
             if (initialPositionId == null) {
                 initialPositionId = operator.getListStats(listType)?.let { stats ->
@@ -88,7 +88,7 @@ internal class KottageListImpl(
                             key = itemKey, itemType = itemType, now = now, operator = operator
                         )
                         items.add(
-                            KottageListItem.from(
+                            KottageListEntry.from(
                                 entry = entry,
                                 itemKey = itemKey,
                                 item = item,
@@ -117,7 +117,7 @@ internal class KottageListImpl(
         }
     }
 
-    override suspend fun getFirst(): KottageListItem? = withContext(dispatcher) {
+    override suspend fun getFirst(): KottageListEntry? = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         transactionWithAutoCompaction { operator, now ->
@@ -134,7 +134,7 @@ internal class KottageListImpl(
                     strategy.onItemRead(
                         key = itemKey, itemType = itemType, now = now, operator = operator
                     )
-                    KottageListItem.from(
+                    KottageListEntry.from(
                         entry = entry,
                         itemKey = itemKey,
                         item = item,
@@ -145,7 +145,7 @@ internal class KottageListImpl(
         }
     }
 
-    override suspend fun getLast(): KottageListItem? = withContext(dispatcher) {
+    override suspend fun getLast(): KottageListEntry? = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         transactionWithAutoCompaction { operator, now ->
@@ -162,7 +162,7 @@ internal class KottageListImpl(
                     strategy.onItemRead(
                         key = itemKey, itemType = itemType, now = now, operator = operator
                     )
-                    KottageListItem.from(
+                    KottageListEntry.from(
                         entry = entry,
                         itemKey = itemKey,
                         item = item,
@@ -173,7 +173,7 @@ internal class KottageListImpl(
         }
     }
 
-    override suspend fun get(positionId: String): KottageListItem? = withContext(dispatcher) {
+    override suspend fun get(positionId: String): KottageListEntry? = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         transactionWithAutoCompaction { operator, now ->
@@ -187,7 +187,7 @@ internal class KottageListImpl(
                 strategy.onItemRead(
                     key = itemKey, itemType = itemType, now = now, operator = operator
                 )
-                KottageListItem.from(
+                KottageListEntry.from(
                     entry = entry,
                     itemKey = itemKey,
                     item = item,
@@ -200,7 +200,7 @@ internal class KottageListImpl(
     override suspend fun getByIndex(
         index: Long,
         direction: KottageListDirection
-    ): KottageListItem? = withContext(dispatcher) {
+    ): KottageListEntry? = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         transactionWithAutoCompaction { operator, now ->
@@ -240,7 +240,7 @@ internal class KottageListImpl(
                 strategy.onItemRead(
                     key = itemKey, itemType = itemType, now = now, operator = operator
                 )
-                KottageListItem.from(
+                KottageListEntry.from(
                     entry = currentEntry,
                     itemKey = itemKey,
                     item = item,
@@ -302,7 +302,7 @@ internal class KottageListImpl(
     }
 
     override suspend fun addAll(
-        values: List<KottageListEntry<*>>
+        values: List<KottageListValue<*>>
     ) = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
@@ -415,7 +415,7 @@ internal class KottageListImpl(
     }
 
     override suspend fun addAllFirst(
-        values: List<KottageListEntry<*>>
+        values: List<KottageListValue<*>>
     ) = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
@@ -570,7 +570,7 @@ internal class KottageListImpl(
 
     override suspend fun insertAllAfter(
         positionId: String,
-        values: List<KottageListEntry<*>>
+        values: List<KottageListValue<*>>
     ) = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
@@ -693,7 +693,7 @@ internal class KottageListImpl(
 
     override suspend fun insertAllBefore(
         positionId: String,
-        values: List<KottageListEntry<*>>
+        values: List<KottageListValue<*>>
     ) = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
