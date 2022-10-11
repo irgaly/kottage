@@ -41,8 +41,6 @@ internal class KottageStorageImpl(
 
     private val itemType: String = name
 
-    private suspend fun itemRepository() = databaseManager.itemRepository.await()
-    private suspend fun itemEventRepository() = databaseManager.itemEventRepository.await()
     private suspend fun operator() = databaseManager.operator.await()
 
     @OptIn(DelicateCoroutinesApi::class)
@@ -121,11 +119,10 @@ internal class KottageStorageImpl(
     }
 
     override suspend fun remove(key: String): Boolean = withContext(dispatcher) {
-        val itemRepository = itemRepository()
         val storageOperator = storageOperator.await()
         var eventCreated = false
         val exists = transactionWithAutoCompaction { _, now ->
-            val exists = itemRepository.exists(key, itemType)
+            val exists = storageOperator.exists(key)
             if (exists) {
                 storageOperator.deleteItem(key = key, now = now) {
                     eventCreated = true
@@ -140,11 +137,10 @@ internal class KottageStorageImpl(
     }
 
     override suspend fun removeAll(key: String): Unit = withContext(dispatcher) {
-        val itemRepository = itemRepository()
         val storageOperator = storageOperator.await()
         var eventCreated = false
         transactionWithAutoCompaction { _, now ->
-            itemRepository.getAllKeys(itemType) { key ->
+            storageOperator.getAllKeys { key ->
                 storageOperator.deleteItem(key = key, now = now) {
                     eventCreated = true
                 }

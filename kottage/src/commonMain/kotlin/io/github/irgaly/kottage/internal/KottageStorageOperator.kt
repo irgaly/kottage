@@ -64,6 +64,13 @@ internal class KottageStorageOperator(
     }
 
     /**
+     * This should be called in transaction
+     */
+    fun getAllKeys(receiver: (key: String) -> Unit) {
+        itemRepository.getAllKeys(itemType = itemType, receiver = receiver)
+    }
+
+    /**
      * Delete Item
      * This should be called in transaction
      *
@@ -111,6 +118,13 @@ internal class KottageStorageOperator(
             maxEventEntryCount = storage.options.maxEventEntryCount
         )
         onEventCreated(eventId)
+    }
+
+    /**
+     * This should be called in transaction
+     */
+    fun exists(key: String): Boolean {
+        return itemRepository.exists(key = key, itemType = itemType)
     }
 
     /**
