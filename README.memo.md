@@ -26,6 +26,7 @@ TODO:
 * Evicted event は生成しないほうがよさそう？
   * GC のタイミングで大量のイベントが発生するため
 * ある程度 item を追加したときに expired アイテムのクリーンアップをする
+* item count = 0 のときに stats データを削除する
 
 機能
 
@@ -96,5 +97,71 @@ storage.clear()
 
 // Delete Kottage
 Kottage.clear()
+```
 
+---
+
+# List Cache
+
+* List Cache の expiration
+  * リストの先頭・末尾から expire しているものが invalidate される
+  * expireAt は add, update で設定される
+  * invalidate のタイミング
+    * KottageList.size(): その時刻で expire してからアイテム数を返す
+    * KottageList.getPage, get~(): expire してからアイテムを返す
+    * KottageList.compact(): expire してから、compaction する
+    * KottageStorage evict cache: expire してから Storage evict する
+    * KottageStorage.remove(): List の expireAt を更新する
+  * auto compaction:
+    * invalidate 後、一定時間が経過した Entry を List から取り除く
+
+```kotlin
+data class Item(val positionId: String)
+
+class MyPagingSource(
+  kottage: Kottage
+) : PagingSource<String, Item>() {
+  val cache = kottage.cache("items")
+  val itemsList: KottageList = cache.list("my_page")
+  override fun getRefreshKey(state: PagingState<String, Item>): String? {
+    val page = state.closestPageToPosition(state.anchorPosition!!)!!
+    return page.data.firstOrNull()?.positionId
+  }
+
+  override suspend fun load(params: LoadParams<String>): LoadResult<String, Item> {
+    val key = params.key
+    val page: KottageListPage = when (params) {
+      is LoadParams.Refresh -> {
+        itemsList.getPageFrom(positionId = key, limit = 20L, direction = Forward)
+      }
+
+      is LoadParams.Append -> {
+        itemsList.getPageFrom(positionId = key, limit = 20L, direction = Forward)
+      }
+
+      is LoadParams.Prepend -> {
+        itemsList.getPageFrom(positionId = key, limit = 20L, direction = Backward)
+      }
+    }
+    return LoadResult.Page(
+      data = page.items,
+      prevKey = page.previousPositionId,
+      nextKey = page.nextPositionId
+    )
+  }
+}
+
+data class KottageListPage<T>(
+  val items: List<KottageListItem<T>>,
+  val previousPositionId: String?,
+  val nextPositionId: String?
+)
+
+data class KottageListItem<T>(
+  val positionId: String,
+  val value: T,
+  val previousKey: String?,
+  val currentKey: String?,
+  val nextKey: String?
+)
 ```

@@ -6,5 +6,7 @@ internal data class ItemEvent(
     val expireAt: Long?,
     val itemType: String,
     val itemKey: String,
+    val itemListId: String?,
+    val itemListType: String?,
     val eventType: ItemEventType
 )

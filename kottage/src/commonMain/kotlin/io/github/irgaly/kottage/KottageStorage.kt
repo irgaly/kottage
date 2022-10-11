@@ -7,6 +7,8 @@ import kotlin.reflect.typeOf
 import kotlin.time.Duration
 
 interface KottageStorage {
+    val name: String
+    val options: KottageStorageOptions
     val defaultExpireTime: Duration?
 
     /**
@@ -84,6 +86,18 @@ interface KottageStorage {
      * get KottageEventFlow
      */
     fun eventFlow(afterUnixTimeMillisAt: Long? = null): KottageEventFlow
+
+    /**
+     * get KottageList
+     *
+     * @param name A list name. This is a global name in the kottage database, so this must be unique in **this kottage database** (not in this KottageStorage instance).
+     */
+    fun list(
+        name: String,
+        optionsBuilder: (KottageListOptions.Builder.() -> Unit)? = null
+    ): KottageList
+
+    suspend fun getDebugStatus(): String
 }
 
 /**

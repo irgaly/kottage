@@ -1,10 +1,64 @@
---CREATE TABLE item_list (
---  key TEXT PRIMARY KEY,
---  type TEXT NOT NULL,
---  item_key TEXT NOT NULL,
---  prev_key TEXT,
---  next_key TEXT
---);
+CREATE TABLE item_list (
+  id TEXT PRIMARY KEY,
+  type TEXT NOT NULL,
+  item_type TEXT NOT NULL,
+  item_key TEXT,
+  previous_id TEXT,
+  next_id TEXT,
+  expire_at INTEGER,
+  user_info TEXT,
+  user_previous_key TEXT,
+  user_current_key TEXT,
+  user_next_key TEXT
+);
+CREATE INDEX item_list_item_type ON item_list(item_type);
+CREATE INDEX item_list_item_type_item_key ON item_list(item_type, item_key);
+CREATE INDEX item_list_type_item_type_expire_at ON item_list(type, item_type, expire_at);
 
---deleteAll:
---DELETE FROM item_list;
+replace:
+REPLACE INTO item_list VALUES ?;
+
+updatePreviousId:
+UPDATE item_list SET previous_id = ? WHERE id = ?;
+
+updateNextId:
+UPDATE item_list SET next_id = ? WHERE id = ?;
+
+updateItemKey:
+UPDATE item_list SET item_key = ?, item_type = ?, expire_at = ? WHERE id = ?;
+
+updateExpireAt:
+UPDATE item_list SET expire_at = ? WHERE id = ?;
+
+removeItemKey:
+UPDATE item_list SET item_key = NULL WHERE id = ?;
+
+removeUserData:
+UPDATE item_list SET user_info = NULL, user_previous_key = NULL, user_current_key = NULL, user_next_key = NULL WHERE id = ?;
+
+select:
+SELECT * FROM item_list WHERE id = ?;
+
+selectIdFromItem:
+SELECT id FROM item_list WHERE item_type = ? AND item_key = ?;
+
+selectInvalidatedItemBeforeExpireAt:
+SELECT id FROM item_list WHERE type = ? AND item_key ISNULL AND expire_at < ? ORDER BY expire_at LIMIT :limit;
+
+selectInvalidatedItem:
+SELECT id FROM item_list WHERE type = ? AND item_key ISNULL ORDER BY expire_at LIMIT :limit;
+
+countByType:
+SELECT count(*) FROM item_list WHERE type = ?;
+
+countInvalidatedItem:
+SELECT count(*) FROM item_list WHERE type = ? AND item_key ISNULL;
+
+delete:
+DELETE FROM item_list WHERE id = ?;
+
+deleteAllByType:
+DELETE FROM item_list WHERE type = ?;
+
+deleteAll:
+DELETE FROM item_list;

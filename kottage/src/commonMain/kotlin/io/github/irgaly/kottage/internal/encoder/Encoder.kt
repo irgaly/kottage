@@ -1,10 +1,12 @@
 package io.github.irgaly.kottage.internal.encoder
 
+import io.github.irgaly.kottage.KottageStorage
 import io.github.irgaly.kottage.internal.model.Item
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import kotlin.reflect.KType
+import kotlin.time.Duration
 
 internal class Encoder(private val json: Json) {
     /**
@@ -96,13 +98,44 @@ internal class Encoder(private val json: Json) {
             (kClass == ByteArray::class) -> {
                 item.bytesValue ?: throw ClassCastException("byteArray from item = $item")
             }
+
             (kClass == String::class) -> {
                 item.stringValue ?: throw ClassCastException("string from item = $item")
             }
+
             else -> {
-                val value = item.stringValue ?: throw ClassCastException("serializable from item = $item")
+                val value =
+                    item.stringValue ?: throw ClassCastException("serializable from item = $item")
                 json.decodeFromString(json.serializersModule.serializer(type), value)
             }
         } as T
+    }
+}
+
+internal fun <T : Any> Encoder.encodeItem(
+    storage: KottageStorage,
+    itemKey: String,
+    value: T,
+    type: KType,
+    now: Long,
+    expireTime: Duration? = null
+): Item {
+    return encode(value, type) { stringValue: String?,
+                                 longValue: Long?,
+                                 doubleValue: Double?,
+                                 bytesValue: ByteArray? ->
+        Item(
+            key = itemKey,
+            type = storage.name,
+            stringValue = stringValue,
+            longValue = longValue,
+            doubleValue = doubleValue,
+            bytesValue = bytesValue,
+            createdAt = now,
+            lastReadAt = now,
+            expireAt = (expireTime ?: storage.defaultExpireTime)?.let { duration ->
+                now + duration.inWholeMilliseconds
+            }
+        )
     }
 }

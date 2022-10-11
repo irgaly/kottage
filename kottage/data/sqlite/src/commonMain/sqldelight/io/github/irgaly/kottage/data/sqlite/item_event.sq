@@ -5,12 +5,16 @@ CREATE TABLE item_event (
   expire_at INTEGER,
   item_type TEXT NOT NULL,
   item_key TEXT NOT NULL,
+  item_list_id TEXT,
+  item_list_type TEXT,
   event_type TEXT AS ItemEventType NOT NULL
 );
 CREATE INDEX item_event_created_at ON item_event(created_at);
 CREATE INDEX item_event_expire_at ON item_event(expire_at);
 CREATE INDEX item_event_item_type_created_at ON item_event(item_type, created_at);
 CREATE INDEX item_event_item_type_expire_at ON item_event(item_type, expire_at);
+CREATE INDEX item_event_item_list_type_created_at ON item_event(item_list_type, created_at);
+CREATE INDEX item_event_item_list_type_expire_at ON item_event(item_list_type, expire_at);
 
 insert:
 INSERT INTO item_event VALUES ?;
@@ -50,6 +54,9 @@ DELETE FROM item_event WHERE created_at < ?;
 
 deleteAllByType:
 DELETE FROM item_event WHERE item_type = ?;
+
+deleteAllByListType:
+DELETE FROM item_event WHERE item_list_type = ?;
 
 deleteAll:
 DELETE FROM item_event;

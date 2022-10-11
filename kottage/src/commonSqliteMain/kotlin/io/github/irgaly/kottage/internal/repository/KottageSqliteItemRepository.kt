@@ -4,6 +4,7 @@ import com.squareup.sqldelight.db.use
 import io.github.irgaly.kottage.data.sqlite.KottageDatabase
 import io.github.irgaly.kottage.data.sqlite.extension.executeAsExists
 import io.github.irgaly.kottage.internal.model.Item
+import io.github.irgaly.kottage.internal.model.ItemStats
 
 internal class KottageSqliteItemRepository(
     private val database: KottageDatabase
@@ -79,33 +80,71 @@ internal class KottageSqliteItemRepository(
         }
     }
 
+    override fun getLeastRecentlyUsedKeys(
+        itemType: String,
+        limit: Long?,
+        receiver: (key: String) -> Boolean
+    ) {
+        if (limit != null) {
+            database.itemQueries
+                .selectLeastRecentlyUsedKeysLimit(type = itemType, limit = limit)
+                .execute().use { cursor ->
+                    var canNext = true
+                    while (canNext && cursor.next()) {
+                        val key = checkNotNull(cursor.getString(0))
+                        canNext = receiver(Item.keyFromEntityKey(key, itemType))
+                    }
+                }
+        } else {
+            database.itemQueries
+                .selectLeastRecentlyUsedKeys(type = itemType)
+                .execute().use { cursor ->
+                    var canNext = true
+                    while (canNext && cursor.next()) {
+                        val key = checkNotNull(cursor.getString(0))
+                        canNext = receiver(Item.keyFromEntityKey(key, itemType))
+                    }
+                }
+        }
+    }
+
+    override fun getOlderKeys(
+        itemType: String,
+        limit: Long?,
+        receiver: (key: String) -> Boolean
+    ) {
+        if (limit != null) {
+            database.itemQueries
+                .selectOlderCreatedKeysLimit(type = itemType, limit = limit)
+                .execute().use { cursor ->
+                    var canNext = true
+                    while (canNext && cursor.next()) {
+                        val key = checkNotNull(cursor.getString(0))
+                        canNext = receiver(Item.keyFromEntityKey(key, itemType))
+                    }
+                }
+        } else {
+            database.itemQueries
+                .selectOlderCreatedKeys(type = itemType)
+                .execute().use { cursor ->
+                    var canNext = true
+                    while (canNext && cursor.next()) {
+                        val key = checkNotNull(cursor.getString(0))
+                        canNext = receiver(Item.keyFromEntityKey(key, itemType))
+                    }
+                }
+        }
+    }
+
+    override fun getStats(itemType: String): ItemStats? {
+        return database.item_statsQueries
+            .select(item_type = itemType)
+            .executeAsOneOrNull()?.toDomain()
+    }
+
     override fun delete(key: String, itemType: String) {
         database.itemQueries
             .delete(Item.toEntityKey(key, itemType))
-    }
-
-    override fun deleteLeastRecentlyUsed(itemType: String, limit: Long) {
-        database.itemQueries
-            .selectLeastRecentlyUsedKeys(itemType, limit)
-            .execute().use { cursor ->
-                while (cursor.next()) {
-                    val key = checkNotNull(cursor.getString(0))
-                    database.itemQueries
-                        .delete(key)
-                }
-            }
-    }
-
-    override fun deleteOlderItems(itemType: String, limit: Long) {
-        database.itemQueries
-            .selectOlderCreatedKeys(itemType, limit)
-            .execute().use { cursor ->
-                while (cursor.next()) {
-                    val key = checkNotNull(cursor.getString(0))
-                    database.itemQueries
-                        .delete(key)
-                }
-            }
     }
 
     override fun deleteAll(itemType: String) {

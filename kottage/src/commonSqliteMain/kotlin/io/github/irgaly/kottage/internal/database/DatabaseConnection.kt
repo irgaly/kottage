@@ -7,8 +7,15 @@ import io.github.irgaly.kottage.KottageEnvironment
 import io.github.irgaly.kottage.data.sqlite.DriverFactory
 import io.github.irgaly.kottage.data.sqlite.Item_event
 import io.github.irgaly.kottage.data.sqlite.KottageDatabase
+import io.github.irgaly.kottage.data.sqlite.createDriver
 import io.github.irgaly.kottage.platform.Files
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.withContext
 
 internal actual data class DatabaseConnection(
     private val sqlDriverProvider: suspend () -> SqlDriver,
@@ -59,6 +66,8 @@ internal actual data class DatabaseConnection(
             database.transaction {
                 database.itemQueries.deleteAll()
                 database.item_statsQueries.deleteAll()
+                database.item_listQueries.deleteAll()
+                database.item_list_statsQueries.deleteAll()
                 database.item_eventQueries.deleteAll()
                 database.statsQueries.deleteAll()
             }
@@ -216,4 +225,21 @@ internal actual fun createDatabaseConnection(
     }, { sqlDriver ->
         KottageDatabase(sqlDriver, Item_event.Adapter(EnumColumnAdapter()))
     }, dispatcher)
+}
+
+internal actual suspend fun createOldDatabase(
+    fileName: String,
+    directoryPath: String,
+    environment: KottageEnvironment,
+    version: Int,
+    dispatcher: CoroutineDispatcher
+) {
+    withContext(dispatcher) {
+        require(!fileName.contains(Files.separator)) { "fileName contains separator: $fileName" }
+        DriverFactory(
+            environment.context.context,
+            dispatcher
+        ).createDriver(fileName, directoryPath, version)
+            .execute(null, "PRAGMA no_operation /* execution for opening connection */", 0)
+    }
 }

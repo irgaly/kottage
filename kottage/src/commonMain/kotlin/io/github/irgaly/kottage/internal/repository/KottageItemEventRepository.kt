@@ -22,6 +22,7 @@ internal interface KottageItemEventRepository {
     fun deleteOlderEvents(itemType: String, limit: Long)
     fun deleteBefore(createdAt: Long)
     fun deleteAll(itemType: String)
+    fun deleteAllList(listType: String)
     fun getStatsCount(itemType: String): Long
     fun incrementStatsCount(itemType: String, count: Long)
     fun decrementStatsCount(itemType: String, count: Long)

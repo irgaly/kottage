@@ -41,12 +41,37 @@ class Kottage(
                 shmFile = "$databaseFile-shm"
             )
         }
+
+        /**
+         * for Debug,
+         * create an old version Database
+         */
+        suspend fun createOldDatabase(
+            name: String,
+            directoryPath: String,
+            environment: KottageEnvironment,
+            version: Int,
+            dispatcher: CoroutineDispatcher = Dispatchers.Default
+        ) {
+            io.github.irgaly.kottage.internal.database.createOldDatabase(
+                fileName = name,
+                directoryPath = directoryPath,
+                environment = environment,
+                dispatcher = dispatcher,
+                version = version
+            )
+        }
     }
 
-    private val databaseManager =
-        KottageDatabaseManager(name, directoryPath, environment, dispatcher, scope)
+    val options: KottageOptions = KottageOptions.Builder(
+        autoCompactionDuration = 14.days,
+        garbageCollectionTimeOfInvalidatedListEntries = 10.days
+    ).apply {
+        optionsBuilder?.invoke(this)
+    }.build()
 
-    private val options: KottageOptions
+    private val databaseManager: KottageDatabaseManager =
+        KottageDatabaseManager(name, directoryPath, options, environment, dispatcher, scope)
 
     /**
      * Simple KottageEvent Flow
@@ -59,13 +84,13 @@ class Kottage(
 
     init {
         require(!name.contains(Files.separator)) { "name contains separator: $name" }
-        options = KottageOptions.Builder(
-            autoCompactionDuration = 14.days
-        ).apply {
-            optionsBuilder?.invoke(this)
-        }.build()
     }
 
+    /**
+     * get KottageStorage for storage mode
+     *
+     * @param name A storage name. This must be unique in **this kottage database**.
+     */
     fun storage(
         name: String,
         optionsBuilder: (KottageStorageOptions.Builder.() -> Unit)? = null
@@ -90,6 +115,11 @@ class Kottage(
         )
     }
 
+    /**
+     * get KottageStorage for cache mode
+     *
+     * @param name A storage name. This must be unique in this kottage database.
+     */
     fun cache(
         name: String,
         optionsBuilder: (KottageStorageOptions.Builder.() -> Unit)? = null

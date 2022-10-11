@@ -3,6 +3,9 @@ package io.github.irgaly.kottage.internal.repository
 import io.github.irgaly.kottage.internal.model.Item
 import io.github.irgaly.kottage.internal.model.ItemEvent
 import io.github.irgaly.kottage.internal.model.ItemEventType
+import io.github.irgaly.kottage.internal.model.ItemListEntry
+import io.github.irgaly.kottage.internal.model.ItemListStats
+import io.github.irgaly.kottage.internal.model.ItemStats
 
 internal fun io.github.irgaly.kottage.data.sqlite.Item.toDomain(): Item {
     return Item(
@@ -32,13 +35,64 @@ internal fun Item.toEntity(): io.github.irgaly.kottage.data.sqlite.Item {
     )
 }
 
+internal fun io.github.irgaly.kottage.data.sqlite.Item_list.toDomain(): ItemListEntry {
+    return ItemListEntry(
+        id = id,
+        type = type,
+        itemType = item_type,
+        itemKey = item_key,
+        previousId = previous_id,
+        nextId = next_id,
+        expireAt = expire_at,
+        userInfo = user_info,
+        userPreviousKey = user_previous_key,
+        userCurrentKey = user_current_key,
+        userNextKey = user_next_key
+    )
+}
+
+internal fun ItemListEntry.toEntity(): io.github.irgaly.kottage.data.sqlite.Item_list {
+    return io.github.irgaly.kottage.data.sqlite.Item_list(
+        id = id,
+        type = type,
+        item_type = itemType,
+        item_key = itemKey,
+        previous_id = previousId,
+        next_id = nextId,
+        expire_at = expireAt,
+        user_info = userInfo,
+        user_previous_key = userPreviousKey,
+        user_current_key = userCurrentKey,
+        user_next_key = userNextKey
+    )
+}
+
+internal fun io.github.irgaly.kottage.data.sqlite.Item_stats.toDomain(): ItemStats {
+    return ItemStats(
+        itemType = item_type,
+        count = count,
+        eventCount = event_count
+    )
+}
+
+internal fun io.github.irgaly.kottage.data.sqlite.Item_list_stats.toDomain(): ItemListStats {
+    return ItemListStats(
+        listType = item_list_type,
+        count = count,
+        firstItemPositionId = first_item_list_id,
+        lastItemPositionId = last_item_list_id
+    )
+}
+
 internal fun io.github.irgaly.kottage.data.sqlite.Item_event.toDomain(): ItemEvent {
     return ItemEvent(
         id = id,
         createdAt = created_at,
         expireAt = expire_at,
         itemType = item_type,
-        itemKey = Item.keyFromEntityKey(item_key, item_type),
+        itemKey = item_key,
+        itemListId = item_list_id,
+        itemListType = item_list_type,
         eventType = event_type.toDomain()
     )
 }
@@ -49,7 +103,9 @@ internal fun ItemEvent.toEntity(): io.github.irgaly.kottage.data.sqlite.Item_eve
         created_at = createdAt,
         expire_at = expireAt,
         item_type = itemType,
-        item_key = Item.toEntityKey(itemKey, itemType),
+        item_key = itemKey,
+        item_list_id = itemListId,
+        item_list_type = itemListType,
         event_type = eventType.toEntity()
     )
 }

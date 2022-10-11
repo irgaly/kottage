@@ -8,6 +8,7 @@ import kotlin.time.Duration.Companion.seconds
 /**
  * Kotest Config
  */
+@Suppress("unused")
 object ProjectConfig: AbstractProjectConfig() {
     override val timeout: Duration = 10.minutes
     override val invocationTimeout: Long = 10.seconds.inWholeMilliseconds

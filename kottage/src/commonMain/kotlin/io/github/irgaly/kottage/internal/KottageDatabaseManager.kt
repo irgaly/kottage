@@ -2,16 +2,27 @@ package io.github.irgaly.kottage.internal
 
 import io.github.irgaly.kottage.KottageEnvironment
 import io.github.irgaly.kottage.KottageEventFlow
+import io.github.irgaly.kottage.KottageList
+import io.github.irgaly.kottage.KottageOptions
+import io.github.irgaly.kottage.KottageStorage
 import io.github.irgaly.kottage.internal.database.createDatabaseConnection
 import io.github.irgaly.kottage.internal.model.ItemEvent
 import io.github.irgaly.kottage.internal.model.ItemEventFlow
 import io.github.irgaly.kottage.internal.repository.KottageRepositoryFactory
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 
 internal class KottageDatabaseManager(
     fileName: String,
     directoryPath: String,
+    private val options: KottageOptions,
     private val environment: KottageEnvironment,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
     private val scope: CoroutineScope = CoroutineScope(dispatcher + SupervisorJob())
@@ -33,6 +44,11 @@ internal class KottageDatabaseManager(
     }
 
     @OptIn(DelicateCoroutinesApi::class)
+    val itemListRepository = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
+        repositoryFactory.createItemListRepository()
+    }
+
+    @OptIn(DelicateCoroutinesApi::class)
     val itemEventRepository = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
         repositoryFactory.createItemEventRepository()
     }
@@ -46,12 +62,40 @@ internal class KottageDatabaseManager(
     val operator = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
         KottageOperator(
             itemRepository.await(),
+            itemListRepository.await(),
             itemEventRepository.await(),
             statsRepository.await()
         )
     }
 
     val eventFlow: Flow<ItemEvent> = _eventFlow.flow
+
+    suspend fun getStorageOperator(storage: KottageStorage): KottageStorageOperator {
+        return KottageStorageOperator(
+            storage,
+            operator.await(),
+            itemRepository.await(),
+            itemListRepository.await(),
+            itemEventRepository.await(),
+            statsRepository.await()
+        )
+    }
+
+    suspend fun getListOperator(
+        kottageList: KottageList,
+        storage: KottageStorage
+    ): KottageListOperator {
+        return KottageListOperator(
+            kottageList,
+            storage,
+            operator.await(),
+            getStorageOperator(storage),
+            itemRepository.await(),
+            itemListRepository.await(),
+            itemEventRepository.await(),
+            statsRepository.await()
+        )
+    }
 
     suspend fun <R> transactionWithResult(bodyWithReturn: () -> R): R =
         databaseConnection.transactionWithResult(bodyWithReturn)
@@ -62,13 +106,25 @@ internal class KottageDatabaseManager(
     }
 
     suspend fun compact() {
-        val statsRepository = statsRepository.await()
         val operator = operator.await()
         val now = calendar.nowUnixTimeMillis()
+        val beforeExpireAt = options.garbageCollectionTimeOfInvalidatedListEntries?.let {
+            now - it.inWholeMilliseconds
+        }
         databaseConnection.transaction {
+            if (beforeExpireAt != null) {
+                // List Entry の自動削除が有効
+                operator.evictExpiredListEntries(
+                    now = now,
+                    beforeExpireAt = beforeExpireAt
+                )
+            } else {
+                // List Entry Invalidate のみ
+                operator.invalidateExpiredListEntries(now = now)
+            }
             operator.evictCaches(now)
             operator.evictEvents(now)
-            statsRepository.updateLastEvictAt(now)
+            operator.updateLastEvictAt(now)
         }
         databaseConnection.compact()
     }
@@ -84,7 +140,7 @@ internal class KottageDatabaseManager(
     /**
      * Publish Events
      */
-    suspend fun onEventCreated(eventId: String) {
+    suspend fun onEventCreated() {
         val operator = operator.await()
         val limit = 100L
         _eventFlow.updateWithLock { lastEvent, emit ->

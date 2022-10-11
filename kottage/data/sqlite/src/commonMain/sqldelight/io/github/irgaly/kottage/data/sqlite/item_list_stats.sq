@@ -1,10 +1,36 @@
---CREATE TABLE item_list_stats (
---  item_list_type TEXT PRIMARY KEY,
---  count INTEGER NOT NULL DEFAULT 0,
---  first_item_list_key TEXT NOT NULL,
---  last_item_list_key TEXT NOT NULL,
---  expire_at INTEGER
---);
+CREATE TABLE item_list_stats (
+  item_list_type TEXT PRIMARY KEY,
+  count INTEGER NOT NULL DEFAULT 0,
+  first_item_list_id TEXT NOT NULL,
+  last_item_list_id TEXT NOT NULL
+);
 
---deleteAll:
---DELETE FROM item_list_stats;
+insert:
+INSERT INTO item_list_stats(item_list_type, count, first_item_list_id, last_item_list_id) VALUES(?, ?, ?, ?);
+
+updateFirstItemListId:
+UPDATE item_list_stats SET first_item_list_id = ? WHERE item_list_type = ?;
+
+updateLastItemListId:
+UPDATE item_list_stats SET last_item_list_id = ? WHERE item_list_type = ?;
+
+incrementCount:
+UPDATE item_list_stats SET count = count + ? WHERE item_list_type = ?;
+
+decrementCount:
+UPDATE item_list_stats SET count = count - ? WHERE item_list_type = ?;
+
+updateCount:
+UPDATE item_list_stats SET count = ? WHERE item_list_type = ?;
+
+select:
+SELECT * FROM item_list_stats WHERE item_list_type = ?;
+
+selectAllItemListType:
+SELECT item_list_type FROM item_list_stats;
+
+delete:
+DELETE FROM item_list_stats WHERE item_list_type = ?;
+
+deleteAll:
+DELETE FROM item_list_stats;
