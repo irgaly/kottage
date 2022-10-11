@@ -8,6 +8,7 @@ import io.github.irgaly.test.extension.duration
 import io.github.irgaly.test.extension.tempdir
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 
 class KottageListTest : DescribeSpec({
     val tempDirectory = tempdir(false)
@@ -135,6 +136,27 @@ class KottageListTest : DescribeSpec({
                 calendar.now += 1.hours
                 list.get(entry1.positionId) shouldBe null
                 list.get(entry4.positionId) shouldBe null
+                if (printListStatus) {
+                    println(list.getDebugStatus())
+                    println(list.getDebugListRawData())
+                }
+            }
+        }
+        context("List compaction") {
+            val (kottage, calendar) = kottage()
+            val cache = kottage.cache("list_compaction")
+            val list = cache.list("list_list_compaction") {
+                itemExpireTime = 1.days.duration
+            }
+            it("expire した entry が削除される") {
+                list.add("key1", "value1")
+                list.compact()
+                list.getSize() shouldBe 1
+                calendar.now += 1.days
+                list.getSize() shouldBe 0
+                list.getDebugStatus() shouldContain "total = 1"
+                list.compact()
+                list.getDebugStatus() shouldContain "total = 0"
                 if (printListStatus) {
                     println(list.getDebugStatus())
                     println(list.getDebugListRawData())
