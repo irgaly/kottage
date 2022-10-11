@@ -34,14 +34,20 @@ class KottageListTest : DescribeSpec({
                         kottageListValue("key4", "value4")
                     )
                 )
+                list.addKeys(listOf("key1", "key2"))
+                list.addFirst("key5", "value5")
                 cache.get<String>("key1") shouldBe "value1"
                 cache.get<String>("key2") shouldBe "value2"
                 cache.get<String>("key3") shouldBe "value3"
                 cache.get<String>("key4") shouldBe "value4"
-                list.getFirst()?.value<String>() shouldBe "value1"
-                list.getByIndex(1)?.value<String>() shouldBe "value2"
-                list.getByIndex(2)?.value<String>() shouldBe "value3"
-                list.getByIndex(3)?.value<String>() shouldBe "value4"
+                cache.get<String>("key5") shouldBe "value5"
+                list.getFirst()?.value<String>() shouldBe "value5"
+                list.getByIndex(1)?.value<String>() shouldBe "value1"
+                list.getByIndex(2)?.value<String>() shouldBe "value2"
+                list.getByIndex(3)?.value<String>() shouldBe "value3"
+                list.getByIndex(4)?.value<String>() shouldBe "value4"
+                list.getByIndex(5)?.value<String>() shouldBe "value1"
+                list.getByIndex(6)?.value<String>() shouldBe "value2"
                 if (printListStatus) {
                     println(list.getDebugStatus())
                     println(list.getDebugListRawData())
