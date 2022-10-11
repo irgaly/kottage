@@ -2,7 +2,7 @@
 kottage = "0.9.1"
 kotlin = "1.7.10"
 kotlinx-coroutines = "1.6.4"
-kotest = "5.4.2"
+kotest = "5.5.1"
 gradle-android = "7.4.0-alpha10"
 gradle-android-compile-sdk = "33"
 gradle-android-target-sdk = "33"
