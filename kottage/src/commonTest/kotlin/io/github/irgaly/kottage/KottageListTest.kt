@@ -1,16 +1,19 @@
 package io.github.irgaly.kottage
 
+import com.soywiz.klock.days
+import com.soywiz.klock.hours
 import io.github.irgaly.kottage.extension.buildKottage
 import io.github.irgaly.kottage.platform.TestCalendar
+import io.github.irgaly.test.extension.duration
 import io.github.irgaly.test.extension.tempdir
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 
 class KottageListTest : DescribeSpec({
     val tempDirectory = tempdir()
-    val printListStatus = true
+    val printListStatus = false
     fun kottage(
-        name: String = "test", builder: (KottageOptions.Builder.() -> Unit)? = null
+        name: String = "kottage_list", builder: (KottageOptions.Builder.() -> Unit)? = null
     ): Pair<Kottage, TestCalendar> = buildKottage(name, tempDirectory, builder)
     describe("Kottage List Test") {
         context("debug 機能") {
@@ -71,6 +74,40 @@ class KottageListTest : DescribeSpec({
                 item.previousKey shouldBe "prev"
                 item.currentKey shouldBe "current"
                 item.nextKey shouldBe "next"
+                if (printListStatus) {
+                    println(list.getDebugStatus())
+                    println(list.getDebugListRawData())
+                }
+            }
+        }
+        context("List expiration") {
+            val (kottage, calendar) = kottage()
+            val cache = kottage.cache("list_expiration")
+            val list = cache.list("list_list_expiration") {
+                itemExpireTime = 1.days.duration
+            }
+            it("先頭・末尾の有効期限切れ Entry にアクセスできないこと") {
+                list.add("key1", "value1")
+                val entry1 = checkNotNull(list.getLast())
+                list.add("key2", "value2")
+                val entry2 = checkNotNull(list.getLast())
+                calendar.now += 1.hours
+                list.add("key3", "value3")
+                val entry3 = checkNotNull(list.getLast())
+                list.add("key4", "value4")
+                val entry4 = checkNotNull(list.getLast())
+                calendar.now += 1.hours
+                list.insertAfter(entry2.positionId, "key5", "value5")
+                val entry5 = checkNotNull(list.getByIndex(2))
+                calendar.now += 22.hours
+                list.get(entry1.positionId)?.itemKey shouldBe "key5"
+                list.get(entry2.positionId)?.itemKey shouldBe "key5"
+                list.get(entry3.positionId)?.itemKey shouldBe "key3"
+                list.get(entry4.positionId)?.itemKey shouldBe "key4"
+                calendar.now += 1.hours
+                list.get(entry3.positionId) shouldBe null
+                list.get(entry4.positionId) shouldBe null
+                list.get(entry5.positionId)?.itemKey shouldBe "key5"
                 if (printListStatus) {
                     println(list.getDebugStatus())
                     println(list.getDebugListRawData())
