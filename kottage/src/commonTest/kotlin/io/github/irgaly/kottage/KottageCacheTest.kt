@@ -3,6 +3,7 @@ package io.github.irgaly.kottage
 import com.soywiz.klock.DateTime
 import com.soywiz.klock.days
 import com.soywiz.klock.milliseconds
+import io.github.irgaly.kottage.extension.buildKottage
 import io.github.irgaly.kottage.platform.KottageContext
 import io.github.irgaly.kottage.platform.TestCalendar
 import io.github.irgaly.kottage.strategy.KottageFifoStrategy
@@ -16,6 +17,9 @@ import io.kotest.matchers.shouldBe
 class KottageCacheTest : DescribeSpec({
     val tempDirectory = tempdir()
     val calendar = TestCalendar(DateTime(2022, 1, 1).utc)
+    fun kottage(
+        name: String = "kottage_cache", builder: (KottageOptions.Builder.() -> Unit)? = null
+    ): Pair<Kottage, TestCalendar> = buildKottage(name, tempDirectory, builder)
     describe("Kottage Cache Test") {
         val kottage = Kottage(
             "test",
@@ -134,6 +138,23 @@ class KottageCacheTest : DescribeSpec({
                 cache.exists("3") shouldBe false
                 cache.exists("4") shouldBe true
                 cache.exists("5") shouldBe true
+            }
+        }
+        context("List") {
+            val (kottage, calendar) = kottage()
+            val cache = kottage.cache("list_expire")
+            val list = cache.list("list_list_expire") {
+                itemExpireTime = 30.days.duration
+            }
+            it("List に追加されたアイテムは expire されない") {
+                cache.put("key1", "value1", 1.days.duration)
+                cache.put("key2", "value2", 1.days.duration)
+                list.addKey("key1")
+                calendar.now += 1.days
+                cache.get<String>("key1") shouldBe "value1"
+                cache.getOrNull<String>("key2") shouldBe null
+                calendar.now += 29.days
+                cache.getOrNull<String>("Key1") shouldBe null
             }
         }
     }
