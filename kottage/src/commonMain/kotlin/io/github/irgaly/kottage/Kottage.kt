@@ -86,6 +86,11 @@ class Kottage(
         require(!name.contains(Files.separator)) { "name contains separator: $name" }
     }
 
+    /**
+     * get KottageStorage for storage mode
+     *
+     * @param name A storage name. This must be unique in **this kottage database**.
+     */
     fun storage(
         name: String,
         optionsBuilder: (KottageStorageOptions.Builder.() -> Unit)? = null
@@ -110,6 +115,11 @@ class Kottage(
         )
     }
 
+    /**
+     * get KottageStorage for cache mode
+     *
+     * @param name A storage name. This must be unique in this kottage database.
+     */
     fun cache(
         name: String,
         optionsBuilder: (KottageStorageOptions.Builder.() -> Unit)? = null

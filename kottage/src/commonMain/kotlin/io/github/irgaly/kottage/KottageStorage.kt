@@ -89,6 +89,8 @@ interface KottageStorage {
 
     /**
      * get KottageList
+     *
+     * @param name A list name. This is a global name in the kottage database, so this must be unique in **this kottage database** (not in this KottageStorage instance).
      */
     fun list(
         name: String,
