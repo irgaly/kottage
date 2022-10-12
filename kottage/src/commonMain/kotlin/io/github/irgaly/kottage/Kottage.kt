@@ -156,7 +156,7 @@ class Kottage(
      * Optimize Database to minimum size.
      */
     suspend fun compact() {
-        databaseManager.compact()
+        databaseManager.compact(true)
     }
 
     suspend fun clear() {

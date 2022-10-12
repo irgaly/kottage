@@ -225,8 +225,7 @@ internal class KottageStorageImpl(
         val receivedNow = now ?: calendar.nowUnixTimeMillis()
         var compactionRequired = false
         val result = databaseManager.transactionWithResult {
-            compactionRequired =
-                operator.getAutoCompactionNeeded(receivedNow, kottageOptions.autoCompactionDuration)
+            compactionRequired = operator.getAutoCompactionNeeded(receivedNow)
             bodyWithReturn(operator, receivedNow)
         }
         if (compactionRequired) {

@@ -61,6 +61,7 @@ internal class KottageDatabaseManager(
     @OptIn(DelicateCoroutinesApi::class)
     val operator = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
         KottageOperator(
+            options,
             itemRepository.await(),
             itemListRepository.await(),
             itemEventRepository.await(),
@@ -105,28 +106,34 @@ internal class KottageDatabaseManager(
         databaseConnection.deleteAll()
     }
 
-    suspend fun compact() {
+    suspend fun compact(force: Boolean = false) {
         val operator = operator.await()
         val now = calendar.nowUnixTimeMillis()
         val beforeExpireAt = options.garbageCollectionTimeOfInvalidatedListEntries?.let {
             now - it.inWholeMilliseconds
         }
-        databaseConnection.transaction {
-            if (beforeExpireAt != null) {
-                // List Entry の自動削除が有効
-                operator.evictExpiredListEntries(
-                    now = now,
-                    beforeExpireAt = beforeExpireAt
-                )
-            } else {
-                // List Entry Invalidate のみ
-                operator.invalidateExpiredListEntries(now = now)
+        val compactionRequired = databaseConnection.transactionWithResult {
+            val required = (force || operator.getAutoCompactionNeeded(now))
+            if (required) {
+                if (beforeExpireAt != null) {
+                    // List Entry の自動削除が有効
+                    operator.evictExpiredListEntries(
+                        now = now,
+                        beforeExpireAt = beforeExpireAt
+                    )
+                } else {
+                    // List Entry Invalidate のみ
+                    operator.invalidateExpiredListEntries(now = now)
+                }
+                operator.evictCaches(now)
+                operator.evictEvents(now)
+                operator.updateLastEvictAt(now)
             }
-            operator.evictCaches(now)
-            operator.evictEvents(now)
-            operator.updateLastEvictAt(now)
+            required
         }
-        databaseConnection.compact()
+        if (compactionRequired) {
+            databaseConnection.compact()
+        }
     }
 
     suspend fun getDatabaseStatus(): String {
