@@ -5,16 +5,17 @@ Kotlin Multiplatform Key-Value Store Local Cache Storage for Single Source of Tr
 # Features
 
 * A Kotlin Multiplatform library
-* Key-Value Store with no schemas, that values are stored based on SQLite
+* Key-Value Store with no schemas, values are stored to SQLite
 * Observing events of item updates as Flow
 * Cache Expiration
-    * Cache Eviction Strategy Options:
+    * Cache Eviction Strategies:
         * Expiration Time
         * FIFO Strategy
         * LRU Strategy
 * KVS Cache mode / KVS Storage mode
     * Expired items are evicted automatically
     * There is a storage mode with no item expiration
+* List structures for Paging are supported
 * Support primitive values and `@Serializable` classes
 
 # Requires
@@ -62,7 +63,7 @@ kotlin.native.binary.memoryModel=experimental
 
 Use Kottage as KVS cache or KVS storage.
 
-At first, get a Kottage instance. Even though you can use Kottage instance as a singleton, multiple
+First, get a Kottage instance. Even though you can use Kottage instance as a singleton, multiple
 Kottage instances creation is allowed. Kottage instances and methods are thread safe.
 
 ```kotlin
@@ -104,16 +105,23 @@ val cache: KottageStorage = kottage.cache("timeline_item_cache") {
     //strategy = KottageLruStrategy(maxEntryCount = 1000) // LRU cache strategy
     defaultExpireTime = 30.days // cache item expiration time in kotlin.time.Duration
 }
+
 // Kottage's data accessing methods (get, put...) are suspending function
-// These items will be expired and automatically deleted after 30 days elapsed
+// These items will be expired and automatically deleted after 30 days (defaultExpireTime) elapsed
 cache.put("item1", "item1 value")
 cache.put("item2", 42)
 cache.put("item3", true)
+
 val value1: String = cache.get<String>("item1")
 val value2: Int = cache.get<Int>("item2")
 val value3: Boolean = cache.get<Boolean>("item3")
 cache.exists("item4") // => false
 cache.getOrNull<String>("item4") // => null
+
+// 30 days later... these items are expired
+cache.get<String>("item1") // throws NoSuchElementException
+cache.getOrNull<String>("item1") // => null
+cache.exists("item1") // => false
 ```
 
 Use it as KVS Storage with no expiration.
@@ -121,16 +129,71 @@ Use it as KVS Storage with no expiration.
 ```kotlin
 // Open Kottage database as storage mode
 val storage: KottageStorage = kottage.storage("app_configs")
+
 // Kottage's data accessing methods (get, put...) are suspending function
 // These items has no expiration
 storage.put("item1", "item1 value")
 storage.put("item2", 42)
 storage.put("item3", true)
+
 val value1: String = storage.get<String>("item1")
 val value2: Int = storage.get<Int>("item2")
 val value3: Boolean = storage.get<Boolean>("item3")
 storage.exists("item4") // => false
 storage.getOrNull<String>("item4") // => null
+```
+
+### List / Paging
+
+Kottage has a List feature for make Paging UIs and for Single Source of Truth.
+
+```kotlin
+import io.github.irgaly.kottage.kottageListValue
+
+val cache: KottageStorage = kottage.cache("timeline_item_cache")
+val list: KottageList = cache.list("timeline_list")
+
+// KottageList is an interface of KottageStorage that supports List operations.
+
+// Add List Items
+list.add("item_id_1", TimelineItem("item_id_1", ...))
+list.addAll(
+    listOf(
+        kottageListValue("item_id_2", TimelineItem("item_id_2", ...)),
+        kottageListValue("item_id_3", TimelineItem("item_id_3", ...)),
+        kottageListValue("item_id_4", TimelineItem("item_id_4", ...)),
+        kottageListValue("item_id_5", TimelineItem("item_id_5", ...))
+    )
+)
+
+// The items are stored in "timeline_item_cache" KottageStorage
+cache.exists("item_id_1") // => true
+
+// You can update items directly
+cache.put("item_id_1", TimelineItem("item_id_1", otherValue = ...))
+
+// Get as Page
+val page0: KottageListPage = list.getPageFrom(positionId = null, pageSize = 2)
+val page1: KottageListPage = list.getPageFrom(positionId = (page0.nextPositionId), pageSize = 2)
+val page2: KottageListPage = list.getPageFrom(positionId = (page1.nextPositionId), pageSize = 2)
+
+page0.items // => List<KottageListEntry>
+page0.items.map { it.value<TimelineItem>() }
+  // => [TimelineItem("item_id_1", otherValue = ...), TimelineItem("item_id_2", ...)]
+page1.items.map { it.value<TimelineItem>() }
+  // => [TimelineItem("item_id_3", ...), TimelineItem("item_id_4", ...)]
+page2.items.map { it.value<TimelineItem>() }
+  // => [TimelineItem("item_id_5", ...)]
+page2.hasNext // => false
+
+// KottageList is a Linked List.
+val entry1: KottageListEntry? = list.getFirst()
+val entry2: KottageListEntry? = list.get(checkNotNull(entry1.nextPositionId))
+val entry3: KottageListEntry? = list.get(checkNotNull(entry2.nextPositionId))
+// convenience method to get an entry by index
+val entry4: KottageListEntry? = list.getByIndex(3)
+
+entry1?.value<TimelineItem>() // => TimelineItem("item_id_1", otherValue = ...)
 ```
 
 ### Serialization
