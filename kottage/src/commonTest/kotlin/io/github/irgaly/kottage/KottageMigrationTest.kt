@@ -15,17 +15,17 @@ class KottageMigrationTest : DescribeSpec({
                 println("tempDirectory = $tempDirectory")
             }
         }
-        context("1 ->") {
+        context("from 1") {
             val calendar = TestCalendar(DateTime(2022, 1, 1).utc)
             val environment = KottageEnvironment(KottageContext(), calendar)
-            it("-> 2") {
+            it("to 2") {
                 Kottage.createOldDatabase(
                     "test",
                     tempDirectory,
                     environment,
                     1
                 )
-                val kottage = Kottage( "test", tempDirectory, environment)
+                val kottage = Kottage("test", tempDirectory, environment)
                 val cache = kottage.cache("cache1")
                 cache.put("key2", "value2")
                 cache.get<String>("key1") shouldBe "value1"
