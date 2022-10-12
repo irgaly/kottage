@@ -12,6 +12,12 @@ class KottageEntry<T : Any> internal constructor(
     private val type: KType,
     private val encoder: Encoder
 ) {
+    val key: String get() = item.key
+    val itemType: String get() = item.type
+    val createdAt: Long get() = item.createdAt
+    val lastReadAt: Long get() = item.lastReadAt
+    val expireAt: Long? get() = item.expireAt
+
     @Throws(
         ClassCastException::class,
         SerializationException::class
