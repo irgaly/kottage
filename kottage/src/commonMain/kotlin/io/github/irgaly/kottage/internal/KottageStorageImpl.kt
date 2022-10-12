@@ -10,7 +10,9 @@ import io.github.irgaly.kottage.KottageStorage
 import io.github.irgaly.kottage.KottageStorageOptions
 import io.github.irgaly.kottage.internal.encoder.Encoder
 import io.github.irgaly.kottage.internal.encoder.encodeItem
+import io.github.irgaly.kottage.internal.property.KottageStorageStore
 import io.github.irgaly.kottage.platform.KottageCalendar
+import io.github.irgaly.kottage.property.KottageStore
 import io.github.irgaly.kottage.strategy.KottageStrategy
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineStart
@@ -21,6 +23,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KType
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
@@ -208,6 +211,39 @@ internal class KottageStorageImpl(
             onCompactionRequired,
             dispatcher
         )
+    }
+
+    override fun <T : Any> property(
+        type: KType,
+        key: String?,
+        expireTime: Duration?,
+        defaultValue: () -> T
+    ): ReadOnlyProperty<Any?, KottageStore<T>> {
+        return ReadOnlyProperty<Any?, KottageStore<T>> { _, property ->
+            KottageStorageStore(
+                storage = this,
+                key = key ?: property.name,
+                type = type,
+                expireTime = expireTime,
+                defaultValue = defaultValue
+            )
+        }
+    }
+
+    override fun <T : Any> nullableProperty(
+        type: KType,
+        key: String?,
+        expireTime: Duration?
+    ): ReadOnlyProperty<Any?, KottageStore<T?>> {
+        return ReadOnlyProperty<Any?, KottageStore<T?>> { _, property ->
+            KottageStorageStore(
+                storage = this,
+                key = key ?: property.name,
+                type = type,
+                expireTime = expireTime,
+                defaultValue = { null }
+            )
+        }
     }
 
     override suspend fun getDebugStatus(): String = withContext(dispatcher) {

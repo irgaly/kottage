@@ -1,7 +1,9 @@
 package io.github.irgaly.kottage
 
+import io.github.irgaly.kottage.property.KottageStore
 import kotlinx.serialization.SerializationException
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 import kotlin.time.Duration
@@ -97,6 +99,19 @@ interface KottageStorage {
         optionsBuilder: (KottageListOptions.Builder.() -> Unit)? = null
     ): KottageList
 
+    fun <T : Any> property(
+        type: KType,
+        key: String? = null,
+        expireTime: Duration? = null,
+        defaultValue: () -> T
+    ): ReadOnlyProperty<Any?, KottageStore<T>>
+
+    fun <T : Any> nullableProperty(
+        type: KType,
+        key: String? = null,
+        expireTime: Duration? = null
+    ): ReadOnlyProperty<Any?, KottageStore<T?>>
+
     suspend fun getDebugStatus(): String
 }
 
@@ -152,4 +167,19 @@ suspend inline fun <reified T : Any> KottageStorage.getEntry(key: String): Kotta
 @Throws(CancellationException::class)
 suspend inline fun <reified T : Any> KottageStorage.getEntryOrNull(key: String): KottageEntry<T>? {
     return getEntryOrNull(key, typeOf<T>())
+}
+
+inline fun <reified T : Any> KottageStorage.property(
+    key: String? = null,
+    expireTime: Duration? = null,
+    noinline defaultValue: () -> T
+): ReadOnlyProperty<Any?, KottageStore<T>> {
+    return property(typeOf<T>(), key, expireTime, defaultValue)
+}
+
+inline fun <reified T : Any> KottageStorage.nullableProperty(
+    key: String? = null,
+    expireTime: Duration? = null
+): ReadOnlyProperty<Any?, KottageStore<T?>> {
+    return nullableProperty(typeOf<T>(), key, expireTime)
 }
