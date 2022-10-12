@@ -1,5 +1,6 @@
 package io.github.irgaly.kottage.internal
 
+import io.github.irgaly.kottage.KottageOptions
 import io.github.irgaly.kottage.internal.model.ItemEvent
 import io.github.irgaly.kottage.internal.model.ItemEventType
 import io.github.irgaly.kottage.internal.model.ItemListEntry
@@ -17,6 +18,7 @@ import kotlin.time.Duration.Companion.milliseconds
  * Data Operation Logic
  */
 internal class KottageOperator(
+    private val options: KottageOptions,
     private val itemRepository: KottageItemRepository,
     private val itemListRepository: KottageItemListRepository,
     private val itemEventRepository: KottageItemEventRepository,
@@ -70,11 +72,11 @@ internal class KottageOperator(
     /**
      * This should be called in transaction
      */
-    fun getAutoCompactionNeeded(now: Long, duration: Duration?): Boolean {
-        return if (duration != null) {
+    fun getAutoCompactionNeeded(now: Long): Boolean {
+        return options.autoCompactionDuration?.let { duration ->
             val lastCompaction = statsRepository.getLastEvictAt()
             (duration <= (now - lastCompaction).milliseconds)
-        } else false
+        } ?: false
     }
 
     /**

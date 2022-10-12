@@ -1,6 +1,6 @@
 package io.github.irgaly.kottage.internal
 
-import io.github.irgaly.kottage.KottageStorage
+import io.github.irgaly.kottage.KottageStorageOptions
 import io.github.irgaly.kottage.internal.model.Item
 import io.github.irgaly.kottage.internal.model.ItemEventType
 import io.github.irgaly.kottage.internal.model.ItemListEntry
@@ -13,15 +13,14 @@ import io.github.irgaly.kottage.internal.repository.KottageStatsRepository
  * Data Operation Logic of KottageStorage
  */
 internal class KottageStorageOperator(
-    private val storage: KottageStorage,
+    private val itemType: String,
+    private val storageOptions: KottageStorageOptions,
     private val operator: KottageOperator,
     private val itemRepository: KottageItemRepository,
     private val itemListRepository: KottageItemListRepository,
     private val itemEventRepository: KottageItemEventRepository,
     private val statsRepository: KottageStatsRepository
 ) {
-    private val itemType = storage.name
-
     /**
      * This should be called in transaction
      */
@@ -34,16 +33,16 @@ internal class KottageStorageOperator(
         operator.addEvent(
             now = now,
             eventType = if (isCreate) ItemEventType.Create else ItemEventType.Update,
-            eventExpireTime = storage.options.eventExpireTime,
+            eventExpireTime = storageOptions.eventExpireTime,
             itemType = item.type,
             itemKey = item.key,
             itemListId = null,
             itemListType = null,
-            maxEventEntryCount = storage.options.maxEventEntryCount
+            maxEventEntryCount = storageOptions.maxEventEntryCount
         )
         if (isCreate) {
             val count = itemRepository.getStatsCount(item.type)
-            storage.options.strategy.onPostItemCreate(item.key, item.type, count, now, operator)
+            storageOptions.strategy.onPostItemCreate(item.key, item.type, count, now, operator)
         }
     }
 
@@ -97,12 +96,12 @@ internal class KottageStorageOperator(
             val eventId = operator.addEvent(
                 now = now,
                 eventType = ItemEventType.Delete,
-                eventExpireTime = storage.options.eventExpireTime,
+                eventExpireTime = storageOptions.eventExpireTime,
                 itemType = itemType,
                 itemKey = key,
                 itemListId = entry.id,
                 itemListType = entry.type,
-                maxEventEntryCount = storage.options.maxEventEntryCount
+                maxEventEntryCount = storageOptions.maxEventEntryCount
             )
             onEventCreated(eventId)
         }
@@ -110,12 +109,12 @@ internal class KottageStorageOperator(
         val eventId = operator.addEvent(
             now = now,
             eventType = ItemEventType.Delete,
-            eventExpireTime = storage.options.eventExpireTime,
+            eventExpireTime = storageOptions.eventExpireTime,
             itemType = itemType,
             itemKey = key,
             itemListId = null,
             itemListType = null,
-            maxEventEntryCount = storage.options.maxEventEntryCount
+            maxEventEntryCount = storageOptions.maxEventEntryCount
         )
         onEventCreated(eventId)
     }
