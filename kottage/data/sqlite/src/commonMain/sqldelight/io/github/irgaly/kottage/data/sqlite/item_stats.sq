@@ -8,7 +8,7 @@ insertIfNotExists:
 INSERT OR IGNORE INTO item_stats(item_type) VALUES(?);
 
 select:
-SELECT * FROM item_stats WHERE item_type = ?;
+SELECT item_type, count, event_count FROM item_stats WHERE item_type = ?;
 
 incrementCount:
 UPDATE item_stats SET count = count + ? WHERE item_type = ?;

@@ -6,7 +6,7 @@ CREATE TABLE item_list_stats (
 );
 
 insert:
-INSERT INTO item_list_stats(item_list_type, count, first_item_list_id, last_item_list_id) VALUES(?, ?, ?, ?);
+INSERT INTO item_list_stats(item_list_type, count, first_item_list_id, last_item_list_id) VALUES ?;
 
 updateFirstItemListId:
 UPDATE item_list_stats SET first_item_list_id = ? WHERE item_list_type = ?;
@@ -24,7 +24,7 @@ updateCount:
 UPDATE item_list_stats SET count = ? WHERE item_list_type = ?;
 
 select:
-SELECT * FROM item_list_stats WHERE item_list_type = ?;
+SELECT item_list_type, count, first_item_list_id, last_item_list_id FROM item_list_stats WHERE item_list_type = ?;
 
 selectAllItemListType:
 SELECT item_list_type FROM item_list_stats;

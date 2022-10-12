@@ -4,7 +4,7 @@ CREATE TABLE stats (
 );
 
 insertIfNotExists:
-INSERT OR IGNORE INTO stats VALUES(?, 0);
+INSERT OR IGNORE INTO stats(key, last_evict_at) VALUES(?, 0);
 
 selectLastEvictAt:
 SELECT last_evict_at FROM stats WHERE key = ?;
