@@ -27,7 +27,9 @@ class KottageMigrationTest : DescribeSpec({
                 )
                 val kottage = Kottage( "test", tempDirectory, environment)
                 val cache = kottage.cache("cache1")
+                cache.put("key2", "value2")
                 cache.get<String>("key1") shouldBe "value1"
+                cache.get<String>("key2") shouldBe "value2"
             }
         }
     }

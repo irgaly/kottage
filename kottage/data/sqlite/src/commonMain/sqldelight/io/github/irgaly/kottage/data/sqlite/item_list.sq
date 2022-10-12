@@ -16,7 +16,7 @@ CREATE INDEX item_list_item_type_item_key ON item_list(item_type, item_key);
 CREATE INDEX item_list_type_item_type_expire_at ON item_list(type, item_type, expire_at);
 
 replace:
-REPLACE INTO item_list VALUES ?;
+REPLACE INTO item_list(id, type, item_type, item_key, previous_id, next_id, expire_at, user_info, user_previous_key, user_current_key, user_next_key) VALUES ?;
 
 updatePreviousId:
 UPDATE item_list SET previous_id = ? WHERE id = ?;
@@ -37,7 +37,7 @@ removeUserData:
 UPDATE item_list SET user_info = NULL, user_previous_key = NULL, user_current_key = NULL, user_next_key = NULL WHERE id = ?;
 
 select:
-SELECT * FROM item_list WHERE id = ?;
+SELECT id, type, item_type, item_key, previous_id, next_id, expire_at, user_info, user_previous_key, user_current_key, user_next_key FROM item_list WHERE id = ?;
 
 selectIdFromItem:
 SELECT id FROM item_list WHERE item_type = ? AND item_key = ?;

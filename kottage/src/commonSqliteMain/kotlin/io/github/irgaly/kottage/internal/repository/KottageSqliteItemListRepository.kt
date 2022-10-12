@@ -1,6 +1,7 @@
 package io.github.irgaly.kottage.internal.repository
 
 import com.squareup.sqldelight.db.use
+import io.github.irgaly.kottage.data.sqlite.Item_list_stats
 import io.github.irgaly.kottage.data.sqlite.KottageDatabase
 import io.github.irgaly.kottage.internal.model.ItemListEntry
 import io.github.irgaly.kottage.internal.model.ItemListStats
@@ -133,10 +134,12 @@ internal class KottageSqliteItemListRepository(
     ) {
         database.item_list_statsQueries
             .insert(
-                item_list_type = type,
-                count = count,
-                first_item_list_id = firstItemListEntryId,
-                last_item_list_id = lastItemListEntryId
+                Item_list_stats(
+                    item_list_type = type,
+                    count = count,
+                    first_item_list_id = firstItemListEntryId,
+                    last_item_list_id = lastItemListEntryId
+                )
             )
     }
 

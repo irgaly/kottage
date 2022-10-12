@@ -15,7 +15,7 @@ CREATE INDEX item_type_last_read ON item(type, last_read_at);
 CREATE INDEX item_type_expire_at ON item(type, expire_at);
 
 replace:
-REPLACE INTO item VALUES ?;
+REPLACE INTO item(key, type, string_value, long_value, double_value, bytes_value, created_at, last_read_at, expire_at) VALUES ?;
 
 updateLastRead:
 UPDATE item SET last_read_at = ? WHERE key = ?;
@@ -24,7 +24,7 @@ updateExpireAt:
 UPDATE item SET expire_at = ? WHERE key = ?;
 
 select:
-SELECT * FROM item WHERE key = ?;
+SELECT key, type, string_value, long_value, double_value, bytes_value, created_at, last_read_at, expire_at FROM item WHERE key = ?;
 
 selectKey:
 SELECT key FROM item WHERE key = ?;
