@@ -73,7 +73,8 @@ internal class KottageDatabaseManager(
 
     suspend fun getStorageOperator(storage: KottageStorage): KottageStorageOperator {
         return KottageStorageOperator(
-            storage,
+            itemType = storage.name,
+            storage.options,
             operator.await(),
             itemRepository.await(),
             itemListRepository.await(),
@@ -87,8 +88,10 @@ internal class KottageDatabaseManager(
         storage: KottageStorage
     ): KottageListOperator {
         return KottageListOperator(
-            kottageList,
-            storage,
+            itemType = storage.name,
+            listType = kottageList.name,
+            kottageList.options,
+            storage.options,
             operator.await(),
             getStorageOperator(storage),
             itemRepository.await(),

@@ -1,8 +1,8 @@
 package io.github.irgaly.kottage.internal
 
-import io.github.irgaly.kottage.KottageList
 import io.github.irgaly.kottage.KottageListDirection
-import io.github.irgaly.kottage.KottageStorage
+import io.github.irgaly.kottage.KottageListOptions
+import io.github.irgaly.kottage.KottageStorageOptions
 import io.github.irgaly.kottage.internal.model.Item
 import io.github.irgaly.kottage.internal.model.ItemEventType
 import io.github.irgaly.kottage.internal.model.ItemListEntry
@@ -15,8 +15,10 @@ import io.github.irgaly.kottage.internal.repository.KottageStatsRepository
  * Database Operation Logic of Kottage List
  */
 internal class KottageListOperator(
-    private val kottageList: KottageList,
-    private val storage: KottageStorage,
+    private val itemType: String,
+    private val listType: String,
+    private val listOptions: KottageListOptions,
+    private val storageOptions: KottageStorageOptions,
     private val operator: KottageOperator,
     private val storageOperator: KottageStorageOperator,
     @Suppress("unused") private val itemRepository: KottageItemRepository,
@@ -24,9 +26,6 @@ internal class KottageListOperator(
     @Suppress("unused") private val itemEventRepository: KottageItemEventRepository,
     @Suppress("unused") private val statsRepository: KottageStatsRepository
 ) {
-    private val listType = kottageList.name
-    private val itemType = storage.name
-
     /**
      * This should be called in transaction
      *
@@ -44,12 +43,12 @@ internal class KottageListOperator(
                 operator.addEvent(
                     now = now,
                     eventType = ItemEventType.Create,
-                    eventExpireTime = storage.options.eventExpireTime,
+                    eventExpireTime = storageOptions.eventExpireTime,
                     itemType = entry.itemType,
                     itemKey = checkNotNull(entry.itemKey),
                     itemListId = entry.id,
                     itemListType = listType,
-                    maxEventEntryCount = storage.options.maxEventEntryCount
+                    maxEventEntryCount = storageOptions.maxEventEntryCount
                 )
             }
             first.previousId?.let { previousId ->
@@ -147,12 +146,12 @@ internal class KottageListOperator(
             operator.addEvent(
                 now = now,
                 eventType = ItemEventType.Delete,
-                eventExpireTime = storage.options.eventExpireTime,
+                eventExpireTime = storageOptions.eventExpireTime,
                 itemType = entry.itemType,
                 itemKey = itemKey,
                 itemListId = entry.id,
                 itemListType = entry.type,
-                maxEventEntryCount = storage.options.maxEventEntryCount
+                maxEventEntryCount = storageOptions.maxEventEntryCount
             )
             true
         } else false
@@ -184,19 +183,19 @@ internal class KottageListOperator(
             id = positionId,
             itemType = item.type,
             itemKey = item.key,
-            expireAt = kottageList.options.itemExpireTime?.let { duration ->
+            expireAt = listOptions.itemExpireTime?.let { duration ->
                 now + duration.inWholeMilliseconds
             }
         )
         operator.addEvent(
             now = now,
             eventType = ItemEventType.Update,
-            eventExpireTime = storage.options.eventExpireTime,
+            eventExpireTime = storageOptions.eventExpireTime,
             itemType = item.type,
             itemKey = item.key,
             itemListId = positionId,
             itemListType = listType,
-            maxEventEntryCount = storage.options.maxEventEntryCount
+            maxEventEntryCount = storageOptions.maxEventEntryCount
         )
     }
 
