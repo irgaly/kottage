@@ -91,13 +91,20 @@ internal class KottageOperator(
      * existing items in ItemList are ignored
      * This should be called in transaction
      */
-    fun evictCaches(now: Long, itemType: String? = null) {
+    fun evictCaches(
+        now: Long,
+        itemType: String? = null,
+        onItemEmpty: (itemType: String) -> Unit
+    ) {
         if (itemType != null) {
             itemRepository.getExpiredKeys(now, itemType) { key, _ ->
                 val itemListEntryIds = itemListRepository.getIds(itemType = itemType, itemKey = key)
                 if (itemListEntryIds.isEmpty()) {
                     // ItemList に存在しなければ削除可能
                     deleteItemInternal(key, itemType)
+                    if (itemRepository.getStatsCount(itemType) <= 0) {
+                        onItemEmpty(itemType)
+                    }
                 }
             }
         } else {
@@ -107,6 +114,9 @@ internal class KottageOperator(
                 if (itemListEntryIds.isEmpty()) {
                     // ItemList に存在しなければ削除可能
                     deleteItemInternal(key, expiredItemType)
+                    if (itemRepository.getStatsCount(expiredItemType) <= 0) {
+                        onItemEmpty(expiredItemType)
+                    }
                 }
             }
         }
@@ -116,14 +126,24 @@ internal class KottageOperator(
      * Delete old events
      * This should be called in transaction
      */
-    fun evictEvents(now: Long, itemType: String? = null) {
+    fun evictEvents(
+        now: Long,
+        itemType: String? = null,
+        onEventEmpty: (itemType: String) -> Unit
+    ) {
         if (itemType != null) {
             itemEventRepository.getExpiredIds(now, itemType) { id, _ ->
                 deleteEvent(id, itemType)
+                if (itemEventRepository.getStatsCount(itemType) <= 0) {
+                    onEventEmpty(itemType)
+                }
             }
         } else {
             itemEventRepository.getExpiredIds(now) { id, type ->
                 deleteEvent(id, type)
+                if (itemEventRepository.getStatsCount(type) <= 0) {
+                    onEventEmpty(type)
+                }
             }
         }
     }
@@ -359,6 +379,13 @@ internal class KottageOperator(
     fun deleteItemInternal(key: String, itemType: String) {
         itemRepository.delete(key, itemType)
         itemRepository.decrementStatsCount(itemType, 1)
+    }
+
+    /**
+     * This should be called in transaction
+     */
+    fun deleteItemStats(itemType: String) {
+        itemRepository.deleteStats(itemType = itemType)
     }
 
     /**
