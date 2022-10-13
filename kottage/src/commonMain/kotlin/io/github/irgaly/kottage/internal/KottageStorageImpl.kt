@@ -158,19 +158,10 @@ internal class KottageStorageImpl(
         val operator = operator()
         val now = calendar.nowUnixTimeMillis()
         databaseManager.transaction {
-            var itemsEmpty = false
-            var eventsEmpty = false
             operator.invalidateExpiredListEntries(now)
-            operator.evictCaches(now, itemType) { _ ->
-                itemsEmpty = true
-            }
-            operator.evictEvents(now, itemType) {
-                eventsEmpty = true
-            }
-            if (itemsEmpty && eventsEmpty) {
-                // item と event が空になったら stats 削除
-                operator.deleteItemStats(itemType = itemType)
-            }
+            operator.evictCaches(now, itemType)
+            operator.evictEvents(now, itemType)
+            operator.evictEmptyStats()
         }
     }
 

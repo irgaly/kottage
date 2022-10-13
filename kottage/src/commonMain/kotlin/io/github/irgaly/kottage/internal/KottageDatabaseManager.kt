@@ -128,18 +128,10 @@ internal class KottageDatabaseManager(
                     // List Entry Invalidate のみ
                     operator.invalidateExpiredListEntries(now = now)
                 }
-                val emptyItemTypes = mutableSetOf<String>()
-                val emptyEventTypes = mutableSetOf<String>()
-                operator.evictCaches(now) { itemType ->
-                    emptyItemTypes.add(itemType)
-                }
-                operator.evictEvents(now) { itemType ->
-                    emptyEventTypes.add(itemType)
-                }
-                (emptyItemTypes intersect emptyEventTypes).forEach { itemType ->
-                    // item と event が空になったら stats 削除
-                    operator.deleteItemStats(itemType = itemType)
-                }
+                operator.evictCaches(now)
+                operator.evictEvents(now)
+                operator.evictEmptyStats()
+                operator.updateLastEvictAt(now)
             }
             required
         }

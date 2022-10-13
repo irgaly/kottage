@@ -142,6 +142,13 @@ internal class KottageSqliteItemRepository(
             .executeAsOneOrNull()?.toDomain()
     }
 
+    override fun getEmptyStats(limit: Long): List<ItemStats> {
+        // クリーンアップ用途だけなので、selectEmptyStats Query はインデックスを使わない
+        return database.item_statsQueries
+            .selectEmptyStats(limit = limit)
+            .executeAsList().map { it.toDomain() }
+    }
+
     override fun delete(key: String, itemType: String) {
         database.itemQueries
             .delete(Item.toEntityKey(key, itemType))
