@@ -1,6 +1,7 @@
 package io.github.irgaly.kottage
 
 import com.soywiz.klock.DateTime
+import io.github.irgaly.kottage.encoder.KottageEncoder
 import io.github.irgaly.kottage.extension.buildKottage
 import io.github.irgaly.kottage.platform.Files
 import io.github.irgaly.kottage.platform.KottageContext
@@ -16,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
+import kotlin.experimental.xor
 
 class KottageTest : DescribeSpec({
     val tempDirectory = tempdir()
@@ -226,6 +228,44 @@ class KottageTest : DescribeSpec({
                 storage.exists("nullableStore") shouldBe false
                 store.read() shouldBe "default"
                 nullableStore.read() shouldBe null
+            }
+        }
+        context("UserEncoder") {
+            it("UserEncoder を指定して正しく保存・復元できる") {
+                @Serializable
+                data class Data(val value: String)
+
+                val storage = kottage().first.storage("user_encoder") {
+                    encoder = object : KottageEncoder {
+                        override fun encode(value: ByteArray): ByteArray {
+                            return value.map { it xor 0xF0.toByte() }.toByteArray()
+                        }
+
+                        override fun decode(encoded: ByteArray): ByteArray {
+                            return encoded.map { it xor 0xF0.toByte() }.toByteArray()
+                        }
+                    }
+                }
+                storage.put("long", 100L)
+                storage.put("int", 100)
+                storage.put("short", 100.toShort())
+                storage.put("byte", 100.toByte())
+                storage.put("boolean", false)
+                storage.put("double", 100.0)
+                storage.put("float", 100.0f)
+                storage.put("bytes", byteArrayOf(0, 1))
+                storage.put("string", "string")
+                storage.put("serializable", Data("data"))
+                storage.get<Long>("long") shouldBe 100L
+                storage.get<Int>("int") shouldBe 100
+                storage.get<Short>("short") shouldBe 100.toShort()
+                storage.get<Byte>("byte") shouldBe 100.toByte()
+                storage.get<Boolean>("boolean") shouldBe false
+                storage.get<Double>("double") shouldBe 100.0
+                storage.get<Float>("float") shouldBe 100.0f
+                storage.get<ByteArray>("bytes") shouldBe byteArrayOf(0, 1)
+                storage.get<String>("string") shouldBe "string"
+                storage.get<Data>("serializable") shouldBe Data("data")
             }
         }
     }
