@@ -1,5 +1,6 @@
 package io.github.irgaly.kottage
 
+import io.github.irgaly.kottage.encoder.KottageEncoder
 import io.github.irgaly.kottage.strategy.KottageStrategy
 import kotlinx.serialization.json.Json
 import kotlin.time.Duration
@@ -12,7 +13,8 @@ data class KottageStorageOptions(
     val defaultExpireTime: Duration?,
     val maxEventEntryCount: Long,
     val eventExpireTime: Duration?,
-    val json: Json?
+    val json: Json?,
+    val encoder: KottageEncoder?
 ) {
     data class Builder(
         var strategy: KottageStrategy,
@@ -24,7 +26,8 @@ data class KottageStorageOptions(
          */
         var maxEventEntryCount: Long,
         var eventExpireTime: Duration?,
-        var json: Json? = null
+        var json: Json? = null,
+        var encoder: KottageEncoder? = null
     ) {
         fun build(): KottageStorageOptions {
             return KottageStorageOptions(
@@ -32,7 +35,8 @@ data class KottageStorageOptions(
                 defaultExpireTime = defaultExpireTime,
                 maxEventEntryCount = maxEventEntryCount,
                 eventExpireTime = eventExpireTime,
-                json = json
+                json = json,
+                encoder = encoder
             )
         }
     }

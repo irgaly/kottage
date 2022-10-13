@@ -38,7 +38,7 @@ internal class KottageStorageImpl(
     private val onCompactionRequired: suspend () -> Unit,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : KottageStorage {
-    private val encoder = Encoder(json)
+    private val encoder = Encoder(json, options.encoder)
 
     private val strategy: KottageStrategy = options.strategy
 
