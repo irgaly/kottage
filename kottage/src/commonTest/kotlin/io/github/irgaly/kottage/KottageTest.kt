@@ -1,9 +1,11 @@
 package io.github.irgaly.kottage
 
 import com.soywiz.klock.DateTime
+import io.github.irgaly.kottage.extension.buildKottage
 import io.github.irgaly.kottage.platform.Files
 import io.github.irgaly.kottage.platform.KottageContext
 import io.github.irgaly.kottage.platform.TestCalendar
+import io.github.irgaly.kottage.property.KottageStore
 import io.github.irgaly.test.extension.tempdir
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
@@ -18,6 +20,9 @@ import kotlinx.serialization.SerializationException
 class KottageTest : DescribeSpec({
     val tempDirectory = tempdir()
     val calendar = TestCalendar(DateTime(2022, 1, 1).utc)
+    fun kottage(
+        name: String = "kottage", builder: (KottageOptions.Builder.() -> Unit)? = null
+    ): Pair<Kottage, TestCalendar> = buildKottage(name, tempDirectory, builder)
     describe("Kottage") {
         val kottage = Kottage(
             "test",
@@ -198,6 +203,29 @@ class KottageTest : DescribeSpec({
                     storage.get<String>("unknown_key")
                 }
                 storage.getOrNull<String>("unknown_key") shouldBe null
+            }
+        }
+        context("property") {
+            it("property で読み書きできる") {
+                val storage = kottage().first.storage("property")
+                val store by storage.property { "default" }
+                val nullableStore: KottageStore<String?> by storage.nullableProperty()
+                store.exists() shouldBe true
+                store.read() shouldBe "default"
+                nullableStore.exists() shouldBe false
+                nullableStore.read() shouldBe null
+                store.write("test")
+                nullableStore.write("test")
+                storage.exists("store") shouldBe true
+                storage.exists("nullableStore") shouldBe true
+                store.read() shouldBe "test"
+                nullableStore.read() shouldBe "test"
+                store.clear()
+                nullableStore.clear()
+                storage.exists("store") shouldBe false
+                storage.exists("nullableStore") shouldBe false
+                store.read() shouldBe "default"
+                nullableStore.read() shouldBe null
             }
         }
     }
