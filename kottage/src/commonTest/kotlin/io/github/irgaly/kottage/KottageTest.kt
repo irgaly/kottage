@@ -268,5 +268,33 @@ class KottageTest : DescribeSpec({
                 storage.get<Data>("serializable") shouldBe Data("data")
             }
         }
+        context("KottageOptions") {
+            it("ignoreJsonDeserializationError でエラーを無視できる") {
+                @Serializable
+                data class Data1(val data1: String)
+
+                @Serializable
+                data class Data2(val data2: String)
+
+                val kottage = kottage().first
+                val storage = kottage.storage("ignore_json_error")
+                val ignoreStorage = kottage.storage("ignore_json_error") {
+                    ignoreJsonDeserializationError = true
+                }
+                storage.put("json", Data1("value1"))
+                shouldThrow<SerializationException> {
+                    storage.getOrNull<Data2>("json")
+                }
+                shouldThrow<NoSuchElementException> {
+                    ignoreStorage.get<Data2>("json")
+                }
+                shouldThrow<SerializationException> {
+                    // KottageEntry は ignoreJsonDeserializationError 設定の影響は受けない
+                    ignoreStorage.getEntry<Data2>("json").get()
+                }
+                ignoreStorage.getOrNull<Data2>("json") shouldBe null
+                ignoreStorage.getOrNull<Data1>("json") shouldBe Data1("value1")
+            }
+        }
     }
 })

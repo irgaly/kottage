@@ -3,6 +3,7 @@ package io.github.irgaly.kottage
 import io.github.irgaly.kottage.internal.encoder.Encoder
 import io.github.irgaly.kottage.internal.model.Item
 import io.github.irgaly.kottage.internal.model.ItemListEntry
+import kotlinx.serialization.SerializationException
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
@@ -41,6 +42,14 @@ class KottageListEntry internal constructor(
         }
     }
 
+    /**
+     * @throws ClassCastException casting from raw data failed
+     * @throws SerializationException Json decode error. This will occur even if [KottageStorageOptions.ignoreJsonDeserializationError] is true.
+     */
+    @Throws(
+        ClassCastException::class,
+        SerializationException::class
+    )
     fun <T : Any> value(type: KType): T {
         return encoder.decode(item, type)
     }

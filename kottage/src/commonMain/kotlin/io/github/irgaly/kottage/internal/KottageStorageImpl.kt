@@ -75,7 +75,15 @@ internal class KottageStorageImpl(
             storageOperator.getOrNull(key, now)?.also {
                 strategy.onItemRead(key, itemType, now, operator)
             }
-        }?.let { encoder.decode(it, type) }
+        }?.let {
+            try {
+                encoder.decode<T>(it, type)
+            } catch (exception: SerializationException) {
+                if (options.ignoreJsonDeserializationError) {
+                    null
+                } else throw exception
+            }
+        }
     }
 
     override suspend fun <T : Any> getEntry(key: String, type: KType): KottageEntry<T> {

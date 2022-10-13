@@ -18,6 +18,10 @@ class KottageEntry<T : Any> internal constructor(
     val lastReadAt: Long get() = item.lastReadAt
     val expireAt: Long? get() = item.expireAt
 
+    /**
+     * @throws ClassCastException casting from raw data failed
+     * @throws SerializationException Json decode error. This will occur even if [KottageStorageOptions.ignoreJsonDeserializationError] is true.
+     */
     @Throws(
         ClassCastException::class,
         SerializationException::class
