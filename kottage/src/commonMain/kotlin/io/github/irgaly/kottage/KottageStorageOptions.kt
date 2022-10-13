@@ -1,6 +1,7 @@
 package io.github.irgaly.kottage
 
 import io.github.irgaly.kottage.encoder.KottageEncoder
+import io.github.irgaly.kottage.property.KottageStore
 import io.github.irgaly.kottage.strategy.KottageStrategy
 import kotlinx.serialization.json.Json
 import kotlin.time.Duration
@@ -29,6 +30,16 @@ data class KottageStorageOptions(
         var eventExpireTime: Duration?,
         /**
          * ignore JsonSerializationException when reading value
+         *
+         * This option affects:
+         * * [KottageStorage.get]
+         * * [KottageStorage.getOrNull]
+         * * [KottageStore.read]
+         *
+         * This option does not affects:
+         * * [KottageStorage.exists]
+         * * [KottageEntry] operations
+         * * [KottageList] operations
          *
          * default: false
          */
