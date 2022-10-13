@@ -13,6 +13,7 @@ data class KottageStorageOptions(
     val defaultExpireTime: Duration?,
     val maxEventEntryCount: Long,
     val eventExpireTime: Duration?,
+    val ignoreJsonDeserializationError: Boolean,
     val json: Json?,
     val encoder: KottageEncoder?
 ) {
@@ -26,6 +27,12 @@ data class KottageStorageOptions(
          */
         var maxEventEntryCount: Long,
         var eventExpireTime: Duration?,
+        /**
+         * ignore JsonSerializationException when reading value
+         *
+         * default: false
+         */
+        var ignoreJsonDeserializationError: Boolean = false,
         var json: Json? = null,
         var encoder: KottageEncoder? = null
     ) {
@@ -35,6 +42,7 @@ data class KottageStorageOptions(
                 defaultExpireTime = defaultExpireTime,
                 maxEventEntryCount = maxEventEntryCount,
                 eventExpireTime = eventExpireTime,
+                ignoreJsonDeserializationError = ignoreJsonDeserializationError,
                 json = json,
                 encoder = encoder
             )

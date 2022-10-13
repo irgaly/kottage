@@ -93,7 +93,10 @@ internal class Encoder(
      * @throws ClassCastException when stored value's type is mismatch
      * @throws SerializationException when serialization decoding is failed
      */
-    @Throws(ClassCastException::class, SerializationException::class)
+    @Throws(
+        ClassCastException::class,
+        SerializationException::class
+    )
     fun <T : Any> decode(item: Item, type: KType): T {
         val kClass = type.classifier
         fun decodeDouble(item: Item): Double? {
