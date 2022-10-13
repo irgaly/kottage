@@ -161,6 +161,7 @@ internal class KottageStorageImpl(
             operator.invalidateExpiredListEntries(now)
             operator.evictCaches(now, itemType)
             operator.evictEvents(now, itemType)
+            operator.evictEmptyStats()
         }
     }
 

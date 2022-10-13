@@ -10,6 +10,9 @@ INSERT OR IGNORE INTO item_stats(item_type) VALUES(?);
 select:
 SELECT item_type, count, event_count FROM item_stats WHERE item_type = ?;
 
+selectEmptyStats:
+SELECT item_type, count, event_count FROM item_stats WHERE count = 0 AND event_count = 0 LIMIT :limit;
+
 incrementCount:
 UPDATE item_stats SET count = count + ? WHERE item_type = ?;
 

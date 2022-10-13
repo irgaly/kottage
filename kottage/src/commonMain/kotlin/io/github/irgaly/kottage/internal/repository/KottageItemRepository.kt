@@ -30,6 +30,7 @@ internal interface KottageItemRepository {
     )
 
     fun getStats(itemType: String): ItemStats?
+    fun getEmptyStats(limit: Long): List<ItemStats>
 
     fun delete(key: String, itemType: String)
     fun deleteAll(itemType: String)

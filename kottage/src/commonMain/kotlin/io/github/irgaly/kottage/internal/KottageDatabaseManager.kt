@@ -130,6 +130,7 @@ internal class KottageDatabaseManager(
                 }
                 operator.evictCaches(now)
                 operator.evictEvents(now)
+                operator.evictEmptyStats()
                 operator.updateLastEvictAt(now)
             }
             required

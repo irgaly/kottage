@@ -131,6 +131,21 @@ internal class KottageOperator(
     /**
      * This should be called in transaction
      */
+    fun evictEmptyStats() {
+        val limit = 100L
+        var hasNext = true
+        while (hasNext) {
+            val statsList = itemRepository.getEmptyStats(limit = limit)
+            statsList.forEach { stats ->
+                itemRepository.deleteStats(stats.itemType)
+            }
+            hasNext = (limit <= statsList.size)
+        }
+    }
+
+    /**
+     * This should be called in transaction
+     */
     fun evictExpiredListEntries(now: Long, beforeExpireAt: Long?, listType: String? = null) {
         fun evict(listType: String) {
             invalidateExpiredListEntries(now = now, listType = listType)
@@ -359,6 +374,13 @@ internal class KottageOperator(
     fun deleteItemInternal(key: String, itemType: String) {
         itemRepository.delete(key, itemType)
         itemRepository.decrementStatsCount(itemType, 1)
+    }
+
+    /**
+     * This should be called in transaction
+     */
+    fun deleteItemStats(itemType: String) {
+        itemRepository.deleteStats(itemType = itemType)
     }
 
     /**
