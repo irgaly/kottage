@@ -1,3 +1,19 @@
+# v1.1.0 - 2022/10/14 JST
+
+#### Features
+
+* implement: KottageStorage.property() property
+  delegate. [#36](https://github.com/irgaly/kottage/pull/36)
+* add KottageEncoder [#40](https://github.com/irgaly/kottage/pull/40)
+    * This supports user's custom encoder, such as encryption.
+* add ignoreJsonDeserializationError option [#42](https://github.com/irgaly/kottage/pull/42)
+
+#### Improvements
+
+* fix: prevent auto compaction running twice [#35](https://github.com/irgaly/kottage/pull/35)
+* add KottageEntry properties [#36](https://github.com/irgaly/kottage/pull/36)
+* delete item_stats record when it's empty [#41](https://github.com/irgaly/kottage/pull/41)
+
 # v1.0.1 - 2022/10/12 JST
 
 #### Fix
