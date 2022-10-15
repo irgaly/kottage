@@ -1,5 +1,6 @@
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 plugins {
     id(libs.plugins.buildlogic.multiplatform.library.get().pluginId)
@@ -13,6 +14,20 @@ android {
 }
 
 kotlin {
+    val xcf = XCFramework("Kottage")
+    val configureXcf: KotlinNativeTarget.() -> Unit = {
+        binaries.framework {
+            baseName = "Kottage"
+            xcf.add(this)
+        }
+    }
+    ios(configure = configureXcf)
+    iosSimulatorArm64(configure = configureXcf)
+    watchos(configure = configureXcf)
+    watchosSimulatorArm64(configure = configureXcf)
+    tvos(configure = configureXcf)
+    tvosSimulatorArm64(configure = configureXcf)
+    macosArm64(configure = configureXcf)
     /*
     // JS
     js(IR) {
