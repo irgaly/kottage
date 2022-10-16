@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "kottage-package",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/irgaly/kottage-package.git",
+      "state" : {
+        "revision" : "7c0cf9fa992aef59604722510c7f773939e6d1e9",
+        "version" : "1.1.0"
+      }
+    }
+  ],
+  "version" : 2
+}
