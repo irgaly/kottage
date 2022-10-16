@@ -1,12 +1,9 @@
 package io.github.irgaly.kottage.internal.repository
 
 import io.github.irgaly.kottage.internal.model.Item
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
+import io.github.irgaly.kottage.internal.model.ItemStats
 
-internal class KottageIndexeddbItemRepository(
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
-) : KottageItemRepository {
+internal class KottageIndexeddbItemRepository : KottageItemRepository {
     override fun upsert(item: Item) {
         TODO("Not yet implemented")
     }
@@ -43,15 +40,27 @@ internal class KottageIndexeddbItemRepository(
         TODO("Not yet implemented")
     }
 
+    override fun getLeastRecentlyUsedKeys(
+        itemType: String,
+        limit: Long?,
+        receiver: (key: String) -> Boolean
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getOlderKeys(itemType: String, limit: Long?, receiver: (key: String) -> Boolean) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getStats(itemType: String): ItemStats? {
+        TODO("Not yet implemented")
+    }
+
+    override fun getEmptyStats(limit: Long): List<ItemStats> {
+        TODO("Not yet implemented")
+    }
+
     override fun delete(key: String, itemType: String) {
-        TODO("Not yet implemented")
-    }
-
-    override fun deleteLeastRecentlyUsed(itemType: String, limit: Long) {
-        TODO("Not yet implemented")
-    }
-
-    override fun deleteOlderItems(itemType: String, limit: Long) {
         TODO("Not yet implemented")
     }
 

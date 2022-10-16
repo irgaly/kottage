@@ -30,14 +30,12 @@ kotlin {
     tvos(configure = configureXcf)
     tvosSimulatorArm64(configure = configureXcf)
     macosArm64(configure = configureXcf)
-    /*
     // JS
     js(IR) {
         browser()
         // nodejs has no indexeddb support
         //nodejs()
     }
-     */
     sourceSets {
         commonMain {
             dependencies {
@@ -58,14 +56,12 @@ kotlin {
                 implementation(projects.kottage.data.sqlite)
             }
         }
-        /*
         val commonIndexeddbMain by creating {
             dependsOn(commonMain.get())
             dependencies {
                 implementation(projects.kottage.data.indexeddb)
             }
         }
-         */
         val androidMain by getting {
             dependsOn(commonSqliteMain)
             dependencies {
@@ -76,13 +72,11 @@ kotlin {
             dependencies {
             }
         }
-        /*
         val jsMain by getting {
             dependsOn(commonIndexeddbMain)
             dependencies {
             }
         }
-         */
         val nativeMain by getting {
             dependsOn(commonSqliteMain)
             dependencies {

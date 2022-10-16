@@ -38,3 +38,12 @@ internal actual fun createDatabaseConnection(
     TODO()
 }
 
+internal actual suspend fun createOldDatabase(
+    fileName: String,
+    directoryPath: String,
+    environment: KottageEnvironment,
+    version: Int,
+    dispatcher: CoroutineDispatcher
+) {
+    TODO()
+}
