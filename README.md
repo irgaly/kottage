@@ -307,6 +307,8 @@ work correctly on these platforms.
 | Kotlin/Native Linux   | linuxX64                                                       | :white_check_mark: Supported, :tired_face: currently no automated unit tests. |
 | Kotlin/Native Windows | mingwX64                                                       | :white_check_mark: Supported, :tired_face: currently no automated unit tests. |
 
+There is also [Kottage for SwiftPM](https://github.com/irgaly/kottage-package) that is **just for experimental** build.
+
 # Kottage Internals
 
 TBA: I'll write details of library here.
