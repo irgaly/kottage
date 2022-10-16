@@ -7,8 +7,8 @@ pluginManagement {
         gradlePluginPortal()
     }
     plugins {
-        id("com.android.application") version "8.0.0-alpha02"
-        id("com.android.library") version "8.0.0-alpha02"
+        id("com.android.application") version "8.0.0-alpha04"
+        id("com.android.library") version "8.0.0-alpha04"
         id("io.kotest.multiplatform") version "5.5.1"
         kotlin("android") version "1.7.10"
         kotlin("multiplatform") version "1.7.10"
