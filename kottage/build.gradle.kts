@@ -19,6 +19,8 @@ kotlin {
         binaries.framework {
             baseName = "Kottage"
             xcf.add(this)
+            export(libs.kotlinx.coroutines.core)
+            export(libs.kotlinx.serialization)
         }
     }
     ios(configure = configureXcf)
@@ -40,8 +42,8 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(projects.kottage.core)
-                implementation(libs.kotlinx.coroutines.core)
-                implementation(libs.kotlinx.serialization)
+                api(libs.kotlinx.coroutines.core)
+                api(libs.kotlinx.serialization)
             }
         }
         commonTest {
