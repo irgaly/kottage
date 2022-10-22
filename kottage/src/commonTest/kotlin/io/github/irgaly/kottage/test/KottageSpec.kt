@@ -23,6 +23,11 @@ abstract class KottageSpec(
 
     init {
         tempDirectory = tempdir(clearTempDirectoryAfterSpec)
+        context("debug 機能", fun ContextScope.() {
+            it("tempDirectory 表示") {
+                println("tempDirectory = $tempDirectory")
+            }
+        })
         body()
     }
 

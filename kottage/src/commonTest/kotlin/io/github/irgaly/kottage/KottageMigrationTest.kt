@@ -4,17 +4,10 @@ import com.soywiz.klock.DateTime
 import io.github.irgaly.kottage.platform.KottageContext
 import io.github.irgaly.kottage.platform.TestCalendar
 import io.github.irgaly.kottage.test.KottageSpec
-import io.github.irgaly.test.extension.tempdir
 import io.kotest.matchers.shouldBe
 
-class KottageMigrationTest : KottageSpec(body = {
-    val tempDirectory = tempdir()
+class KottageMigrationTest : KottageSpec("migration", body = {
     describe("Database Migration") {
-        context("debug 機能") {
-            it("tempDirectory 表示") {
-                println("tempDirectory = $tempDirectory")
-            }
-        }
         context("from 1") {
             val calendar = TestCalendar(DateTime(2022, 1, 1).utc)
             val environment = KottageEnvironment(KottageContext(), calendar)
