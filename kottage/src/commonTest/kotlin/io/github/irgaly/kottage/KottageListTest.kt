@@ -150,15 +150,19 @@ class KottageListTest : DescribeSpec({
                     listOf(
                         kottageListValue("key1", "value1"),
                         kottageListValue("key2", "value2"),
-                        kottageListValue("key3", "value3")
+                        kottageListValue("key3", "value3"),
+                        kottageListValue("key4", "value4")
                     )
                 )
                 list.remove(checkNotNull(list.getFirst()).positionId)
                 list.remove(checkNotNull(list.getLast()).positionId)
                 val entry2 = checkNotNull(list.getFirst())
-                val page = list.getPageFrom(entry2.positionId, 1)
-                page.hasPrevious shouldBe false
-                page.hasNext shouldBe false
+                val page1 = list.getPageFrom(entry2.positionId, 1)
+                val page2 = list.getPageFrom(page1.nextPositionId, 1)
+                page1.hasPrevious shouldBe false
+                page1.hasNext shouldBe true
+                page2.hasPrevious shouldBe true
+                page2.hasNext shouldBe false
             }
             it("MetaData の読み書き") {
                 val cache = kottage().first.cache("metadata")

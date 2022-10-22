@@ -103,7 +103,7 @@ internal class KottageListOperator(
      *
      * positionId からたどり、有効な Entry があればそれを返す
      */
-    fun getAvailableListItem(
+    fun getAvailableListEntry(
         positionId: String,
         direction: KottageListDirection
     ): ItemListEntry? {

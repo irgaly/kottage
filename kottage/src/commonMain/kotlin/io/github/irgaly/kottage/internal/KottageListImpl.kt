@@ -57,6 +57,8 @@ internal class KottageListImpl(
     ): KottageListPage = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
+        var hasPrevious = false
+        var hasNext = false
         val items = transactionWithAutoCompaction { operator, now ->
             val items = mutableListOf<KottageListEntry>()
             var initialPositionId = positionId
@@ -75,7 +77,7 @@ internal class KottageListImpl(
                     (pageSize?.let { items.size < it } != false)
                     && (nextPositionId != null)
                 ) {
-                    listOperator.getAvailableListItem(
+                    listOperator.getAvailableListEntry(
                         positionId = nextPositionId,
                         direction = direction
                     )?.let { entry ->
@@ -105,12 +107,26 @@ internal class KottageListImpl(
                 // KottageListPage.items は常に Forward 順
                 items.reverse()
             }
+            items.firstOrNull()?.previousPositionId?.let { previousPositionId ->
+                val previousEntry = listOperator.getAvailableListEntry(
+                    previousPositionId, direction = KottageListDirection.Backward
+                )
+                hasPrevious = (previousEntry != null)
+            }
+            items.lastOrNull()?.nextPositionId?.let { nextPositionId ->
+                val nextEntry = listOperator.getAvailableListEntry(
+                    nextPositionId, direction = KottageListDirection.Forward
+                )
+                hasNext = (nextEntry != null)
+            }
             items.toList()
         }
         KottageListPage(
             items = items,
             previousPositionId = items.firstOrNull()?.previousPositionId,
-            nextPositionId = items.lastOrNull()?.nextPositionId
+            nextPositionId = items.lastOrNull()?.nextPositionId,
+            hasPrevious = hasPrevious,
+            hasNext = hasNext
         )
     }
 
@@ -140,7 +156,7 @@ internal class KottageListImpl(
         transactionWithAutoCompaction { operator, now ->
             operator.getListStats(listType)?.let { stats ->
                 listOperator.invalidateExpiredListEntries(now)
-                listOperator.getAvailableListItem(
+                listOperator.getAvailableListEntry(
                     positionId = stats.firstItemPositionId,
                     direction = KottageListDirection.Forward
                 )?.let { entry ->
@@ -168,7 +184,7 @@ internal class KottageListImpl(
         transactionWithAutoCompaction { operator, now ->
             operator.getListStats(listType)?.let { stats ->
                 listOperator.invalidateExpiredListEntries(now)
-                listOperator.getAvailableListItem(
+                listOperator.getAvailableListEntry(
                     positionId = stats.lastItemPositionId,
                     direction = KottageListDirection.Backward
                 )?.let { entry ->
@@ -195,7 +211,7 @@ internal class KottageListImpl(
         val listOperator = listOperator.await()
         transactionWithAutoCompaction { operator, now ->
             listOperator.invalidateExpiredListEntries(now)
-            listOperator.getAvailableListItem(
+            listOperator.getAvailableListEntry(
                 positionId = positionId,
                 direction = KottageListDirection.Forward
             )?.let { entry ->
@@ -238,7 +254,7 @@ internal class KottageListImpl(
                 (nextIndex <= index)
                 && (nextPositionId != null)
             ) {
-                currentEntry = listOperator.getAvailableListItem(
+                currentEntry = listOperator.getAvailableListEntry(
                     positionId = nextPositionId,
                     direction = direction
                 )
