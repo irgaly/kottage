@@ -3,39 +3,21 @@ package io.github.irgaly.kottage
 import com.soywiz.klock.DateTime
 import com.soywiz.klock.days
 import com.soywiz.klock.milliseconds
-import io.github.irgaly.kottage.extension.buildKottage
-import io.github.irgaly.kottage.platform.KottageContext
-import io.github.irgaly.kottage.platform.TestCalendar
 import io.github.irgaly.kottage.strategy.KottageFifoStrategy
 import io.github.irgaly.kottage.strategy.KottageLruStrategy
 import io.github.irgaly.kottage.test.KottageSpec
 import io.github.irgaly.test.extension.duration
-import io.github.irgaly.test.extension.tempdir
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 
-class KottageCacheTest : KottageSpec(body = {
-    val tempDirectory = tempdir()
-    val calendar = TestCalendar(DateTime(2022, 1, 1).utc)
-    fun kottage(
-        name: String = "kottage_cache", builder: (KottageOptions.Builder.() -> Unit)? = null
-    ): Pair<Kottage, TestCalendar> = buildKottage(name, tempDirectory, builder)
+class KottageCacheTest : KottageSpec("kottage_cache", body = {
     describe("Kottage Cache Test") {
-        val kottage = Kottage(
-            "test",
-            tempDirectory,
-            KottageEnvironment(KottageContext(), calendar)
-        )
-        context("debug 機能") {
-            it("tempDirectory 表示") {
-                println("tempDirectory = $tempDirectory")
-            }
-        }
         context("Cache Expire") {
-            val cache = kottage.cache("cache1") {
-                defaultExpireTime = 1.days.duration
-            }
+            val (kottage, calendar) = kottage()
             it("defaultExpireTime 経過で cache が消えること") {
+                val cache = kottage.cache("cache1") {
+                    defaultExpireTime = 1.days.duration
+                }
                 cache.put("expire1", "value")
                 calendar.now += 1.days
                 cache.exists("expire1") shouldBe false
@@ -68,11 +50,7 @@ class KottageCacheTest : KottageSpec(body = {
             }
         }
         context("Auto Compaction") {
-            val compactionKottage = Kottage(
-                "compaction",
-                tempDirectory,
-                KottageEnvironment(KottageContext(), calendar)
-            ) {
+            val (compactionKottage, calendar) = kottage("compaction") {
                 autoCompactionDuration = 1.days.duration
             }
             val cache = compactionKottage.cache("cache1") {
@@ -96,6 +74,7 @@ class KottageCacheTest : KottageSpec(body = {
             }
         }
         context("FIFO Strategy") {
+            val (kottage, calendar) = kottage()
             val cache = kottage.cache("cache2") {
                 strategy = KottageFifoStrategy(4, 2)
             }
@@ -117,6 +96,7 @@ class KottageCacheTest : KottageSpec(body = {
             }
         }
         context("LRU Strategy") {
+            val (kottage, calendar) = kottage()
             val cache = kottage.cache("cache3") {
                 strategy = KottageLruStrategy(4, 2)
             }
