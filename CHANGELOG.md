@@ -1,3 +1,10 @@
+# v1.2.0 - 2022/10/22 JST
+
+#### Changes
+
+* change: KottagePage.hasPrevious, hasNext are false if next page has no available items
+  * now flags are false in case of nextPositionId != null but no available items.
+
 # v1.1.1 - 2022/10/16 JST
 
 #### Fix
