@@ -14,11 +14,11 @@ import io.kotest.core.test.TestScope
  * テストは it の中でのみ実行可能
  * すべての it の実行順は保証しない
  */
-abstract class KottageSpec(
+open class KottageSpec(
     val name: String = "kottage",
     clearTempDirectoryAfterSpec: Boolean = false,
     body: (KottageSpec.() -> Unit) = {}
-): FunSpec() {
+) : FunSpec() {
     val tempDirectory: String
 
     init {
