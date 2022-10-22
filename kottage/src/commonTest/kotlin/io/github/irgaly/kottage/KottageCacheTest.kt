@@ -8,13 +8,13 @@ import io.github.irgaly.kottage.platform.KottageContext
 import io.github.irgaly.kottage.platform.TestCalendar
 import io.github.irgaly.kottage.strategy.KottageFifoStrategy
 import io.github.irgaly.kottage.strategy.KottageLruStrategy
+import io.github.irgaly.kottage.test.KottageSpec
 import io.github.irgaly.test.extension.duration
 import io.github.irgaly.test.extension.tempdir
 import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 
-class KottageCacheTest : DescribeSpec({
+class KottageCacheTest : KottageSpec(body = {
     val tempDirectory = tempdir()
     val calendar = TestCalendar(DateTime(2022, 1, 1).utc)
     fun kottage(

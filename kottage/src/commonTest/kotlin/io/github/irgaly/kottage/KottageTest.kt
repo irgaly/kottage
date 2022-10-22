@@ -7,10 +7,10 @@ import io.github.irgaly.kottage.platform.Files
 import io.github.irgaly.kottage.platform.KottageContext
 import io.github.irgaly.kottage.platform.TestCalendar
 import io.github.irgaly.kottage.property.KottageStore
+import io.github.irgaly.kottage.test.KottageSpec
 import io.github.irgaly.test.extension.tempdir
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldNotBeEmpty
 import kotlinx.coroutines.Dispatchers
@@ -19,7 +19,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlin.experimental.xor
 
-class KottageTest : DescribeSpec({
+class KottageTest : KottageSpec(body = {
     val tempDirectory = tempdir()
     val calendar = TestCalendar(DateTime(2022, 1, 1).utc)
     fun kottage(

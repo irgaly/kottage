@@ -3,11 +3,11 @@ package io.github.irgaly.kottage
 import com.soywiz.klock.DateTime
 import io.github.irgaly.kottage.platform.KottageContext
 import io.github.irgaly.kottage.platform.TestCalendar
+import io.github.irgaly.kottage.test.KottageSpec
 import io.github.irgaly.test.extension.tempdir
-import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 
-class KottageMigrationTest : DescribeSpec({
+class KottageMigrationTest : KottageSpec(body = {
     val tempDirectory = tempdir()
     describe("Database Migration") {
         context("debug 機能") {

@@ -6,8 +6,8 @@ import com.soywiz.klock.seconds
 import io.github.irgaly.kottage.extension.buildKottage
 import io.github.irgaly.kottage.platform.KottageContext
 import io.github.irgaly.kottage.platform.TestCalendar
+import io.github.irgaly.kottage.test.KottageSpec
 import io.github.irgaly.test.extension.tempdir
-import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.Job
@@ -19,7 +19,7 @@ import kotlin.time.Duration.Companion.days
 /**
  * Event 関連のテスト
  */
-class KottageEventTest : DescribeSpec({
+class KottageEventTest : KottageSpec(body = {
     val tempDirectory = tempdir()
     fun kottage(
         name: String = "test", builder: (KottageOptions.Builder.() -> Unit)? = null
@@ -32,7 +32,6 @@ class KottageEventTest : DescribeSpec({
             tempDirectory,
             KottageEnvironment(KottageContext(), calendar)
         )
-        kottage.storage("initialize").put("initialize", "initialize") // 初期化
         context("debug 機能") {
             it("tempDirectory 表示") {
                 println("tempDirectory = $tempDirectory")
