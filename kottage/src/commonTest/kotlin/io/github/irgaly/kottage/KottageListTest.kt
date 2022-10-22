@@ -2,26 +2,14 @@ package io.github.irgaly.kottage
 
 import com.soywiz.klock.days
 import com.soywiz.klock.hours
-import io.github.irgaly.kottage.extension.buildKottage
-import io.github.irgaly.kottage.platform.TestCalendar
+import io.github.irgaly.kottage.test.KottageSpec
 import io.github.irgaly.test.extension.duration
-import io.github.irgaly.test.extension.tempdir
-import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 
-class KottageListTest : DescribeSpec({
-    val tempDirectory = tempdir()
+class KottageListTest : KottageSpec("kottage_list", body = {
     val printListStatus = false
-    fun kottage(
-        name: String = "kottage_list", builder: (KottageOptions.Builder.() -> Unit)? = null
-    ): Pair<Kottage, TestCalendar> = buildKottage(name, tempDirectory, builder)
     describe("Kottage List Test") {
-        context("debug 機能") {
-            it("tempDirectory 表示") {
-                println("tempDirectory = $tempDirectory")
-            }
-        }
         context("List 基本操作") {
             it("add, get") {
                 val cache = kottage().first.cache("add_get")

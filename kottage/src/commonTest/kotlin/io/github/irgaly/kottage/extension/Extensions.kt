@@ -9,7 +9,7 @@ import io.github.irgaly.kottage.platform.KottageContext
 import io.github.irgaly.kottage.platform.TestCalendar
 
 fun buildKottage(
-    name: String, directory: String, builder: (KottageOptions.Builder.() -> Unit)?
+    name: String, directory: String, builder: (KottageOptions.Builder.() -> Unit)? = null
 ): Pair<Kottage, TestCalendar> {
     val calendar = TestCalendar(DateTime(2022, 1, 1).utc - 1.milliseconds)
     val environment = KottageEnvironment(KottageContext(), calendar)

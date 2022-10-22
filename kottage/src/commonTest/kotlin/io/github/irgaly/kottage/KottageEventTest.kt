@@ -3,11 +3,7 @@ package io.github.irgaly.kottage
 import app.cash.turbine.test
 import com.soywiz.klock.DateTime
 import com.soywiz.klock.seconds
-import io.github.irgaly.kottage.extension.buildKottage
-import io.github.irgaly.kottage.platform.KottageContext
-import io.github.irgaly.kottage.platform.TestCalendar
-import io.github.irgaly.test.extension.tempdir
-import io.kotest.core.spec.style.DescribeSpec
+import io.github.irgaly.kottage.test.KottageSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.Job
@@ -19,26 +15,10 @@ import kotlin.time.Duration.Companion.days
 /**
  * Event 関連のテスト
  */
-class KottageEventTest : DescribeSpec({
-    val tempDirectory = tempdir()
-    fun kottage(
-        name: String = "test", builder: (KottageOptions.Builder.() -> Unit)? = null
-    ): Pair<Kottage, TestCalendar> = buildKottage(name, tempDirectory, builder)
-
-    val calendar = TestCalendar(DateTime(2022, 1, 1).utc)
+class KottageEventTest : KottageSpec("kottage_event", body = {
     describe("Kottage Event Test") {
-        val kottage = Kottage(
-            "test",
-            tempDirectory,
-            KottageEnvironment(KottageContext(), calendar)
-        )
-        kottage.storage("initialize").put("initialize", "initialize") // 初期化
-        context("debug 機能") {
-            it("tempDirectory 表示") {
-                println("tempDirectory = $tempDirectory")
-            }
-        }
         context("Storage 操作") {
+            val (kottage, calendar) = kottage()
             it("並列で書き込みがあっても正しく Event が記録されていること") {
                 val storage = kottage.storage("storage")
                 val jobs = mutableListOf<Job>()
@@ -73,18 +53,13 @@ class KottageEventTest : DescribeSpec({
         }
         context("Event") {
             it("Simple Event を受け取れること") {
-                val calendar2 = TestCalendar(DateTime(2022, 1, 1).utc)
-                val kottage2 = Kottage(
-                    "event",
-                    tempDirectory,
-                    KottageEnvironment(KottageContext(), calendar2)
-                )
-                val storage = kottage2.cache("event")
-                kottage2.simpleEventFlow.test {
-                    calendar2.now += 1.seconds
+                val (kottage, calendar) = kottage("event")
+                val storage = kottage.cache("event")
+                kottage.simpleEventFlow.test {
+                    calendar.now += 1.seconds
                     storage.put("key1", "value")
                     awaitItem().eventType shouldBe KottageEventType.Create
-                    calendar2.now += 1.seconds
+                    calendar.now += 1.seconds
                     storage.remove("key1")
                     awaitItem().eventType shouldBe KottageEventType.Delete
                 }
@@ -112,14 +87,9 @@ class KottageEventTest : DescribeSpec({
         }
         context("KottageEventFlow") {
             it("KottageEventFlowで値を監視できる") {
-                val calendar2 = TestCalendar(DateTime(2022, 1, 1).utc)
-                val kottage2 = Kottage(
-                    "eventflow",
-                    tempDirectory,
-                    KottageEnvironment(KottageContext(), calendar2)
-                )
-                calendar2.now += 1.seconds
-                val storage = kottage2.cache("event")
+                val (kottage, calendar) = kottage("eventflow")
+                calendar.now += 1.seconds
+                val storage = kottage.cache("event")
                 storage.put("key1", "value")
                 storage.eventFlow(DateTime(2022, 1, 1).unixMillisLong).test {
                     // 2022/1/1 以降のイベントから流れる

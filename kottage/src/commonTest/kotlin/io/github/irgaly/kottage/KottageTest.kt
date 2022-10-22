@@ -7,10 +7,9 @@ import io.github.irgaly.kottage.platform.Files
 import io.github.irgaly.kottage.platform.KottageContext
 import io.github.irgaly.kottage.platform.TestCalendar
 import io.github.irgaly.kottage.property.KottageStore
-import io.github.irgaly.test.extension.tempdir
+import io.github.irgaly.kottage.test.KottageSpec
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldNotBeEmpty
 import kotlinx.coroutines.Dispatchers
@@ -19,40 +18,27 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlin.experimental.xor
 
-class KottageTest : DescribeSpec({
-    val tempDirectory = tempdir()
-    val calendar = TestCalendar(DateTime(2022, 1, 1).utc)
-    fun kottage(
-        name: String = "kottage", builder: (KottageOptions.Builder.() -> Unit)? = null
-    ): Pair<Kottage, TestCalendar> = buildKottage(name, tempDirectory, builder)
+class KottageTest : KottageSpec("kottage", body = {
     describe("Kottage") {
-        val kottage = Kottage(
-            "test",
-            tempDirectory,
-            KottageEnvironment(KottageContext(), calendar)
-        )
         context("debug 機能") {
-            it("tempDirectory 表示") {
-                println("tempDirectory = $tempDirectory")
-            }
             it("getDatabaseStatus() で情報を取得できる") {
-                val status = kottage.getDatabaseStatus()
+                val status = kottage().first.getDatabaseStatus()
                 println(status)
                 status.shouldNotBeEmpty()
             }
             it("compact() をエラーなく実行できる") {
                 shouldNotThrowAny {
-                    kottage.compact()
+                    kottage().first.compact()
                 }
             }
             it("export() でバックアップを作成できる") {
-                kottage.export("backup.db", tempDirectory)
+                kottage().first.export("backup.db", tempDirectory)
             }
             it("export() で存在しないディレクトリにバックアップを作成できる") {
-                kottage.export("backup.db", "$tempDirectory/backup")
+                kottage().first.export("backup.db", "$tempDirectory/backup")
             }
             it("export() で特殊なファイル名を扱える") {
-                kottage.export(
+                kottage().first.export(
                     "export_${
                         "_'_\"_/_\\_ _あ_😄_:_;_".replace(Files.separator, "-")
                     }.db", "$tempDirectory/${"_'_\"_/_\\_ _あ_😄_:_".replace(Files.separator, "-")}"
@@ -60,7 +46,7 @@ class KottageTest : DescribeSpec({
             }
             it("export() で separator を含むファイル名はエラー") {
                 shouldThrow<IllegalArgumentException> {
-                    kottage.export("export_/_:_\\_.db", tempDirectory)
+                    kottage().first.export("export_/_:_\\_.db", tempDirectory)
                 }
             }
             it("特殊文字を含むパスを扱える") {
@@ -73,7 +59,10 @@ class KottageTest : DescribeSpec({
                                 "-"
                             )
                         }",
-                        KottageEnvironment(KottageContext(), calendar)
+                        KottageEnvironment(
+                            KottageContext(),
+                            TestCalendar(DateTime(2022, 1, 1).utc)
+                        )
                     ).storage("test").put("test", "test")
                 }
             }
@@ -82,7 +71,10 @@ class KottageTest : DescribeSpec({
                     Kottage(
                         "test_'_\"_/_\\_ _あ_😄_:_".replace(Files.separator, "-"),
                         tempDirectory,
-                        KottageEnvironment(KottageContext(), calendar)
+                        KottageEnvironment(
+                            KottageContext(),
+                            TestCalendar(DateTime(2022, 1, 1).utc)
+                        )
                     ).storage("test").put("test", "test")
                 }
             }
@@ -91,18 +83,17 @@ class KottageTest : DescribeSpec({
                     Kottage(
                         "test_/_:_\\_",
                         tempDirectory,
-                        KottageEnvironment(KottageContext(), calendar)
+                        KottageEnvironment(
+                            KottageContext(),
+                            TestCalendar(DateTime(2022, 1, 1).utc)
+                        )
                     )
                 }
             }
         }
         context("Connection") {
             val directory = "$tempDirectory/subdirectory"
-            val subdirectoryKottage = Kottage(
-                "test",
-                directory,
-                KottageEnvironment(KottageContext(), calendar)
-            )
+            val subdirectoryKottage = buildKottage("test", directory).first
             val storage = subdirectoryKottage.storage("storage1")
             it("ディレクトリが存在しなくてもファイルを作成できる") {
                 shouldNotThrowAny {
@@ -111,7 +102,7 @@ class KottageTest : DescribeSpec({
             }
         }
         context("storage モード") {
-            val storage = kottage.storage("storage1")
+            val storage = kottage().first.storage("storage1")
             it("put, get で値を保持できている") {
                 storage.put("key", "test")
                 storage.get<String>("key") shouldBe "test"
@@ -119,20 +110,12 @@ class KottageTest : DescribeSpec({
         }
         context("独立 Kottage インスタンス") {
             it("並列書き込み: 100") {
-                val initialKottage = Kottage(
-                    "test100",
-                    tempDirectory,
-                    KottageEnvironment(KottageContext(), calendar)
-                )
+                val initialKottage = kottage("test100").first
                 // SQLite Table 作成
                 initialKottage.storage("storage1").put("test", "test")
                 repeat(100) { id ->
                     launch(Dispatchers.Default) {
-                        val kottage2 = Kottage(
-                            "test100",
-                            tempDirectory,
-                            KottageEnvironment(KottageContext(), calendar)
-                        )
+                        val kottage2 = kottage("test100").first
                         val storage = kottage2.storage("storage1")
                         storage.put("key$id", "value$id")
                         storage.get<String>("key$id") shouldBe "value$id"
@@ -141,7 +124,7 @@ class KottageTest : DescribeSpec({
             }
         }
         context("基本的な型の操作") {
-            val storage = kottage.storage("storage_basic_type")
+            val storage = kottage().first.storage("storage_basic_type")
             it("Double, Float") {
                 storage.put("double", 0.0)
                 storage.put("float", 0f)
