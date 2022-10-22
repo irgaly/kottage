@@ -36,14 +36,14 @@ Add Kottage as gradle dependency.
 kotlin {
     sourceSets {
         commonMain {
-            implementation("io.github.irgaly.kottage:kottage:1.1.1")
+            implementation("io.github.irgaly.kottage:kottage:1.2.0")
         }
     }
 }
 
 // It can be used as a JVM library for Kotlin/JVM or Kotlin/Android
 dependencies {
-    implementation("io.github.irgaly.kottage:kottage:1.1.1")
+    implementation("io.github.irgaly.kottage:kottage:1.2.0")
 }
 ```
 
