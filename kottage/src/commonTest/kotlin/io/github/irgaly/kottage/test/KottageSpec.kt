@@ -19,6 +19,10 @@ open class KottageSpec(
     clearTempDirectoryAfterSpec: Boolean = false,
     body: (KottageSpec.() -> Unit) = {}
 ) : FunSpec() {
+    // kotest が KottageSpec を実行しようとするが、zero arg constructor がないとエラーになるので
+    // dummy constructor
+    constructor() : this("KottageSpec::dummy")
+
     val tempDirectory: String
 
     init {
