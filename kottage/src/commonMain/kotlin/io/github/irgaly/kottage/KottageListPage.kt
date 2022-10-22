@@ -4,9 +4,15 @@ package io.github.irgaly.kottage
 data class KottageListPage(
     val items: List<KottageListEntry>,
     val previousPositionId: String?,
-    val nextPositionId: String?
+    val nextPositionId: String?,
+    /**
+     * has previous page
+     */
+    val hasPrevious: Boolean,
+    /**
+     * has next page
+     */
+    val hasNext: Boolean
 ) {
     val isEmpty: Boolean get() = items.isEmpty()
-    val hasPrevious: Boolean get() = (previousPositionId != null)
-    val hasNext: Boolean get() = (nextPositionId != null)
 }

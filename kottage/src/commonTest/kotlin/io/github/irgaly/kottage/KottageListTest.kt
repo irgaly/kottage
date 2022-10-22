@@ -143,6 +143,27 @@ class KottageListTest : DescribeSpec({
                 lastPage.hasNext shouldBe false
                 lastPage.items[0].itemKey shouldBe "key5"
             }
+            it("Page: hasPrevious, hasNext の要素有無判定") {
+                val storage = kottage().first.storage("hasprevious_hasnext")
+                val list = storage.list("list_hasprevious_hasnext")
+                list.addAll(
+                    listOf(
+                        kottageListValue("key1", "value1"),
+                        kottageListValue("key2", "value2"),
+                        kottageListValue("key3", "value3"),
+                        kottageListValue("key4", "value4")
+                    )
+                )
+                list.remove(checkNotNull(list.getFirst()).positionId)
+                list.remove(checkNotNull(list.getLast()).positionId)
+                val entry2 = checkNotNull(list.getFirst())
+                val page1 = list.getPageFrom(entry2.positionId, 1)
+                val page2 = list.getPageFrom(page1.nextPositionId, 1)
+                page1.hasPrevious shouldBe false
+                page1.hasNext shouldBe true
+                page2.hasPrevious shouldBe true
+                page2.hasNext shouldBe false
+            }
             it("MetaData の読み書き") {
                 val cache = kottage().first.cache("metadata")
                 val list = cache.list("list_metadata")
