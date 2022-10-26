@@ -15,6 +15,9 @@ android {
 }
 
 kotlin {
+    js(IR) {
+        browser()
+    }
     sourceSets {
         commonMain {
             dependencies {
@@ -44,6 +47,14 @@ kotlin {
         val nativeMain by getting {
             dependencies {
                 implementation(libs.sqldelight.driver.native)
+            }
+        }
+        val jsMain by getting {
+            dependencies {
+                implementation("com.squareup.sqldelight:sqljs-driver:1.5.3")
+                implementation(npm("@jlongster/sql.js", "1.6.7"))
+                implementation(npm("absurd-sql", "0.0.53"))
+                implementation(devNpm("copy-webpack-plugin", "9.1.0"))
             }
         }
     }

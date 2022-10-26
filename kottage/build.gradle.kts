@@ -56,12 +56,14 @@ kotlin {
                 implementation(projects.kottage.data.sqlite)
             }
         }
+        /*
         val commonIndexeddbMain by creating {
             dependsOn(commonMain.get())
             dependencies {
                 implementation(projects.kottage.data.indexeddb)
             }
         }
+         */
         val androidMain by getting {
             dependsOn(commonSqliteMain)
             dependencies {
@@ -73,7 +75,7 @@ kotlin {
             }
         }
         val jsMain by getting {
-            dependsOn(commonIndexeddbMain)
+            dependsOn(commonSqliteMain)
             dependencies {
             }
         }
