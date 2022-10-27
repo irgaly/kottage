@@ -5,6 +5,7 @@ import io.github.irgaly.kottage.KottageEventFlow
 import io.github.irgaly.kottage.KottageList
 import io.github.irgaly.kottage.KottageOptions
 import io.github.irgaly.kottage.KottageStorage
+import io.github.irgaly.kottage.internal.database.Transaction
 import io.github.irgaly.kottage.internal.database.createDatabaseConnection
 import io.github.irgaly.kottage.internal.model.ItemEvent
 import io.github.irgaly.kottage.internal.model.ItemEventFlow
@@ -101,10 +102,10 @@ internal class KottageDatabaseManager(
         )
     }
 
-    suspend fun <R> transactionWithResult(bodyWithReturn: () -> R): R =
+    suspend fun <R> transactionWithResult(bodyWithReturn: Transaction.() -> R): R =
         databaseConnection.transactionWithResult(bodyWithReturn)
 
-    suspend fun transaction(body: () -> Unit) = databaseConnection.transaction(body)
+    suspend fun transaction(body: Transaction.() -> Unit) = databaseConnection.transaction(body)
     suspend fun deleteAll() {
         databaseConnection.deleteAll()
     }

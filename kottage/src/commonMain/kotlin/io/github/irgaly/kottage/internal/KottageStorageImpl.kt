@@ -8,6 +8,7 @@ import io.github.irgaly.kottage.KottageListOptions
 import io.github.irgaly.kottage.KottageOptions
 import io.github.irgaly.kottage.KottageStorage
 import io.github.irgaly.kottage.KottageStorageOptions
+import io.github.irgaly.kottage.internal.database.Transaction
 import io.github.irgaly.kottage.internal.encoder.Encoder
 import io.github.irgaly.kottage.internal.encoder.encodeItem
 import io.github.irgaly.kottage.internal.property.KottageStorageStore
@@ -264,7 +265,7 @@ internal class KottageStorageImpl(
 
     private suspend fun <R> transactionWithAutoCompaction(
         now: Long? = null,
-        bodyWithReturn: (operator: KottageOperator, now: Long) -> R
+        bodyWithReturn: Transaction.(operator: KottageOperator, now: Long) -> R
     ): R {
         val operator = operator()
         val receivedNow = now ?: calendar.nowUnixTimeMillis()

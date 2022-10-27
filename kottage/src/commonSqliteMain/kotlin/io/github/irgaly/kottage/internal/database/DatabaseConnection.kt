@@ -36,7 +36,7 @@ internal actual data class DatabaseConnection(
         return body(sqlDriver.await(), database.await())
     }
 
-    actual suspend fun <R> transactionWithResult(bodyWithReturn: () -> R): R =
+    actual suspend fun <R> transactionWithResult(bodyWithReturn: Transaction.() -> R): R =
         withContext(dispatcher) {
             withDatabase { sqlDriver, database ->
                 database.transactionWithResult {
@@ -44,19 +44,19 @@ internal actual data class DatabaseConnection(
                     // restart transaction with EXCLUSIVE
                     sqlDriver.execute(null, "END", 0)
                     sqlDriver.execute(null, "BEGIN EXCLUSIVE", 0)
-                    bodyWithReturn()
+                    bodyWithReturn(Transaction())
                 }
             }
         }
 
-    actual suspend fun transaction(body: () -> Unit) = withContext(dispatcher) {
+    actual suspend fun transaction(body: Transaction.() -> Unit) = withContext(dispatcher) {
         withDatabase { sqlDriver, database ->
             database.transaction {
                 // here: SQLDelight Transaction = DEFERRED (default)
                 // restart transaction with EXCLUSIVE
                 sqlDriver.execute(null, "END", 0)
                 sqlDriver.execute(null, "BEGIN EXCLUSIVE", 0)
-                body()
+                body(Transaction())
             }
         }
     }

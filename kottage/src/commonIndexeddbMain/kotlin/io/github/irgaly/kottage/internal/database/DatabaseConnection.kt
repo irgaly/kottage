@@ -1,15 +1,40 @@
 package io.github.irgaly.kottage.internal.database
 
 import io.github.irgaly.kottage.KottageEnvironment
+import io.github.irgaly.kottage.data.indexeddb.KottageIndexeddbDatabase
+import io.github.irgaly.kottage.data.indexeddb.schema.allStoreSchemaNames
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 
-internal actual class DatabaseConnection {
-    actual suspend fun <R> transactionWithResult(bodyWithReturn: () -> R): R {
-        TODO("Not yet implemented")
+internal actual class DatabaseConnection(
+    private val databaseName: String,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
+) {
+    @OptIn(DelicateCoroutinesApi::class)
+    private val database = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
+        KottageIndexeddbDatabase.open(databaseName)
     }
 
-    actual suspend fun transaction(body: () -> Unit) {
-        TODO("Not yet implemented")
+    actual suspend fun <R> transactionWithResult(bodyWithReturn: Transaction.() -> R): R {
+        val database = database.await()
+        return database.database.transaction(*allStoreSchemaNames()) {
+            with(Transaction(this)) {
+                bodyWithReturn()
+            }
+        }
+    }
+
+    actual suspend fun transaction(body: Transaction.() -> Unit) {
+        val database = database.await()
+        database.database.transaction(*allStoreSchemaNames()) {
+            with(Transaction(this)) {
+                body()
+            }
+        }
     }
 
     actual suspend fun deleteAll() {
@@ -17,11 +42,11 @@ internal actual class DatabaseConnection {
     }
 
     actual suspend fun getDatabaseStatus(): String {
-        TODO("Not yet implemented")
+        return "no status for indexeddb"
     }
 
     actual suspend fun backupTo(file: String, directoryPath: String) {
-        TODO("Not yet implemented")
+        // no operation with indexeddb
     }
 
     actual suspend fun compact() {
@@ -35,7 +60,10 @@ internal actual fun createDatabaseConnection(
     environment: KottageEnvironment,
     dispatcher: CoroutineDispatcher
 ): DatabaseConnection {
-    TODO()
+    return DatabaseConnection(
+        databaseName = "$directoryPath/$fileName",
+        dispatcher = dispatcher
+    )
 }
 
 internal actual suspend fun createOldDatabase(
