@@ -26,6 +26,7 @@ kotlin {
         }
         val jsMain by getting {
             dependencies {
+                api(libs.indexeddb)
             }
         }
     }
