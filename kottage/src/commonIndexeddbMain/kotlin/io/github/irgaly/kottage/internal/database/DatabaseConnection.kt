@@ -21,7 +21,7 @@ internal actual class DatabaseConnection(
 
     actual suspend fun <R> transactionWithResult(bodyWithReturn: suspend Transaction.() -> R): R {
         val database = database.await()
-        return database.database.transaction(*allStoreSchemaNames()) {
+        return database.database.writeTransaction(*allStoreSchemaNames()) {
             with(Transaction(this)) {
                 bodyWithReturn()
             }
@@ -30,7 +30,7 @@ internal actual class DatabaseConnection(
 
     actual suspend fun transaction(body: suspend Transaction.() -> Unit) {
         val database = database.await()
-        database.database.transaction(*allStoreSchemaNames()) {
+        database.database.writeTransaction(*allStoreSchemaNames()) {
             with(Transaction(this)) {
                 body()
             }
