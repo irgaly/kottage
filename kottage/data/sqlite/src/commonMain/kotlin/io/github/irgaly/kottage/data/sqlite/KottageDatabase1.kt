@@ -65,7 +65,11 @@ class KottageDatabase1(
                 "CREATE INDEX item_event_item_type_expire_at ON item_event(item_type, expire_at)", 0
             )
             driver.execute(null, "CREATE INDEX item_type_created_at ON item(type, created_at)", 0)
-            driver.execute(null, "CREATE INDEX item_type_last_read ON item(type, last_read_at)", 0)
+            driver.execute(
+                null,
+                "CREATE INDEX item_type_last_read_at ON item(type, last_read_at)",
+                0
+            )
             driver.execute(null, "CREATE INDEX item_type_expire_at ON item(type, expire_at)", 0)
             driver.execute(
                 null,
