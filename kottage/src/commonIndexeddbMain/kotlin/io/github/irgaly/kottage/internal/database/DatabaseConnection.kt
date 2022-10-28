@@ -19,7 +19,7 @@ internal actual class DatabaseConnection(
         KottageIndexeddbDatabase.open(databaseName)
     }
 
-    actual suspend fun <R> transactionWithResult(bodyWithReturn: Transaction.() -> R): R {
+    actual suspend fun <R> transactionWithResult(bodyWithReturn: suspend Transaction.() -> R): R {
         val database = database.await()
         return database.database.transaction(*allStoreSchemaNames()) {
             with(Transaction(this)) {
@@ -28,7 +28,7 @@ internal actual class DatabaseConnection(
         }
     }
 
-    actual suspend fun transaction(body: Transaction.() -> Unit) {
+    actual suspend fun transaction(body: suspend Transaction.() -> Unit) {
         val database = database.await()
         database.database.transaction(*allStoreSchemaNames()) {
             with(Transaction(this)) {
