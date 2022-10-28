@@ -15,7 +15,7 @@ internal actual class DatabaseConnection(
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default
 ) {
     @OptIn(DelicateCoroutinesApi::class)
-    private val database = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
+    val database = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
         KottageIndexeddbDatabase.open(databaseName)
     }
 

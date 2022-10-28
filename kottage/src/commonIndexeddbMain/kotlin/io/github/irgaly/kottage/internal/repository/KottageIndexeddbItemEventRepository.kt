@@ -1,9 +1,14 @@
 package io.github.irgaly.kottage.internal.repository
 
+import com.juul.indexeddb.ObjectStore
+import com.juul.indexeddb.WriteTransaction
+import io.github.irgaly.kottage.data.indexeddb.KottageIndexeddbDatabase
 import io.github.irgaly.kottage.internal.database.Transaction
 import io.github.irgaly.kottage.internal.model.ItemEvent
 
-internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository {
+internal class KottageIndexeddbItemEventRepository(
+    private val database: KottageIndexeddbDatabase
+) : KottageItemEventRepository {
     override suspend fun create(transaction: Transaction, itemEvent: ItemEvent) {
         TODO("Not yet implemented")
     }
@@ -68,5 +73,9 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
 
     override suspend fun updateStatsCount(transaction: Transaction, itemType: String, count: Long) {
         TODO("Not yet implemented")
+    }
+
+    private inline fun <R> Transaction.store(block: WriteTransaction.(store: ObjectStore) -> R): R {
+        return with(transaction) { block(transaction.objectStore("item_event")) }
     }
 }
