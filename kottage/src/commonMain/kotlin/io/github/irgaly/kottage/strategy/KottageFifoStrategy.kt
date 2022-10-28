@@ -14,6 +14,7 @@ class KottageFifoStrategy(
         (maxEntryCount * 0.25).toLong().coerceAtLeast(1)
 
     override fun onItemRead(
+        transaction: KottageTransaction,
         key: String,
         itemType: String,
         now: Long,
@@ -23,6 +24,7 @@ class KottageFifoStrategy(
     }
 
     override fun onPostItemCreate(
+        transaction: KottageTransaction,
         key: String,
         itemType: String,
         itemCount: Long,
@@ -31,11 +33,11 @@ class KottageFifoStrategy(
     ) {
         if (maxEntryCount < itemCount) {
             // expire caches
-            val expiredItemsCount = operator.deleteExpiredItems(itemType, now)
+            val expiredItemsCount = operator.deleteExpiredItems(transaction, itemType, now)
             // reduce caches
             val reduceCount = (reduceCount ?: calculatedReduceCount) - expiredItemsCount
             if (0 < reduceCount) {
-                operator.deleteOlderItems(itemType, reduceCount)
+                operator.deleteOlderItems(transaction, itemType, reduceCount)
             }
         }
     }

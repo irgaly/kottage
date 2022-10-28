@@ -16,6 +16,7 @@ import io.github.irgaly.kottage.internal.model.ItemListEntry
 import io.github.irgaly.kottage.platform.Id
 import io.github.irgaly.kottage.platform.KottageCalendar
 import io.github.irgaly.kottage.strategy.KottageStrategy
+import io.github.irgaly.kottage.strategy.KottageTransaction
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -64,7 +65,7 @@ internal class KottageListImpl(
             val items = mutableListOf<KottageListEntry>()
             var initialPositionId = positionId
             if (initialPositionId == null) {
-                initialPositionId = operator.getListStats(listType)?.let { stats ->
+                initialPositionId = operator.getListStats(this, listType)?.let { stats ->
                     when (direction) {
                         KottageListDirection.Forward -> stats.firstItemPositionId
                         KottageListDirection.Backward -> stats.lastItemPositionId
@@ -72,13 +73,14 @@ internal class KottageListImpl(
                 }
             }
             if (initialPositionId != null) {
-                listOperator.invalidateExpiredListEntries(now)
+                listOperator.invalidateExpiredListEntries(this, now)
                 var nextPositionId: String? = initialPositionId
                 while (
                     (pageSize?.let { items.size < it } != false)
                     && (nextPositionId != null)
                 ) {
                     listOperator.getAvailableListEntry(
+                        this,
                         positionId = nextPositionId,
                         direction = direction
                     )?.let { entry ->
@@ -88,9 +90,10 @@ internal class KottageListImpl(
                         }
                         val itemKey = checkNotNull(entry.itemKey)
                         val item = checkNotNull(
-                            storageOperator.getOrNull(key = itemKey, now = null)
+                            storageOperator.getOrNull(this, key = itemKey, now = null)
                         )
                         strategy.onItemRead(
+                            KottageTransaction(this),
                             key = itemKey, itemType = itemType, now = now, operator = operator
                         )
                         items.add(
@@ -110,13 +113,13 @@ internal class KottageListImpl(
             }
             items.firstOrNull()?.previousPositionId?.let { previousPositionId ->
                 val previousEntry = listOperator.getAvailableListEntry(
-                    previousPositionId, direction = KottageListDirection.Backward
+                    this, previousPositionId, direction = KottageListDirection.Backward
                 )
                 hasPrevious = (previousEntry != null)
             }
             items.lastOrNull()?.nextPositionId?.let { nextPositionId ->
                 val nextEntry = listOperator.getAvailableListEntry(
-                    nextPositionId, direction = KottageListDirection.Forward
+                    this, nextPositionId, direction = KottageListDirection.Forward
                 )
                 hasNext = (nextEntry != null)
             }
@@ -133,20 +136,20 @@ internal class KottageListImpl(
 
     override suspend fun getSize(): Long = withContext(dispatcher) {
         transactionWithAutoCompaction { operator, now ->
-            operator.getListCount(listType = listType, now = now)
+            operator.getListCount(this, listType = listType, now = now)
         }
     }
 
     override suspend fun isEmpty(): Boolean = withContext(dispatcher) {
         val count = transactionWithAutoCompaction { operator, now ->
-            operator.getListCount(listType = listType, now = now)
+            operator.getListCount(this, listType = listType, now = now)
         }
         (count <= 0)
     }
 
     override suspend fun isNotEmpty(): Boolean = withContext(dispatcher) {
         val count = transactionWithAutoCompaction { operator, now ->
-            operator.getListCount(listType = listType, now = now)
+            operator.getListCount(this, listType = listType, now = now)
         }
         (0 < count)
     }
@@ -155,17 +158,19 @@ internal class KottageListImpl(
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         transactionWithAutoCompaction { operator, now ->
-            operator.getListStats(listType)?.let { stats ->
-                listOperator.invalidateExpiredListEntries(now)
+            operator.getListStats(this, listType)?.let { stats ->
+                listOperator.invalidateExpiredListEntries(this, now)
                 listOperator.getAvailableListEntry(
+                    this,
                     positionId = stats.firstItemPositionId,
                     direction = KottageListDirection.Forward
                 )?.let { entry ->
                     val itemKey = checkNotNull(entry.itemKey)
                     val item = checkNotNull(
-                        storageOperator.getOrNull(key = itemKey, now = null)
+                        storageOperator.getOrNull(this, key = itemKey, now = null)
                     )
                     strategy.onItemRead(
+                        KottageTransaction(this),
                         key = itemKey, itemType = itemType, now = now, operator = operator
                     )
                     KottageListEntry.from(
@@ -183,17 +188,19 @@ internal class KottageListImpl(
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         transactionWithAutoCompaction { operator, now ->
-            operator.getListStats(listType)?.let { stats ->
-                listOperator.invalidateExpiredListEntries(now)
+            operator.getListStats(this, listType)?.let { stats ->
+                listOperator.invalidateExpiredListEntries(this, now)
                 listOperator.getAvailableListEntry(
+                    this,
                     positionId = stats.lastItemPositionId,
                     direction = KottageListDirection.Backward
                 )?.let { entry ->
                     val itemKey = checkNotNull(entry.itemKey)
                     val item = checkNotNull(
-                        storageOperator.getOrNull(key = itemKey, now = null)
+                        storageOperator.getOrNull(this, key = itemKey, now = null)
                     )
                     strategy.onItemRead(
+                        KottageTransaction(this),
                         key = itemKey, itemType = itemType, now = now, operator = operator
                     )
                     KottageListEntry.from(
@@ -211,14 +218,16 @@ internal class KottageListImpl(
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         transactionWithAutoCompaction { operator, now ->
-            listOperator.invalidateExpiredListEntries(now)
+            listOperator.invalidateExpiredListEntries(this, now)
             listOperator.getAvailableListEntry(
+                this,
                 positionId = positionId,
                 direction = KottageListDirection.Forward
             )?.let { entry ->
                 val itemKey = checkNotNull(entry.itemKey)
-                val item = checkNotNull(storageOperator.getOrNull(key = itemKey, now = null))
+                val item = checkNotNull(storageOperator.getOrNull(this, key = itemKey, now = null))
                 strategy.onItemRead(
+                    KottageTransaction(this),
                     key = itemKey, itemType = itemType, now = now, operator = operator
                 )
                 KottageListEntry.from(
@@ -240,7 +249,7 @@ internal class KottageListImpl(
         val listOperator = listOperator.await()
         transactionWithAutoCompaction { operator, now ->
             val initialPositionId =
-                fromPositionId ?: operator.getListStats(listType)?.let { stats ->
+                fromPositionId ?: operator.getListStats(this, listType)?.let { stats ->
                     when (direction) {
                         KottageListDirection.Forward -> stats.firstItemPositionId
                         KottageListDirection.Backward -> stats.lastItemPositionId
@@ -250,12 +259,13 @@ internal class KottageListImpl(
             var currentEntry: ItemListEntry? = null
             var nextIndex = 0L
             var nextPositionId = initialPositionId
-            listOperator.invalidateExpiredListEntries(now)
+            listOperator.invalidateExpiredListEntries(this, now)
             while (
                 (nextIndex <= index)
                 && (nextPositionId != null)
             ) {
                 currentEntry = listOperator.getAvailableListEntry(
+                    this,
                     positionId = nextPositionId,
                     direction = direction
                 )
@@ -270,8 +280,9 @@ internal class KottageListImpl(
                 // index のアイテムを見つけた
                 val itemKey = checkNotNull(currentEntry.itemKey)
                 val item =
-                    checkNotNull(storageOperator.getOrNull(key = itemKey, now = null))
+                    checkNotNull(storageOperator.getOrNull(this, key = itemKey, now = null))
                 strategy.onItemRead(
+                    KottageTransaction(this),
                     key = itemKey, itemType = itemType, now = now, operator = operator
                 )
                 KottageListEntry.from(
@@ -296,7 +307,7 @@ internal class KottageListImpl(
         val item = encoder.encodeItem(storage, key, value, type, now)
         val newPositionId = Id.generateUuidV4Short()
         val entry = transactionWithAutoCompaction(now) { _, _ ->
-            val lastPositionId = listOperator.getLastItemPositionId()
+            val lastPositionId = listOperator.getLastItemPositionId(this)
             val entry = createItemListEntry(
                 id = newPositionId,
                 itemKey = item.key,
@@ -305,8 +316,8 @@ internal class KottageListImpl(
                 now = now,
                 metaData = metaData
             )
-            listOperator.addListEntries(listOf(entry), now)
-            storageOperator.upsertItem(item, now)
+            listOperator.addListEntries(this, listOf(entry), now)
+            storageOperator.upsertItem(this, item, now)
             KottageListEntry.from(
                 entry = entry,
                 itemKey = item.key,
@@ -326,9 +337,9 @@ internal class KottageListImpl(
         val now = calendar.nowUnixTimeMillis()
         val newPositionId = Id.generateUuidV4Short()
         val entry = transactionWithAutoCompaction(now) { _, _ ->
-            val item = storageOperator.getOrNull(key = key, now = null)
+            val item = storageOperator.getOrNull(this, key = key, now = null)
                 ?: throw NoSuchElementException("storage = ${storage.name}, key = $key")
-            val lastPositionId = listOperator.getLastItemPositionId()
+            val lastPositionId = listOperator.getLastItemPositionId(this)
             val entry = createItemListEntry(
                 id = newPositionId,
                 itemKey = item.key,
@@ -337,7 +348,7 @@ internal class KottageListImpl(
                 now = now,
                 metaData = metaData
             )
-            listOperator.addListEntries(listOf(entry), now)
+            listOperator.addListEntries(this, listOf(entry), now)
             KottageListEntry.from(
                 entry = entry,
                 itemKey = item.key,
@@ -361,7 +372,7 @@ internal class KottageListImpl(
             Triple(id, item, it.metaData)
         }
         transactionWithAutoCompaction(now) { _, _ ->
-            val lastPositionId = listOperator.getLastItemPositionId()
+            val lastPositionId = listOperator.getLastItemPositionId(this)
             val entries = items.mapIndexed { index, (id, item, metaData) ->
                 createItemListEntry(
                     id = id,
@@ -372,9 +383,9 @@ internal class KottageListImpl(
                     metaData = metaData
                 )
             }
-            listOperator.addListEntries(entries, now)
+            listOperator.addListEntries(this, entries, now)
             items.forEach { (_, item, _) ->
-                storageOperator.upsertItem(item, now)
+                storageOperator.upsertItem(this, item, now)
             }
         }
         if (values.isNotEmpty()) {
@@ -388,10 +399,10 @@ internal class KottageListImpl(
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         transactionWithAutoCompaction { _, now ->
-            val lastPositionId = listOperator.getLastItemPositionId()
+            val lastPositionId = listOperator.getLastItemPositionId(this)
             val items = keys.map { key ->
                 val id = Id.generateUuidV4Short()
-                val item = storageOperator.getOrNull(key = key, now = null)
+                val item = storageOperator.getOrNull(this, key = key, now = null)
                     ?: throw NoSuchElementException("storage = ${storage.name}, key = $key")
                 Pair(id, item)
             }
@@ -405,7 +416,7 @@ internal class KottageListImpl(
                     metaData = metaData
                 )
             }
-            listOperator.addListEntries(entries, now)
+            listOperator.addListEntries(this, entries, now)
         }
         if (keys.isNotEmpty()) {
             databaseManager.onEventCreated()
@@ -424,7 +435,7 @@ internal class KottageListImpl(
         val item = encoder.encodeItem(storage, key, value, type, now)
         val newPositionId = Id.generateUuidV4Short()
         val entry = transactionWithAutoCompaction(now) { _, _ ->
-            val firstPositionId = listOperator.getFirstItemPositionId()
+            val firstPositionId = listOperator.getFirstItemPositionId(this)
             val entry = createItemListEntry(
                 id = newPositionId,
                 itemKey = item.key,
@@ -433,8 +444,8 @@ internal class KottageListImpl(
                 now = now,
                 metaData = metaData
             )
-            listOperator.addListEntries(listOf(entry), now)
-            storageOperator.upsertItem(item, now)
+            listOperator.addListEntries(this, listOf(entry), now)
+            storageOperator.upsertItem(this, item, now)
             KottageListEntry.from(
                 entry = entry,
                 itemKey = item.key,
@@ -453,9 +464,9 @@ internal class KottageListImpl(
         val listOperator = listOperator.await()
         val newPositionId = Id.generateUuidV4Short()
         val entry = transactionWithAutoCompaction { _, now ->
-            val item = storageOperator.getOrNull(key = key, now = null)
+            val item = storageOperator.getOrNull(this, key = key, now = null)
                 ?: throw NoSuchElementException("storage = ${storage.name}, key = $key")
-            val firstPositionId = listOperator.getFirstItemPositionId()
+            val firstPositionId = listOperator.getFirstItemPositionId(this)
             val entry = createItemListEntry(
                 id = newPositionId,
                 itemKey = item.key,
@@ -464,7 +475,7 @@ internal class KottageListImpl(
                 now = now,
                 metaData = metaData
             )
-            listOperator.addListEntries(listOf(entry), now)
+            listOperator.addListEntries(this, listOf(entry), now)
             KottageListEntry.from(
                 entry = entry,
                 itemKey = item.key,
@@ -488,7 +499,7 @@ internal class KottageListImpl(
             Triple(id, item, it.metaData)
         }
         transactionWithAutoCompaction(now) { _, _ ->
-            val firstPositionId = listOperator.getFirstItemPositionId()
+            val firstPositionId = listOperator.getFirstItemPositionId(this)
             val entries = items.mapIndexed { index, (id, item, metaData) ->
                 createItemListEntry(
                     id = id,
@@ -499,9 +510,9 @@ internal class KottageListImpl(
                     metaData = metaData
                 )
             }
-            listOperator.addListEntries(entries, now)
+            listOperator.addListEntries(this, entries, now)
             items.forEach { (_, item, _) ->
-                storageOperator.upsertItem(item, now)
+                storageOperator.upsertItem(this, item, now)
             }
         }
         if (values.isNotEmpty()) {
@@ -516,10 +527,10 @@ internal class KottageListImpl(
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         transactionWithAutoCompaction { _, now ->
-            val firstPositionId = listOperator.getFirstItemPositionId()
+            val firstPositionId = listOperator.getFirstItemPositionId(this)
             val items = keys.map { key ->
                 val id = Id.generateUuidV4Short()
-                val item = storageOperator.getOrNull(key = key, now = null)
+                val item = storageOperator.getOrNull(this, key = key, now = null)
                     ?: throw NoSuchElementException("storage = ${storage.name}, key = $key")
                 Pair(id, item)
             }
@@ -533,7 +544,7 @@ internal class KottageListImpl(
                     metaData = metaData
                 )
             }
-            listOperator.addListEntries(entries, now)
+            listOperator.addListEntries(this, entries, now)
         }
         if (keys.isNotEmpty()) {
             databaseManager.onEventCreated()
@@ -551,10 +562,10 @@ internal class KottageListImpl(
         val now = calendar.nowUnixTimeMillis()
         val item = encoder.encodeItem(storage, key, value, type, now)
         val entry = transactionWithAutoCompaction(now) { _, _ ->
-            val entry = listOperator.getListItem(positionId = positionId)
+            val entry = listOperator.getListItem(this, positionId = positionId)
                 ?: throw NoSuchElementException("positionId = $positionId")
-            listOperator.updateItemKey(entry.id, item, now)
-            storageOperator.upsertItem(item, now)
+            listOperator.updateItemKey(this, entry.id, item, now)
+            storageOperator.upsertItem(this, item, now)
             KottageListEntry.from(
                 entry = entry,
                 itemKey = item.key,
@@ -573,11 +584,11 @@ internal class KottageListImpl(
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         val entry = transactionWithAutoCompaction { _, now ->
-            val item = storageOperator.getOrNull(key = key, now = null)
+            val item = storageOperator.getOrNull(this, key = key, now = null)
                 ?: throw NoSuchElementException("storage = ${storage.name}, key = $key")
-            val entry = listOperator.getListItem(positionId = positionId)
+            val entry = listOperator.getListItem(this, positionId = positionId)
                 ?: throw NoSuchElementException("positionId = $positionId")
-            listOperator.updateItemKey(entry.id, item, now)
+            listOperator.updateItemKey(this, entry.id, item, now)
             KottageListEntry.from(
                 entry = entry,
                 itemKey = item.key,
@@ -602,7 +613,7 @@ internal class KottageListImpl(
         val item = encoder.encodeItem(storage, key, value, type, now)
         val newPositionId = Id.generateUuidV4Short()
         val entry = transactionWithAutoCompaction(now) { _, _ ->
-            val anchorEntry = listOperator.getListItem(positionId)
+            val anchorEntry = listOperator.getListItem(this, positionId)
                 ?: throw NoSuchElementException("list = $listType, positionId = $positionId")
             val entry = createItemListEntry(
                 id = newPositionId,
@@ -612,8 +623,8 @@ internal class KottageListImpl(
                 now = now,
                 metaData = metaData
             )
-            listOperator.addListEntries(listOf(entry), now)
-            storageOperator.upsertItem(item, now)
+            listOperator.addListEntries(this, listOf(entry), now)
+            storageOperator.upsertItem(this, item, now)
             KottageListEntry.from(
                 entry = entry,
                 itemKey = item.key,
@@ -634,9 +645,9 @@ internal class KottageListImpl(
         val listOperator = listOperator.await()
         val newPositionId = Id.generateUuidV4Short()
         val entry = transactionWithAutoCompaction { _, now ->
-            val item = storageOperator.getOrNull(key = key, now = null)
+            val item = storageOperator.getOrNull(this, key = key, now = null)
                 ?: throw NoSuchElementException("storage = ${storage.name}, key = $key")
-            val anchorEntry = listOperator.getListItem(positionId)
+            val anchorEntry = listOperator.getListItem(this, positionId)
                 ?: throw NoSuchElementException("list = $listType, positionId = $positionId")
             val entry = createItemListEntry(
                 id = newPositionId,
@@ -646,7 +657,7 @@ internal class KottageListImpl(
                 now = now,
                 metaData = metaData
             )
-            listOperator.addListEntries(listOf(entry), now)
+            listOperator.addListEntries(this, listOf(entry), now)
             KottageListEntry.from(
                 entry = entry,
                 itemKey = item.key,
@@ -671,7 +682,7 @@ internal class KottageListImpl(
             Triple(id, item, it.metaData)
         }
         transactionWithAutoCompaction(now) { _, _ ->
-            val anchorEntry = listOperator.getListItem(positionId)
+            val anchorEntry = listOperator.getListItem(this, positionId)
                 ?: throw NoSuchElementException("list = $listType, positionId = $positionId")
             val entries = items.mapIndexed { index, (id, item, metaData) ->
                 createItemListEntry(
@@ -683,9 +694,9 @@ internal class KottageListImpl(
                     metaData = metaData
                 )
             }
-            listOperator.addListEntries(entries, now)
+            listOperator.addListEntries(this, entries, now)
             items.forEach { (_, item, _) ->
-                storageOperator.upsertItem(item, now)
+                storageOperator.upsertItem(this, item, now)
             }
         }
         if (values.isNotEmpty()) {
@@ -701,11 +712,11 @@ internal class KottageListImpl(
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         transactionWithAutoCompaction { _, now ->
-            val anchorEntry = listOperator.getListItem(positionId)
+            val anchorEntry = listOperator.getListItem(this, positionId)
                 ?: throw NoSuchElementException("list = $listType, positionId = $positionId")
             val items = keys.map { key ->
                 val id = Id.generateUuidV4Short()
-                val item = storageOperator.getOrNull(key = key, now = null)
+                val item = storageOperator.getOrNull(this, key = key, now = null)
                     ?: throw NoSuchElementException("storage = ${storage.name}, key = $key")
                 Pair(id, item)
             }
@@ -719,7 +730,7 @@ internal class KottageListImpl(
                     metaData = metaData
                 )
             }
-            listOperator.addListEntries(entries, now)
+            listOperator.addListEntries(this, entries, now)
         }
         if (keys.isNotEmpty()) {
             databaseManager.onEventCreated()
@@ -739,7 +750,7 @@ internal class KottageListImpl(
         val item = encoder.encodeItem(storage, key, value, type, now)
         val newPositionId = Id.generateUuidV4Short()
         val entry = transactionWithAutoCompaction(now) { _, _ ->
-            val anchorEntry = listOperator.getListItem(positionId)
+            val anchorEntry = listOperator.getListItem(this, positionId)
                 ?: throw NoSuchElementException("list = $listType, positionId = $positionId")
             val entry = createItemListEntry(
                 id = newPositionId,
@@ -749,8 +760,8 @@ internal class KottageListImpl(
                 now = now,
                 metaData = metaData
             )
-            listOperator.addListEntries(listOf(entry), now)
-            storageOperator.upsertItem(item, now)
+            listOperator.addListEntries(this, listOf(entry), now)
+            storageOperator.upsertItem(this, item, now)
             KottageListEntry.from(
                 entry = entry,
                 itemKey = item.key,
@@ -771,9 +782,9 @@ internal class KottageListImpl(
         val listOperator = listOperator.await()
         val newPositionId = Id.generateUuidV4Short()
         val entry = transactionWithAutoCompaction { _, now ->
-            val item = storageOperator.getOrNull(key = key, now = null)
+            val item = storageOperator.getOrNull(this, key = key, now = null)
                 ?: throw NoSuchElementException("storage = ${storage.name}, key = $key")
-            val anchorEntry = listOperator.getListItem(positionId)
+            val anchorEntry = listOperator.getListItem(this, positionId)
                 ?: throw NoSuchElementException("list = $listType, positionId = $positionId")
             val entry = createItemListEntry(
                 id = newPositionId,
@@ -783,7 +794,7 @@ internal class KottageListImpl(
                 now = now,
                 metaData = metaData
             )
-            listOperator.addListEntries(listOf(entry), now)
+            listOperator.addListEntries(this, listOf(entry), now)
             KottageListEntry.from(
                 entry = entry,
                 itemKey = item.key,
@@ -808,7 +819,7 @@ internal class KottageListImpl(
             Triple(id, item, it.metaData)
         }
         transactionWithAutoCompaction(now) { _, _ ->
-            val anchorEntry = listOperator.getListItem(positionId)
+            val anchorEntry = listOperator.getListItem(this, positionId)
                 ?: throw NoSuchElementException("list = $listType, positionId = $positionId")
             val entries = items.mapIndexed { index, (id, item, metaData) ->
                 createItemListEntry(
@@ -820,9 +831,9 @@ internal class KottageListImpl(
                     metaData = metaData
                 )
             }
-            listOperator.addListEntries(entries, now)
+            listOperator.addListEntries(this, entries, now)
             items.forEach { (_, item, _) ->
-                storageOperator.upsertItem(item, now)
+                storageOperator.upsertItem(this, item, now)
             }
         }
         if (values.isNotEmpty()) {
@@ -838,11 +849,11 @@ internal class KottageListImpl(
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         transactionWithAutoCompaction { _, now ->
-            val anchorEntry = listOperator.getListItem(positionId)
+            val anchorEntry = listOperator.getListItem(this, positionId)
                 ?: throw NoSuchElementException("list = $listType, positionId = $positionId")
             val items = keys.map { key ->
                 val id = Id.generateUuidV4Short()
-                val item = storageOperator.getOrNull(key = key, now = null)
+                val item = storageOperator.getOrNull(this, key = key, now = null)
                     ?: throw NoSuchElementException("storage = ${storage.name}, key = $key")
                 Pair(id, item)
             }
@@ -856,7 +867,7 @@ internal class KottageListImpl(
                     metaData = metaData
                 )
             }
-            listOperator.addListEntries(entries, now)
+            listOperator.addListEntries(this, entries, now)
         }
         if (keys.isNotEmpty()) {
             databaseManager.onEventCreated()
@@ -866,7 +877,7 @@ internal class KottageListImpl(
     override suspend fun remove(positionId: String) = withContext(dispatcher) {
         val listOperator = listOperator.await()
         val removed = transactionWithAutoCompaction { _, now ->
-            listOperator.removeListItem(positionId = positionId, now = now)
+            listOperator.removeListItem(this, positionId = positionId, now = now)
         }
         if (removed) {
             databaseManager.onEventCreated()
@@ -877,7 +888,7 @@ internal class KottageListImpl(
         val listOperator = listOperator.await()
         val now = calendar.nowUnixTimeMillis()
         databaseManager.transaction {
-            listOperator.evictExpiredEntries(now)
+            listOperator.evictExpiredEntries(this, now)
         }
         storage.compact()
     }
@@ -885,21 +896,21 @@ internal class KottageListImpl(
     override suspend fun clear() = withContext(dispatcher) {
         val listOperator = listOperator.await()
         databaseManager.transaction {
-            listOperator.clear()
+            listOperator.clear(this)
         }
     }
 
     override suspend fun getDebugStatus(): String = withContext(dispatcher) {
         val listOperator = listOperator.await()
         databaseManager.transactionWithResult {
-            listOperator.getDebugStatus()
+            listOperator.getDebugStatus(this)
         }
     }
 
     override suspend fun getDebugListRawData(): String = withContext(dispatcher) {
         val listOperator = listOperator.await()
         databaseManager.transactionWithResult {
-            listOperator.getDebugListRawData()
+            listOperator.getDebugListRawData(this)
         }
     }
 
@@ -934,7 +945,7 @@ internal class KottageListImpl(
         val receivedNow = now ?: calendar.nowUnixTimeMillis()
         var compactionRequired = false
         val result = databaseManager.transactionWithResult {
-            compactionRequired = operator.getAutoCompactionNeeded(receivedNow)
+            compactionRequired = operator.getAutoCompactionNeeded(this, receivedNow)
             bodyWithReturn(operator, receivedNow)
         }
         if (compactionRequired) {

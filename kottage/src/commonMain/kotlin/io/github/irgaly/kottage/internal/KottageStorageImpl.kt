@@ -15,6 +15,7 @@ import io.github.irgaly.kottage.internal.property.KottageStorageStore
 import io.github.irgaly.kottage.platform.KottageCalendar
 import io.github.irgaly.kottage.property.KottageStore
 import io.github.irgaly.kottage.strategy.KottageStrategy
+import io.github.irgaly.kottage.strategy.KottageTransaction
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -72,9 +73,9 @@ internal class KottageStorageImpl(
     ): T? = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         transactionWithAutoCompaction { operator, now ->
-            operator.invalidateExpiredListEntries(now)
-            storageOperator.getOrNull(key, now)?.also {
-                strategy.onItemRead(key, itemType, now, operator)
+            operator.invalidateExpiredListEntries(this, now)
+            storageOperator.getOrNull(this, key, now)?.also {
+                strategy.onItemRead(KottageTransaction(this), key, itemType, now, operator)
             }
         }?.let {
             try {
@@ -102,9 +103,9 @@ internal class KottageStorageImpl(
     ): KottageEntry<T>? = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         transactionWithAutoCompaction { operator, now ->
-            operator.invalidateExpiredListEntries(now)
-            storageOperator.getOrNull(key, now)?.also {
-                strategy.onItemRead(key, itemType, now, operator)
+            operator.invalidateExpiredListEntries(this, now)
+            storageOperator.getOrNull(this, key, now)?.also {
+                strategy.onItemRead(KottageTransaction(this), key, itemType, now, operator)
             }
         }?.let { KottageEntry(it, type, encoder) }
     }
@@ -112,8 +113,8 @@ internal class KottageStorageImpl(
     override suspend fun exists(key: String): Boolean = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         transactionWithAutoCompaction { operator, now ->
-            operator.invalidateExpiredListEntries(now)
-            (storageOperator.getOrNull(key, now) != null)
+            operator.invalidateExpiredListEntries(this, now)
+            (storageOperator.getOrNull(this, key, now) != null)
         }
     }
 
@@ -125,7 +126,7 @@ internal class KottageStorageImpl(
         val item =
             encoder.encodeItem(this@KottageStorageImpl, key, value, type, now, expireTime)
         transactionWithAutoCompaction(now) { _, _ ->
-            storageOperator.upsertItem(item, now)
+            storageOperator.upsertItem(this, item, now)
         }
         databaseManager.onEventCreated()
     }
@@ -134,9 +135,9 @@ internal class KottageStorageImpl(
         val storageOperator = storageOperator.await()
         var eventCreated = false
         val exists = transactionWithAutoCompaction { _, now ->
-            val exists = storageOperator.exists(key)
+            val exists = storageOperator.exists(this, key)
             if (exists) {
-                storageOperator.deleteItem(key = key, now = now) {
+                storageOperator.deleteItem(this, key = key, now = now) {
                     eventCreated = true
                 }
             }
@@ -152,8 +153,8 @@ internal class KottageStorageImpl(
         val storageOperator = storageOperator.await()
         var eventCreated = false
         transactionWithAutoCompaction { _, now ->
-            storageOperator.getAllKeys { key ->
-                storageOperator.deleteItem(key = key, now = now) {
+            storageOperator.getAllKeys(this) { key ->
+                storageOperator.deleteItem(this, key = key, now = now) {
                     eventCreated = true
                 }
             }
@@ -167,10 +168,10 @@ internal class KottageStorageImpl(
         val operator = operator()
         val now = calendar.nowUnixTimeMillis()
         databaseManager.transaction {
-            operator.invalidateExpiredListEntries(now)
-            operator.evictCaches(now, itemType)
-            operator.evictEvents(now, itemType)
-            operator.evictEmptyStats()
+            operator.invalidateExpiredListEntries(this, now)
+            operator.evictCaches(this, now, itemType)
+            operator.evictEvents(this, now, itemType)
+            operator.evictEmptyStats(this)
         }
     }
 
@@ -178,7 +179,7 @@ internal class KottageStorageImpl(
         val storageOperator = storageOperator.await()
         val now = calendar.nowUnixTimeMillis()
         databaseManager.transaction {
-            storageOperator.clear(now)
+            storageOperator.clear(this, now)
         }
     }
 
@@ -188,6 +189,7 @@ internal class KottageStorageImpl(
         val operator = operator()
         databaseManager.transactionWithResult {
             operator.getEvents(
+                this,
                 afterUnixTimeMillisAt = afterUnixTimeMillisAt,
                 itemType = itemType,
                 limit = limit
@@ -259,7 +261,7 @@ internal class KottageStorageImpl(
     override suspend fun getDebugStatus(): String = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         databaseManager.transactionWithResult {
-            storageOperator.getDebugStatus()
+            storageOperator.getDebugStatus(this)
         }
     }
 
@@ -271,7 +273,7 @@ internal class KottageStorageImpl(
         val receivedNow = now ?: calendar.nowUnixTimeMillis()
         var compactionRequired = false
         val result = databaseManager.transactionWithResult {
-            compactionRequired = operator.getAutoCompactionNeeded(receivedNow)
+            compactionRequired = operator.getAutoCompactionNeeded(this, receivedNow)
             bodyWithReturn(operator, receivedNow)
         }
         if (compactionRequired) {

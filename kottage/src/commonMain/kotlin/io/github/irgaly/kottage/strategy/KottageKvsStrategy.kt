@@ -5,6 +5,7 @@ package io.github.irgaly.kottage.strategy
  */
 class KottageKvsStrategy : KottageStrategy {
     override fun onItemRead(
+        transaction: KottageTransaction,
         key: String,
         itemType: String,
         now: Long,
@@ -14,6 +15,7 @@ class KottageKvsStrategy : KottageStrategy {
     }
 
     override fun onPostItemCreate(
+        transaction: KottageTransaction,
         key: String,
         itemType: String,
         itemCount: Long,

@@ -4,12 +4,18 @@ interface KottageStrategy {
     /**
      * called in transaction
      */
-    fun onItemRead(key: String, itemType: String, now: Long, operator: KottageStrategyOperator)
+    fun onItemRead(
+        transaction: KottageTransaction,
+        key: String,
+        itemType: String,
+        now: Long, operator: KottageStrategyOperator
+    )
 
     /**
      * called in transaction
      */
     fun onPostItemCreate(
+        transaction: KottageTransaction,
         key: String,
         itemType: String,
         itemCount: Long,

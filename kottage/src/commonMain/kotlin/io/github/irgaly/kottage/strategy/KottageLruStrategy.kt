@@ -14,15 +14,17 @@ class KottageLruStrategy(
         (maxEntryCount * 0.25).toLong().coerceAtLeast(1)
 
     override fun onItemRead(
+        transaction: KottageTransaction,
         key: String,
         itemType: String,
         now: Long,
         operator: KottageStrategyOperator
     ) {
-        operator.updateItemLastRead(key, itemType, now)
+        operator.updateItemLastRead(transaction, key, itemType, now)
     }
 
     override fun onPostItemCreate(
+        transaction: KottageTransaction,
         key: String,
         itemType: String,
         itemCount: Long,
@@ -31,11 +33,11 @@ class KottageLruStrategy(
     ) {
         if (maxEntryCount < itemCount) {
             // expire caches
-            val expiredItemsCount = operator.deleteExpiredItems(itemType, now)
+            val expiredItemsCount = operator.deleteExpiredItems(transaction, itemType, now)
             // reduce caches
             val reduceCount = (reduceCount ?: calculatedReduceCount) - expiredItemsCount
             if (0 < reduceCount) {
-                operator.deleteLeastRecentlyUsed(itemType, reduceCount)
+                operator.deleteLeastRecentlyUsed(transaction, itemType, reduceCount)
             }
         }
     }

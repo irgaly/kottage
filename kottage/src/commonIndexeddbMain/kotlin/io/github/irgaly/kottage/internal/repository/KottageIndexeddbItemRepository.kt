@@ -1,38 +1,54 @@
 package io.github.irgaly.kottage.internal.repository
 
+import io.github.irgaly.kottage.internal.database.Transaction
 import io.github.irgaly.kottage.internal.model.Item
 import io.github.irgaly.kottage.internal.model.ItemStats
 
 internal class KottageIndexeddbItemRepository : KottageItemRepository {
-    override fun upsert(item: Item) {
+    override fun upsert(transaction: Transaction, item: Item) {
         TODO("Not yet implemented")
     }
 
-    override fun updateLastRead(key: String, itemType: String, lastReadAt: Long) {
+    override fun updateLastRead(
+        transaction: Transaction,
+        key: String,
+        itemType: String,
+        lastReadAt: Long
+    ) {
         TODO("Not yet implemented")
     }
 
-    override fun updateExpireAt(key: String, itemType: String, expireAt: Long) {
+    override fun updateExpireAt(
+        transaction: Transaction,
+        key: String,
+        itemType: String,
+        expireAt: Long
+    ) {
         TODO("Not yet implemented")
     }
 
-    override fun exists(key: String, itemType: String): Boolean {
+    override fun exists(transaction: Transaction, key: String, itemType: String): Boolean {
         TODO("Not yet implemented")
     }
 
-    override fun get(key: String, itemType: String): Item? {
+    override fun get(transaction: Transaction, key: String, itemType: String): Item? {
         TODO("Not yet implemented")
     }
 
-    override fun getCount(itemType: String): Long {
+    override fun getCount(transaction: Transaction, itemType: String): Long {
         TODO("Not yet implemented")
     }
 
-    override fun getAllKeys(itemType: String, receiver: (key: String) -> Unit) {
+    override fun getAllKeys(
+        transaction: Transaction,
+        itemType: String,
+        receiver: (key: String) -> Unit
+    ) {
         TODO("Not yet implemented")
     }
 
     override fun getExpiredKeys(
+        transaction: Transaction,
         now: Long,
         itemType: String?,
         receiver: (key: String, itemType: String) -> Unit
@@ -41,6 +57,7 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
     }
 
     override fun getLeastRecentlyUsedKeys(
+        transaction: Transaction,
         itemType: String,
         limit: Long?,
         receiver: (key: String) -> Boolean
@@ -48,43 +65,48 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
         TODO("Not yet implemented")
     }
 
-    override fun getOlderKeys(itemType: String, limit: Long?, receiver: (key: String) -> Boolean) {
+    override fun getOlderKeys(
+        transaction: Transaction,
+        itemType: String,
+        limit: Long?,
+        receiver: (key: String) -> Boolean
+    ) {
         TODO("Not yet implemented")
     }
 
-    override fun getStats(itemType: String): ItemStats? {
+    override fun getStats(transaction: Transaction, itemType: String): ItemStats? {
         TODO("Not yet implemented")
     }
 
-    override fun getEmptyStats(limit: Long): List<ItemStats> {
+    override fun getEmptyStats(transaction: Transaction, limit: Long): List<ItemStats> {
         TODO("Not yet implemented")
     }
 
-    override fun delete(key: String, itemType: String) {
+    override fun delete(transaction: Transaction, key: String, itemType: String) {
         TODO("Not yet implemented")
     }
 
-    override fun deleteAll(itemType: String) {
+    override fun deleteAll(transaction: Transaction, itemType: String) {
         TODO("Not yet implemented")
     }
 
-    override fun getStatsCount(itemType: String): Long {
+    override fun getStatsCount(transaction: Transaction, itemType: String): Long {
         TODO("Not yet implemented")
     }
 
-    override fun incrementStatsCount(itemType: String, count: Long) {
+    override fun incrementStatsCount(transaction: Transaction, itemType: String, count: Long) {
         TODO("Not yet implemented")
     }
 
-    override fun decrementStatsCount(itemType: String, count: Long) {
+    override fun decrementStatsCount(transaction: Transaction, itemType: String, count: Long) {
         TODO("Not yet implemented")
     }
 
-    override fun updateStatsCount(itemType: String, count: Long) {
+    override fun updateStatsCount(transaction: Transaction, itemType: String, count: Long) {
         TODO("Not yet implemented")
     }
 
-    override fun deleteStats(itemType: String) {
+    override fun deleteStats(transaction: Transaction, itemType: String) {
         TODO("Not yet implemented")
     }
 }
