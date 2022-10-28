@@ -26,7 +26,7 @@ internal class KottageStorageOperator(
     /**
      * This should be called in transaction
      */
-    fun upsertItem(transaction: Transaction, item: Item, now: Long) {
+    suspend fun upsertItem(transaction: Transaction, item: Item, now: Long) {
         val isCreate = !itemRepository.exists(transaction, item.key, item.type)
         itemRepository.upsert(transaction, item)
         if (isCreate) {
@@ -52,7 +52,7 @@ internal class KottageStorageOperator(
     /**
      * This should be called in transaction
      */
-    fun getOrNull(transaction: Transaction, key: String, now: Long?): Item? {
+    suspend fun getOrNull(transaction: Transaction, key: String, now: Long?): Item? {
         var item = itemRepository.get(transaction, key, itemType)
         if ((now != null) && (item != null) && item.isExpired(now)) {
             val itemListEntryIds = itemListRepository.getIds(transaction, itemType = itemType, itemKey = key)
@@ -68,7 +68,7 @@ internal class KottageStorageOperator(
     /**
      * This should be called in transaction
      */
-    fun getAllKeys(transaction: Transaction, receiver: (key: String) -> Unit) {
+    suspend fun getAllKeys(transaction: Transaction, receiver: suspend (key: String) -> Unit) {
         itemRepository.getAllKeys(transaction, itemType = itemType, receiver = receiver)
     }
 
@@ -79,7 +79,7 @@ internal class KottageStorageOperator(
      * * ItemList からも削除される
      * * ItemList / Item の Delete Event が登録される
      */
-    fun deleteItem(
+    suspend fun deleteItem(
         transaction: Transaction,
         key: String,
         now: Long,
@@ -130,14 +130,14 @@ internal class KottageStorageOperator(
     /**
      * This should be called in transaction
      */
-    fun exists(transaction: Transaction, key: String): Boolean {
+    suspend fun exists(transaction: Transaction, key: String): Boolean {
         return itemRepository.exists(transaction, key = key, itemType = itemType)
     }
 
     /**
      * This should be called in transaction
      */
-    fun clear(transaction: Transaction, now: Long) {
+    suspend fun clear(transaction: Transaction, now: Long) {
         itemRepository.getAllKeys(transaction, itemType) { key ->
             itemListRepository.getIds(
                 transaction,
@@ -162,7 +162,7 @@ internal class KottageStorageOperator(
     /**
      * This should be called in transaction
      */
-    fun removeListItemInternal(
+    suspend fun removeListItemInternal(
         transaction: Transaction,
         positionId: String,
         listType: String,
@@ -188,7 +188,7 @@ internal class KottageStorageOperator(
     /**
      * This should be called in transaction
      */
-    fun getDebugStatus(transaction: Transaction): String {
+    suspend fun getDebugStatus(transaction: Transaction): String {
         val stats = itemRepository.getStats(transaction, itemType)
         val count = itemRepository.getCount(transaction, itemType)
         return """

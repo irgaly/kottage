@@ -54,7 +54,7 @@ class KottageEventFlow internal constructor(
                     while (remains) {
                         val events = databaseConnection.transactionWithResult {
                             operator.getEvents(
-                                this,
+                                this@transactionWithResult,
                                 afterUnixTimeMillisAt = lastEventTime,
                                 itemType = itemType,
                                 limit = limit

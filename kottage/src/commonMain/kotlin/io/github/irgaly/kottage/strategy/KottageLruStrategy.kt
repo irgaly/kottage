@@ -13,7 +13,7 @@ class KottageLruStrategy(
     private val calculatedReduceCount: Long =
         (maxEntryCount * 0.25).toLong().coerceAtLeast(1)
 
-    override fun onItemRead(
+    override suspend fun onItemRead(
         transaction: KottageTransaction,
         key: String,
         itemType: String,
@@ -23,7 +23,7 @@ class KottageLruStrategy(
         operator.updateItemLastRead(transaction, key, itemType, now)
     }
 
-    override fun onPostItemCreate(
+    override suspend fun onPostItemCreate(
         transaction: KottageTransaction,
         key: String,
         itemType: String,

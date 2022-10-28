@@ -939,7 +939,7 @@ internal class KottageListImpl(
 
     private suspend fun <R> transactionWithAutoCompaction(
         now: Long? = null,
-        bodyWithReturn: Transaction.(operator: KottageOperator, now: Long) -> R
+        bodyWithReturn: suspend Transaction.(operator: KottageOperator, now: Long) -> R
     ): R {
         val operator = operator()
         val receivedNow = now ?: calendar.nowUnixTimeMillis()

@@ -31,7 +31,7 @@ internal class KottageOperator(
      *
      * @return Event id
      */
-    fun addEvent(
+    suspend fun addEvent(
         transaction: Transaction,
         now: Long,
         eventType: ItemEventType,
@@ -61,7 +61,7 @@ internal class KottageOperator(
      * Get events
      * This should be called in transaction
      */
-    fun getEvents(
+    suspend fun getEvents(
         transaction: Transaction,
         afterUnixTimeMillisAt: Long,
         itemType: String? = null,
@@ -78,7 +78,7 @@ internal class KottageOperator(
     /**
      * This should be called in transaction
      */
-    fun getAutoCompactionNeeded(transaction: Transaction, now: Long): Boolean {
+    suspend fun getAutoCompactionNeeded(transaction: Transaction, now: Long): Boolean {
         return options.autoCompactionDuration?.let { duration ->
             val lastCompaction = statsRepository.getLastEvictAt(transaction)
             (duration <= (now - lastCompaction).milliseconds)
@@ -88,7 +88,7 @@ internal class KottageOperator(
     /**
      * This should be called in transaction
      */
-    fun getAllListType(transaction: Transaction, receiver: (listType: String) -> Unit) {
+    suspend fun getAllListType(transaction: Transaction, receiver: suspend (listType: String) -> Unit) {
         itemListRepository.getAllTypes(transaction, receiver)
     }
 
@@ -97,7 +97,7 @@ internal class KottageOperator(
      * existing items in ItemList are ignored
      * This should be called in transaction
      */
-    fun evictCaches(transaction: Transaction, now: Long, itemType: String? = null) {
+    suspend fun evictCaches(transaction: Transaction, now: Long, itemType: String? = null) {
         if (itemType != null) {
             itemRepository.getExpiredKeys(transaction, now, itemType) { key, _ ->
                 val itemListEntryIds = itemListRepository.getIds(transaction, itemType = itemType, itemKey = key)
@@ -122,7 +122,7 @@ internal class KottageOperator(
      * Delete old events
      * This should be called in transaction
      */
-    fun evictEvents(transaction: Transaction, now: Long, itemType: String? = null) {
+    suspend fun evictEvents(transaction: Transaction, now: Long, itemType: String? = null) {
         if (itemType != null) {
             itemEventRepository.getExpiredIds(transaction, now, itemType) { id, _ ->
                 deleteEvent(transaction, id, itemType)
@@ -137,7 +137,7 @@ internal class KottageOperator(
     /**
      * This should be called in transaction
      */
-    fun evictEmptyStats(transaction: Transaction) {
+    suspend fun evictEmptyStats(transaction: Transaction) {
         val limit = 100L
         var hasNext = true
         while (hasNext) {
@@ -152,8 +152,8 @@ internal class KottageOperator(
     /**
      * This should be called in transaction
      */
-    fun evictExpiredListEntries(transaction: Transaction, now: Long, beforeExpireAt: Long?, listType: String? = null) {
-        fun evict(listType: String) {
+    suspend fun evictExpiredListEntries(transaction: Transaction, now: Long, beforeExpireAt: Long?, listType: String? = null) {
+        suspend fun evict(listType: String) {
             invalidateExpiredListEntries(transaction, now = now, listType = listType)
             var limit = 100L
             while (0 < limit) {
@@ -181,7 +181,7 @@ internal class KottageOperator(
     /**
      * This should be called in transaction
      */
-    fun getListStats(transaction: Transaction, listType: String): ItemListStats? {
+    suspend fun getListStats(transaction: Transaction, listType: String): ItemListStats? {
         return itemListRepository.getStats(transaction, type = listType)
     }
 
@@ -189,7 +189,7 @@ internal class KottageOperator(
      * Get List Item Count
      * This should be called in transaction
      */
-    fun getListCount(transaction: Transaction, listType: String, now: Long): Long {
+    suspend fun getListCount(transaction: Transaction, listType: String, now: Long): Long {
         invalidateExpiredListEntries(transaction, now = now, listType = listType)
         return itemListRepository.getStatsCount(transaction, type = listType)
     }
@@ -200,7 +200,7 @@ internal class KottageOperator(
      * 前後のアイテムと item_list_stats の先頭末尾情報を更新しながらアイテムを取り除く
      * 有効なアイテムを削除した場合は Delete Event を追加する
      */
-    fun removeListEntries(transaction: Transaction, listType: String, positionIds: List<String>) {
+    suspend fun removeListEntries(transaction: Transaction, listType: String, positionIds: List<String>) {
         val entries = positionIds.map {
             itemListRepository.get(transaction, it)
         }.mapNotNull {
@@ -289,11 +289,11 @@ internal class KottageOperator(
      * * リストの末尾から、expired な entity を invalidate する
      *     * 非削除対象の entity が現れたら処理を止める
      */
-    fun invalidateExpiredListEntries(transaction: Transaction, now: Long, listType: String? = null) {
-        fun invalidate(listType: String) {
+    suspend fun invalidateExpiredListEntries(transaction: Transaction, now: Long, listType: String? = null) {
+        suspend fun invalidate(listType: String) {
             itemListRepository.getStats(transaction, type = listType)?.let { stats ->
                 var invalidated = 0L
-                val scanInvalidate = { startPositionId: String, block: (ItemListEntry) -> String? ->
+                val scanInvalidate: suspend (startPositionId: String, block: (ItemListEntry) -> String?) -> Unit = { startPositionId, block ->
                     var nextPositionId: String? = startPositionId
                     while ((nextPositionId != null) && (invalidated < stats.count)) {
                         val entry = checkNotNull(itemListRepository.get(transaction, nextPositionId))
@@ -327,15 +327,15 @@ internal class KottageOperator(
     /**
      * This should be called in transaction
      */
-    fun updateLastEvictAt(transaction: Transaction, now: Long) {
+    suspend fun updateLastEvictAt(transaction: Transaction, now: Long) {
         statsRepository.updateLastEvictAt(transaction, now)
     }
 
-    override fun updateItemLastRead(transaction: KottageTransaction, key: String, itemType: String, now: Long) {
+    override suspend fun updateItemLastRead(transaction: KottageTransaction, key: String, itemType: String, now: Long) {
         itemRepository.updateLastRead(transaction.transaction, key, itemType, now)
     }
 
-    override fun deleteLeastRecentlyUsed(transaction: KottageTransaction, itemType: String, limit: Long) {
+    override suspend fun deleteLeastRecentlyUsed(transaction: KottageTransaction, itemType: String, limit: Long) {
         var deleted = 0L
         itemRepository.getLeastRecentlyUsedKeys(transaction.transaction, itemType, null) { key ->
             val itemListEntryIds = itemListRepository.getIds(transaction.transaction, itemType = itemType, itemKey = key)
@@ -348,7 +348,7 @@ internal class KottageOperator(
         }
     }
 
-    override fun deleteOlderItems(transaction: KottageTransaction, itemType: String, limit: Long) {
+    override suspend fun deleteOlderItems(transaction: KottageTransaction, itemType: String, limit: Long) {
         var deleted = 0L
         itemRepository.getOlderKeys(transaction.transaction, itemType, null) { key ->
             val itemListEntryIds = itemListRepository.getIds(transaction.transaction, itemType = itemType, itemKey = key)
@@ -361,7 +361,7 @@ internal class KottageOperator(
         }
     }
 
-    override fun deleteExpiredItems(transaction: KottageTransaction, itemType: String, now: Long): Long {
+    override suspend fun deleteExpiredItems(transaction: KottageTransaction, itemType: String, now: Long): Long {
         var deleted = 0L
         // List Invalidate を処理しておく
         invalidateExpiredListEntries(transaction.transaction, now)
@@ -382,7 +382,7 @@ internal class KottageOperator(
      *
      * ItemList の存在チェックなしで Item を削除する
      */
-    fun deleteItemInternal(transaction: Transaction, key: String, itemType: String) {
+    suspend fun deleteItemInternal(transaction: Transaction, key: String, itemType: String) {
         itemRepository.delete(transaction, key, itemType)
         itemRepository.decrementStatsCount(transaction, itemType, 1)
     }
@@ -390,7 +390,7 @@ internal class KottageOperator(
     /**
      * This should be called in transaction
      */
-    fun deleteItemStats(transaction: Transaction, itemType: String) {
+    suspend fun deleteItemStats(transaction: Transaction, itemType: String) {
         itemRepository.deleteStats(transaction, itemType = itemType)
     }
 
@@ -399,7 +399,7 @@ internal class KottageOperator(
      *
      * This should be called in transaction
      */
-    private fun deleteEvent(transaction: Transaction, id: String, itemType: String) {
+    private suspend fun deleteEvent(transaction: Transaction, id: String, itemType: String) {
         itemEventRepository.delete(transaction, id)
         itemEventRepository.decrementStatsCount(transaction, itemType, 1)
     }
@@ -411,7 +411,7 @@ internal class KottageOperator(
      *
      * @return event id
      */
-    private fun addEventInternal(
+    private suspend fun addEventInternal(
         transaction: Transaction,
         now: Long,
         eventExpireTime: Duration?,
@@ -446,7 +446,7 @@ internal class KottageOperator(
     /**
      * This should be called in transaction
      */
-    private fun reduceEvents(transaction: Transaction, now: Long, itemType: String, maxEventEntryCount: Long) {
+    private suspend fun reduceEvents(transaction: Transaction, now: Long, itemType: String, maxEventEntryCount: Long) {
         val currentCount = itemEventRepository.getStatsCount(transaction, itemType)
         if (maxEventEntryCount < currentCount) {
             var deleted = 0L

@@ -10,12 +10,12 @@ import io.github.irgaly.kottage.internal.model.ItemStats
 internal class KottageSqliteItemRepository(
     private val database: KottageDatabase
 ) : KottageItemRepository {
-    override fun upsert(transaction: Transaction, item: Item) {
+    override suspend fun upsert(transaction: Transaction, item: Item) {
         database.itemQueries
             .replace(item.toEntity())
     }
 
-    override fun updateLastRead(
+    override suspend fun updateLastRead(
         transaction: Transaction,
         key: String,
         itemType: String,
@@ -25,7 +25,7 @@ internal class KottageSqliteItemRepository(
             .updateLastRead(lastReadAt, Item.toEntityKey(key, itemType))
     }
 
-    override fun updateExpireAt(
+    override suspend fun updateExpireAt(
         transaction: Transaction,
         key: String,
         itemType: String,
@@ -35,28 +35,28 @@ internal class KottageSqliteItemRepository(
             .updateExpireAt(expireAt, Item.toEntityKey(key, itemType))
     }
 
-    override fun exists(transaction: Transaction, key: String, itemType: String): Boolean {
+    override suspend fun exists(transaction: Transaction, key: String, itemType: String): Boolean {
         return database.itemQueries
             .selectKey(Item.toEntityKey(key, itemType))
             .executeAsExists()
     }
 
-    override fun get(transaction: Transaction, key: String, itemType: String): Item? {
+    override suspend fun get(transaction: Transaction, key: String, itemType: String): Item? {
         return database.itemQueries
             .select(Item.toEntityKey(key, itemType))
             .executeAsOneOrNull()?.toDomain()
     }
 
-    override fun getCount(transaction: Transaction, itemType: String): Long {
+    override suspend fun getCount(transaction: Transaction, itemType: String): Long {
         return database.itemQueries
             .countByType(itemType)
             .executeAsOne()
     }
 
-    override fun getAllKeys(
+    override suspend fun getAllKeys(
         transaction: Transaction,
         itemType: String,
-        receiver: (key: String) -> Unit
+        receiver: suspend (key: String) -> Unit
     ) {
         database.itemQueries
             .selectAllKeys(itemType)
@@ -68,11 +68,11 @@ internal class KottageSqliteItemRepository(
             }
     }
 
-    override fun getExpiredKeys(
+    override suspend fun getExpiredKeys(
         transaction: Transaction,
         now: Long,
         itemType: String?,
-        receiver: (key: String, itemType: String) -> Unit
+        receiver: suspend (key: String, itemType: String) -> Unit
     ) {
         if (itemType != null) {
             database.itemQueries
@@ -96,11 +96,11 @@ internal class KottageSqliteItemRepository(
         }
     }
 
-    override fun getLeastRecentlyUsedKeys(
+    override suspend fun getLeastRecentlyUsedKeys(
         transaction: Transaction,
         itemType: String,
         limit: Long?,
-        receiver: (key: String) -> Boolean
+        receiver: suspend (key: String) -> Boolean
     ) {
         if (limit != null) {
             database.itemQueries
@@ -125,11 +125,11 @@ internal class KottageSqliteItemRepository(
         }
     }
 
-    override fun getOlderKeys(
+    override suspend fun getOlderKeys(
         transaction: Transaction,
         itemType: String,
         limit: Long?,
-        receiver: (key: String) -> Boolean
+        receiver: suspend (key: String) -> Boolean
     ) {
         if (limit != null) {
             database.itemQueries
@@ -154,57 +154,57 @@ internal class KottageSqliteItemRepository(
         }
     }
 
-    override fun getStats(transaction: Transaction, itemType: String): ItemStats? {
+    override suspend fun getStats(transaction: Transaction, itemType: String): ItemStats? {
         return database.item_statsQueries
             .select(item_type = itemType)
             .executeAsOneOrNull()?.toDomain()
     }
 
-    override fun getEmptyStats(transaction: Transaction, limit: Long): List<ItemStats> {
+    override suspend fun getEmptyStats(transaction: Transaction, limit: Long): List<ItemStats> {
         // クリーンアップ用途だけなので、selectEmptyStats Query はインデックスを使わない
         return database.item_statsQueries
             .selectEmptyStats(limit = limit)
             .executeAsList().map { it.toDomain() }
     }
 
-    override fun delete(transaction: Transaction, key: String, itemType: String) {
+    override suspend fun delete(transaction: Transaction, key: String, itemType: String) {
         database.itemQueries
             .delete(Item.toEntityKey(key, itemType))
     }
 
-    override fun deleteAll(transaction: Transaction, itemType: String) {
+    override suspend fun deleteAll(transaction: Transaction, itemType: String) {
         database.itemQueries
             .deleteAllByType(itemType)
     }
 
-    override fun getStatsCount(transaction: Transaction, itemType: String): Long {
+    override suspend fun getStatsCount(transaction: Transaction, itemType: String): Long {
         return database.item_statsQueries
             .select(itemType)
             .executeAsOneOrNull()?.count ?: 0
     }
 
-    override fun incrementStatsCount(transaction: Transaction, itemType: String, count: Long) {
+    override suspend fun incrementStatsCount(transaction: Transaction, itemType: String, count: Long) {
         database.item_statsQueries
             .insertIfNotExists(itemType)
         database.item_statsQueries
             .incrementCount(count, itemType)
     }
 
-    override fun decrementStatsCount(transaction: Transaction, itemType: String, count: Long) {
+    override suspend fun decrementStatsCount(transaction: Transaction, itemType: String, count: Long) {
         database.item_statsQueries
             .insertIfNotExists(itemType)
         database.item_statsQueries
             .decrementCount(count, itemType)
     }
 
-    override fun updateStatsCount(transaction: Transaction, itemType: String, count: Long) {
+    override suspend fun updateStatsCount(transaction: Transaction, itemType: String, count: Long) {
         database.item_statsQueries
             .insertIfNotExists(itemType)
         database.item_statsQueries
             .updateCount(count, itemType)
     }
 
-    override fun deleteStats(transaction: Transaction, itemType: String) {
+    override suspend fun deleteStats(transaction: Transaction, itemType: String) {
         database.item_statsQueries
             .delete(itemType)
     }

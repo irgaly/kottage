@@ -4,7 +4,7 @@ package io.github.irgaly.kottage.strategy
  * No Eviction Strategy
  */
 class KottageKvsStrategy : KottageStrategy {
-    override fun onItemRead(
+    override suspend fun onItemRead(
         transaction: KottageTransaction,
         key: String,
         itemType: String,
@@ -14,7 +14,7 @@ class KottageKvsStrategy : KottageStrategy {
         // do nothing
     }
 
-    override fun onPostItemCreate(
+    override suspend fun onPostItemCreate(
         transaction: KottageTransaction,
         key: String,
         itemType: String,

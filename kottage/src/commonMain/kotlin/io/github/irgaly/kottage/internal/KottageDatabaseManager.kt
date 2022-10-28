@@ -102,10 +102,10 @@ internal class KottageDatabaseManager(
         )
     }
 
-    suspend fun <R> transactionWithResult(bodyWithReturn: Transaction.() -> R): R =
+    suspend fun <R> transactionWithResult(bodyWithReturn: suspend Transaction.() -> R): R =
         databaseConnection.transactionWithResult(bodyWithReturn)
 
-    suspend fun transaction(body: Transaction.() -> Unit) = databaseConnection.transaction(body)
+    suspend fun transaction(body: suspend Transaction.() -> Unit) = databaseConnection.transaction(body)
     suspend fun deleteAll() {
         databaseConnection.deleteAll()
     }

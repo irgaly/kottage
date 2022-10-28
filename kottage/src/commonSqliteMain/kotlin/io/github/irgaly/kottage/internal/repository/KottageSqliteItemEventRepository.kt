@@ -8,12 +8,12 @@ import io.github.irgaly.kottage.internal.model.ItemEvent
 internal class KottageSqliteItemEventRepository(
     private val database: KottageDatabase
 ) : KottageItemEventRepository {
-    override fun create(transaction: Transaction, itemEvent: ItemEvent) {
+    override suspend fun create(transaction: Transaction, itemEvent: ItemEvent) {
         database.item_eventQueries
             .insert(itemEvent.toEntity())
     }
 
-    override fun selectAfter(
+    override suspend fun selectAfter(
         transaction: Transaction,
         createdAt: Long,
         itemType: String?,
@@ -52,17 +52,17 @@ internal class KottageSqliteItemEventRepository(
         }
     }
 
-    override fun getLatestCreatedAt(transaction: Transaction, itemType: String): Long? {
+    override suspend fun getLatestCreatedAt(transaction: Transaction, itemType: String): Long? {
         return database.item_eventQueries
             .selectItemTypeLatestCreatedAt(itemType)
             .executeAsOneOrNull()
     }
 
-    override fun getExpiredIds(
+    override suspend fun getExpiredIds(
         transaction: Transaction,
         now: Long,
         itemType: String?,
-        receiver: (id: String, itemType: String) -> Unit
+        receiver: suspend (id: String, itemType: String) -> Unit
     ) {
         if (itemType != null) {
             database.item_eventQueries
@@ -86,18 +86,18 @@ internal class KottageSqliteItemEventRepository(
         }
     }
 
-    override fun getCount(transaction: Transaction, itemType: String): Long {
+    override suspend fun getCount(transaction: Transaction, itemType: String): Long {
         return database.item_eventQueries
             .countByType(itemType)
             .executeAsOne()
     }
 
-    override fun delete(transaction: Transaction, id: String) {
+    override suspend fun delete(transaction: Transaction, id: String) {
         database.item_eventQueries
             .delete(id)
     }
 
-    override fun deleteOlderEvents(transaction: Transaction, itemType: String, limit: Long) {
+    override suspend fun deleteOlderEvents(transaction: Transaction, itemType: String, limit: Long) {
         database.item_eventQueries
             .selectOlderCreatedIds(itemType, limit)
             .execute().use { cursor ->
@@ -109,42 +109,42 @@ internal class KottageSqliteItemEventRepository(
             }
     }
 
-    override fun deleteBefore(transaction: Transaction, createdAt: Long) {
+    override suspend fun deleteBefore(transaction: Transaction, createdAt: Long) {
         database.item_eventQueries
             .deleteBefore(createdAt)
     }
 
-    override fun deleteAll(transaction: Transaction, itemType: String) {
+    override suspend fun deleteAll(transaction: Transaction, itemType: String) {
         database.item_eventQueries
             .deleteAllByType(itemType)
     }
 
-    override fun deleteAllList(transaction: Transaction, listType: String) {
+    override suspend fun deleteAllList(transaction: Transaction, listType: String) {
         database.item_eventQueries
             .deleteAllByListType(item_list_type = listType)
     }
 
-    override fun getStatsCount(transaction: Transaction, itemType: String): Long {
+    override suspend fun getStatsCount(transaction: Transaction, itemType: String): Long {
         return database.item_statsQueries
             .select(itemType)
             .executeAsOneOrNull()?.event_count ?: 0
     }
 
-    override fun incrementStatsCount(transaction: Transaction, itemType: String, count: Long) {
+    override suspend fun incrementStatsCount(transaction: Transaction, itemType: String, count: Long) {
         database.item_statsQueries
             .insertIfNotExists(itemType)
         database.item_statsQueries
             .incrementEventCount(count, itemType)
     }
 
-    override fun decrementStatsCount(transaction: Transaction, itemType: String, count: Long) {
+    override suspend fun decrementStatsCount(transaction: Transaction, itemType: String, count: Long) {
         database.item_statsQueries
             .insertIfNotExists(itemType)
         database.item_statsQueries
             .decrementEventCount(count, itemType)
     }
 
-    override fun updateStatsCount(transaction: Transaction, itemType: String, count: Long) {
+    override suspend fun updateStatsCount(transaction: Transaction, itemType: String, count: Long) {
         database.item_statsQueries
             .insertIfNotExists(itemType)
         database.item_statsQueries

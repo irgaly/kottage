@@ -34,7 +34,7 @@ internal class KottageListOperator(
      *
      * @param entries previousId, nextId が正しく設定された Entry
      */
-    fun addListEntries(
+    suspend fun addListEntries(
         transaction: Transaction,
         entries: List<ItemListEntry>,
         now: Long
@@ -108,7 +108,7 @@ internal class KottageListOperator(
      *
      * positionId の ItemListEntry を取得する
      */
-    fun getListItem(
+    suspend fun getListItem(
         transaction: Transaction,
         positionId: String
     ): ItemListEntry? {
@@ -122,7 +122,7 @@ internal class KottageListOperator(
      *
      * positionId からたどり、有効な Entry があればそれを返す
      */
-    fun getAvailableListEntry(
+    suspend fun getAvailableListEntry(
         transaction: Transaction,
         positionId: String,
         direction: KottageListDirection
@@ -150,7 +150,7 @@ internal class KottageListOperator(
     /**
      * This should be called in transaction
      */
-    fun removeListItem(
+    suspend fun removeListItem(
         transaction: Transaction,
         positionId: String,
         now: Long
@@ -186,21 +186,21 @@ internal class KottageListOperator(
     /**
      * This should be called in transaction
      */
-    fun getFirstItemPositionId(transaction: Transaction): String? {
+    suspend fun getFirstItemPositionId(transaction: Transaction): String? {
         return itemListRepository.getStats(transaction, listType)?.firstItemPositionId
     }
 
     /**
      * This should be called in transaction
      */
-    fun getLastItemPositionId(transaction: Transaction): String? {
+    suspend fun getLastItemPositionId(transaction: Transaction): String? {
         return itemListRepository.getStats(transaction, listType)?.lastItemPositionId
     }
 
     /**
      * This should be called in transaction
      */
-    fun updateItemKey(
+    suspend fun updateItemKey(
         transaction: Transaction,
         positionId: String,
         item: Item,
@@ -233,7 +233,7 @@ internal class KottageListOperator(
      *
      * * リスト全体から削除可能な entity を取り除く
      */
-    fun evictExpiredEntries(
+    suspend fun evictExpiredEntries(
         transaction: Transaction,
         now: Long
     ) {
@@ -248,7 +248,7 @@ internal class KottageListOperator(
     /**
      * This should be called in transaction
      */
-    fun invalidateExpiredListEntries(
+    suspend fun invalidateExpiredListEntries(
         transaction: Transaction,
         now: Long
     ) {
@@ -258,7 +258,7 @@ internal class KottageListOperator(
     /**
      * This should be called in transaction
      */
-    fun clear(transaction: Transaction) {
+    suspend fun clear(transaction: Transaction) {
         itemListRepository.deleteAll(transaction, type = listType)
         itemListRepository.deleteStats(transaction, type = listType)
         itemEventRepository.deleteAllList(transaction, listType = listType)
@@ -267,7 +267,7 @@ internal class KottageListOperator(
     /**
      * This should be called in transaction
      */
-    fun getDebugStatus(transaction: Transaction): String {
+    suspend fun getDebugStatus(transaction: Transaction): String {
         val stats = itemListRepository.getStats(transaction, type = listType)
         val invalidatedItemsCount =
             itemListRepository.getInvalidatedItemCount(transaction, type = listType)
@@ -282,7 +282,7 @@ internal class KottageListOperator(
     /**
      * This should be called in transaction
      */
-    fun getDebugListRawData(transaction: Transaction): String {
+    suspend fun getDebugListRawData(transaction: Transaction): String {
         val data = StringBuilder()
         val stats = itemListRepository.getStats(transaction, type = listType)
         if (stats != null) {

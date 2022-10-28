@@ -8,7 +8,7 @@ internal class KottageSqliteStatsRepository(
 ) : KottageStatsRepository {
     private val key = "kottage"
 
-    override fun getLastEvictAt(transaction: Transaction): Long {
+    override suspend fun getLastEvictAt(transaction: Transaction): Long {
         database.statsQueries
             .insertIfNotExists(key)
         return database.statsQueries
@@ -16,7 +16,7 @@ internal class KottageSqliteStatsRepository(
             .executeAsOne()
     }
 
-    override fun updateLastEvictAt(transaction: Transaction, now: Long) {
+    override suspend fun updateLastEvictAt(transaction: Transaction, now: Long) {
         database.statsQueries
             .insertIfNotExists(key)
         database.statsQueries

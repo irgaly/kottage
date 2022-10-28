@@ -4,7 +4,7 @@ interface KottageStrategy {
     /**
      * called in transaction
      */
-    fun onItemRead(
+    suspend fun onItemRead(
         transaction: KottageTransaction,
         key: String,
         itemType: String,
@@ -14,7 +14,7 @@ interface KottageStrategy {
     /**
      * called in transaction
      */
-    fun onPostItemCreate(
+    suspend fun onPostItemCreate(
         transaction: KottageTransaction,
         key: String,
         itemType: String,

@@ -12,10 +12,10 @@ internal interface KottageStatsRepository {
     /**
      * get last evicting time
      */
-    fun getLastEvictAt(transaction: Transaction): Long
+    suspend fun getLastEvictAt(transaction: Transaction): Long
 
     /**
      * set last evicting time
      */
-    fun updateLastEvictAt(transaction: Transaction, now: Long)
+    suspend fun updateLastEvictAt(transaction: Transaction, now: Long)
 }
