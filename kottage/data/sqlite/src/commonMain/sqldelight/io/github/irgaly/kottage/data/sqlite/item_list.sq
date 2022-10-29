@@ -43,10 +43,10 @@ selectIdFromItem:
 SELECT id FROM item_list WHERE item_type = ? AND item_key = ?;
 
 selectInvalidatedItemBeforeExpireAt:
-SELECT id FROM item_list WHERE type = ? AND item_key ISNULL AND expire_at < ? ORDER BY expire_at LIMIT :limit;
+SELECT id FROM item_list WHERE type = ? AND item_key ISNULL AND expire_at < ? ORDER BY expire_at ASC LIMIT :limit;
 
 selectInvalidatedItem:
-SELECT id FROM item_list WHERE type = ? AND item_key ISNULL ORDER BY expire_at LIMIT :limit;
+SELECT id FROM item_list WHERE type = ? AND item_key ISNULL ORDER BY expire_at ASC LIMIT :limit;
 
 countByType:
 SELECT count(*) FROM item_list WHERE type = ?;

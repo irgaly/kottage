@@ -40,13 +40,13 @@ selectAllTypeExpiredKeys:
 SELECT key, type FROM item WHERE expire_at IS NOT NULL AND expire_at <= ? ORDER BY expire_at ASC;
 
 selectOlderCreatedKeys:
-SELECT key FROM item WHERE type = ? ORDER BY created_at;
+SELECT key FROM item WHERE type = ? ORDER BY created_at ASC;
 
 selectOlderCreatedKeysLimit:
 SELECT key FROM item WHERE type = ? ORDER BY created_at ASC LIMIT :limit;
 
 selectLeastRecentlyUsedKeys:
-SELECT key FROM item WHERE type = ? ORDER BY last_read_at;
+SELECT key FROM item WHERE type = ? ORDER BY last_read_at ASC;
 
 selectLeastRecentlyUsedKeysLimit:
 SELECT key FROM item WHERE type = ? ORDER BY last_read_at ASC LIMIT :limit;
