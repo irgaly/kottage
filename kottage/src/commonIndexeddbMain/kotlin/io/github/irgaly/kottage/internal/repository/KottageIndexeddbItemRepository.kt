@@ -114,25 +114,43 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
     ) {
         transaction.store { store ->
             if (itemType != null) {
-                store.index("item_type_expire_at").openKeyCursor(
-                    // type = itemType && created_at <= now
-                    bound(
-                        arrayOf(itemType),
-                        arrayOf(itemType, now.toDouble())
-                    )
-                ).collect { cursor ->
-                    val key = cursor.primaryKey.unsafeCast<String>()
-                    receiver(Item.keyFromEntityKey(key, itemType), itemType)
-                }
+                store.index("item_type_expire_at")
+                    .iterateWithChunk<io.github.irgaly.kottage.data.indexeddb.schema.entity.Item, Double>(
+                        this,
+                        chunkSize = 100L,
+                        primaryKey = { it.key },
+                        sortKey = { checkNotNull(it.expire_at) },
+                        initialRange = bound(
+                            // type = itemType && expire_at <= now
+                            arrayOf(itemType),
+                            arrayOf(itemType, now.toDouble())
+                        ),
+                        resumeRange = {
+                            bound(
+                                arrayOf(itemType, checkNotNull(it.expire_at)),
+                                arrayOf(itemType, now.toDouble())
+                            )
+                        }
+                    ) { item ->
+                        receiver(Item.keyFromEntityKey(item.key, itemType), itemType)
+                    }
             } else {
-                store.index("item_expire_at").openCursor(
-                    // created_at <= now
-                    upperBound(now.toDouble())
-                ).collect { cursor ->
-                    val item =
-                        cursor.value.unsafeCast<io.github.irgaly.kottage.data.indexeddb.schema.entity.Item>()
-                    receiver(Item.keyFromEntityKey(item.key, item.type), item.type)
-                }
+                store.index("item_expire_at")
+                    .iterateWithChunk<io.github.irgaly.kottage.data.indexeddb.schema.entity.Item, Double>(
+                        this,
+                        chunkSize = 100L,
+                        primaryKey = { it.key },
+                        sortKey = { checkNotNull(it.expire_at) },
+                        initialRange = upperBound(now.toDouble()), // expire_at <= now
+                        resumeRange = {
+                            bound(
+                                checkNotNull(it.expire_at),
+                                now.toDouble()
+                            )
+                        }
+                    ) { item ->
+                        receiver(Item.keyFromEntityKey(item.key, item.type), item.type)
+                    }
             }
         }
     }
