@@ -29,6 +29,7 @@ include(
     ":kottage:data:indexeddb",
     ":kottage:core",
     ":kottage:core:test",
-    ":sample:android"
+    ":sample:android",
+    ":sample:js-browser"
 )
 includeBuild("build-logic")
