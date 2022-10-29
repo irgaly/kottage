@@ -14,6 +14,7 @@ import io.github.irgaly.kottage.internal.model.Item
 import io.github.irgaly.kottage.internal.model.ItemStats
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.toList
 
 internal class KottageIndexeddbItemRepository : KottageItemRepository {
@@ -131,6 +132,7 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
         receiver: suspend (key: String) -> Boolean
     ) {
         transaction.store { store ->
+            var takeNext = true
             store.index("item_type_last_read_at").openKeyCursor(
                 // type = itemType
                 bound(
@@ -139,9 +141,9 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
                 )
             ).let {
                 if (limit != null) it.take(limit) else it
-            }.collect { cursor ->
+            }.takeWhile { takeNext }.collect { cursor ->
                 val key = cursor.primaryKey.unsafeCast<String>()
-                receiver(Item.keyFromEntityKey(key, itemType))
+                takeNext = receiver(Item.keyFromEntityKey(key, itemType))
             }
         }
     }
@@ -153,6 +155,7 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
         receiver: suspend (key: String) -> Boolean
     ) {
         transaction.store { store ->
+            var takeNext = true
             store.index("item_type_created_at").openKeyCursor(
                 // type = itemType
                 bound(
@@ -161,9 +164,9 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
                 )
             ).let {
                 if (limit != null) it.take(limit) else it
-            }.collect { cursor ->
+            }.takeWhile { takeNext }.collect { cursor ->
                 val key = cursor.primaryKey.unsafeCast<String>()
-                receiver(Item.keyFromEntityKey(key, itemType))
+                takeNext = receiver(Item.keyFromEntityKey(key, itemType))
             }
         }
     }
