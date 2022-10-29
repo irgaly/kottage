@@ -13,15 +13,15 @@ internal interface KottageItemEventRepository {
     ): List<ItemEvent>
 
     suspend fun getLatestCreatedAt(transaction: Transaction, itemType: String): Long?
-    suspend fun getExpiredIds(
+    suspend fun getCount(transaction: Transaction, itemType: String): Long
+    suspend fun delete(transaction: Transaction, id: String)
+    suspend fun deleteExpiredEvents(
         transaction: Transaction,
         now: Long,
         itemType: String? = null,
-        receiver: suspend (id: String, itemType: String) -> Unit
-    )
+        onDelete: (suspend (id: String, itemType: String) -> Unit)? = null
+    ): Long
 
-    suspend fun getCount(transaction: Transaction, itemType: String): Long
-    suspend fun delete(transaction: Transaction, id: String)
     suspend fun deleteOlderEvents(transaction: Transaction, itemType: String, limit: Long)
     suspend fun deleteBefore(transaction: Transaction, createdAt: Long)
     suspend fun deleteAll(transaction: Transaction, itemType: String)

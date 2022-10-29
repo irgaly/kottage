@@ -58,34 +58,6 @@ internal class KottageSqliteItemEventRepository(
             .executeAsOneOrNull()
     }
 
-    override suspend fun getExpiredIds(
-        transaction: Transaction,
-        now: Long,
-        itemType: String?,
-        receiver: suspend (id: String, itemType: String) -> Unit
-    ) {
-        if (itemType != null) {
-            database.item_eventQueries
-                .selectExpiredIds(itemType, now)
-                .execute().use { cursor ->
-                    while (cursor.next()) {
-                        val id = checkNotNull(cursor.getString(0))
-                        receiver(id, itemType)
-                    }
-                }
-        } else {
-            database.item_eventQueries
-                .selectAllTypeExpiredIds(now)
-                .execute().use { cursor ->
-                    while (cursor.next()) {
-                        val id = checkNotNull(cursor.getString(0))
-                        val type = checkNotNull(cursor.getString(1))
-                        receiver(id, type)
-                    }
-                }
-        }
-    }
-
     override suspend fun getCount(transaction: Transaction, itemType: String): Long {
         return database.item_eventQueries
             .countByType(itemType)
@@ -97,7 +69,47 @@ internal class KottageSqliteItemEventRepository(
             .delete(id)
     }
 
-    override suspend fun deleteOlderEvents(transaction: Transaction, itemType: String, limit: Long) {
+    override suspend fun deleteExpiredEvents(
+        transaction: Transaction,
+        now: Long,
+        itemType: String?,
+        onDelete: (suspend (id: String, itemType: String) -> Unit)?
+    ): Long {
+        var deleted = 0L
+        if (itemType != null) {
+            database.item_eventQueries
+                .selectExpiredIds(itemType, now)
+                .execute().use { cursor ->
+                    while (cursor.next()) {
+                        val id = checkNotNull(cursor.getString(0))
+                        database.item_eventQueries
+                            .delete(id)
+                        onDelete?.invoke(id, itemType)
+                        deleted++
+                    }
+                }
+        } else {
+            database.item_eventQueries
+                .selectAllTypeExpiredIds(now)
+                .execute().use { cursor ->
+                    while (cursor.next()) {
+                        val id = checkNotNull(cursor.getString(0))
+                        val type = checkNotNull(cursor.getString(1))
+                        database.item_eventQueries
+                            .delete(id)
+                        onDelete?.invoke(id, type)
+                        deleted++
+                    }
+                }
+        }
+        return deleted
+    }
+
+    override suspend fun deleteOlderEvents(
+        transaction: Transaction,
+        itemType: String,
+        limit: Long
+    ) {
         database.item_eventQueries
             .selectOlderCreatedIds(itemType, limit)
             .execute().use { cursor ->

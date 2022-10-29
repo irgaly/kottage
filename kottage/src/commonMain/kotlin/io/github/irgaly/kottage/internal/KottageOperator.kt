@@ -123,14 +123,8 @@ internal class KottageOperator(
      * This should be called in transaction
      */
     suspend fun evictEvents(transaction: Transaction, now: Long, itemType: String? = null) {
-        if (itemType != null) {
-            itemEventRepository.getExpiredIds(transaction, now, itemType) { id, _ ->
-                deleteEvent(transaction, id, itemType)
-            }
-        } else {
-            itemEventRepository.getExpiredIds(transaction, now) { id, type ->
-                deleteEvent(transaction, id, type)
-            }
+        itemEventRepository.deleteExpiredEvents(transaction, now, itemType) { _, type ->
+            itemEventRepository.decrementStatsCount(transaction, type, 1)
         }
     }
 
@@ -395,16 +389,6 @@ internal class KottageOperator(
     }
 
     /**
-     * Delete event
-     *
-     * This should be called in transaction
-     */
-    private suspend fun deleteEvent(transaction: Transaction, id: String, itemType: String) {
-        itemEventRepository.delete(transaction, id)
-        itemEventRepository.decrementStatsCount(transaction, itemType, 1)
-    }
-
-    /**
      * Add Event item
      *
      * This should be called in transaction
@@ -449,11 +433,8 @@ internal class KottageOperator(
     private suspend fun reduceEvents(transaction: Transaction, now: Long, itemType: String, maxEventEntryCount: Long) {
         val currentCount = itemEventRepository.getStatsCount(transaction, itemType)
         if (maxEventEntryCount < currentCount) {
-            var deleted = 0L
-            itemEventRepository.getExpiredIds(transaction, now, itemType) { id, _ ->
-                deleteEvent(transaction, id, itemType)
-                deleted++
-            }
+            val deleted = itemEventRepository.deleteExpiredEvents(transaction, now, itemType)
+            itemEventRepository.decrementStatsCount(transaction, itemType, deleted)
             val calculatedReduceCount = (maxEventEntryCount * 0.25).toLong().coerceAtLeast(1)
             val reduceCount = calculatedReduceCount - deleted
             if (0 < reduceCount) {

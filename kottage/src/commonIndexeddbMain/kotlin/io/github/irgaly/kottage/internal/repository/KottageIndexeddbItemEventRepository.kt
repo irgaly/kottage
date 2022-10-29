@@ -71,36 +71,6 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
         }
     }
 
-    override suspend fun getExpiredIds(
-        transaction: Transaction,
-        now: Long,
-        itemType: String?,
-        receiver: suspend (id: String, itemType: String) -> Unit
-    ) {
-        transaction.store { store ->
-            if (itemType != null) {
-                store.index("item_event_item_type_expire_at").openKeyCursor(
-                    // item_type = itemType && expire_at <= now
-                    bound(
-                        arrayOf(itemType),
-                        arrayOf(itemType, now.toDouble())
-                    )
-                ).collect { cursor ->
-                    val id = cursor.primaryKey.unsafeCast<String>()
-                    receiver(id, itemType)
-                }
-            } else {
-                store.index("item_event_expire_at").openCursor(
-                    // expire_at <= now
-                    upperBound(now.toDouble())
-                ).collect { cursor ->
-                    val event = cursor.value.unsafeCast<Item_event>()
-                    receiver(event.id, event.item_type)
-                }
-            }
-        }
-    }
-
     override suspend fun getCount(transaction: Transaction, itemType: String): Long {
         return transaction.store { store ->
             store.index("item_event_item_type_created_at").count(
@@ -119,7 +89,42 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
         }
     }
 
-    override suspend fun deleteOlderEvents(transaction: Transaction, itemType: String, limit: Long) {
+    override suspend fun deleteExpiredEvents(
+        transaction: Transaction,
+        now: Long,
+        itemType: String?,
+        onDelete: (suspend (id: String, itemType: String) -> Unit)?
+    ): Long {
+        return transaction.store { store ->
+            var deleted = 0L
+            (if (itemType != null) {
+                store.index("item_event_item_type_expire_at").openCursor(
+                    // item_type = itemType && expire_at <= now
+                    bound(
+                        arrayOf(itemType),
+                        arrayOf(itemType, now.toDouble())
+                    )
+                )
+            } else {
+                store.index("item_event_expire_at").openCursor(
+                    // expire_at <= now
+                    upperBound(now.toDouble())
+                )
+            }).collect { cursor ->
+                val event = cursor.value.unsafeCast<Item_event>()
+                cursor.delete()
+                onDelete?.invoke(event.id, event.item_type)
+                deleted++
+            }
+            deleted
+        }
+    }
+
+    override suspend fun deleteOlderEvents(
+        transaction: Transaction,
+        itemType: String,
+        limit: Long
+    ) {
         transaction.store { store ->
             store.index("item_event_item_type_created_at").openCursor(
                 // item_type = itemType
