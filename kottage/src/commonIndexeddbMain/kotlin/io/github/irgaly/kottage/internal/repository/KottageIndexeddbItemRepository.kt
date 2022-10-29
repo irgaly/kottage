@@ -33,7 +33,7 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
             store.get(Key(Item.toEntityKey(key, itemType)))
                 ?.unsafeCast<io.github.irgaly.kottage.data.indexeddb.schema.entity.Item>()
                 ?.let { item ->
-                    item.last_read_at = lastReadAt
+                    item.last_read_at = lastReadAt.toDouble()
                     store.put(item)
                 }
         }
@@ -49,7 +49,7 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
             store.get(Key(Item.toEntityKey(key, itemType)))
                 ?.unsafeCast<io.github.irgaly.kottage.data.indexeddb.schema.entity.Item>()
                 ?.let { item ->
-                    item.expire_at = expireAt
+                    item.expire_at = expireAt.toDouble()
                     store.put(item)
                 }
         }
@@ -105,7 +105,7 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
                     // type = itemType && created_at <= now
                     bound(
                         arrayOf(itemType),
-                        arrayOf(itemType, now)
+                        arrayOf(itemType, now.toDouble())
                     )
                 ).collect { cursor ->
                     val key = cursor.primaryKey.unsafeCast<String>()
@@ -114,7 +114,7 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
             } else {
                 store.index("item_expire_at").openCursor(
                     // created_at <= now
-                    upperBound(now)
+                    upperBound(now.toDouble())
                 ).collect { cursor ->
                     val item =
                         cursor.value.unsafeCast<io.github.irgaly.kottage.data.indexeddb.schema.entity.Item>()
@@ -180,7 +180,7 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
             store.openCursor().map { cursor ->
                 cursor.value.unsafeCast<Item_stats>()
             }.filter { stats ->
-                ((stats.count <= 0) && (stats.event_count <= 0))
+                ((stats.count.toLong() <= 0L) && (stats.event_count.toLong() <= 0))
             }.take(limit).map {
                 it.toDomain()
             }.toList()
@@ -206,7 +206,7 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
 
     override suspend fun getStatsCount(transaction: Transaction, itemType: String): Long {
         return transaction.statsStore { store ->
-            store.get(Key(itemType))?.unsafeCast<Item_stats>()?.count ?: 0
+            store.get(Key(itemType))?.unsafeCast<Item_stats>()?.count?.toLong() ?: 0
         }
     }
 
@@ -217,7 +217,7 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
     ) {
         transaction.statsStore { store ->
             val stats = getOrCreate(store, itemType)
-            stats.count += count
+            stats.count += count.toDouble()
             store.put(stats)
         }
     }
@@ -229,7 +229,7 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
     ) {
         transaction.statsStore { store ->
             val stats = getOrCreate(store, itemType)
-            stats.count -= count
+            stats.count -= count.toDouble()
             store.put(stats)
         }
     }
@@ -237,7 +237,7 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
     override suspend fun updateStatsCount(transaction: Transaction, itemType: String, count: Long) {
         transaction.statsStore { store ->
             val stats = getOrCreate(store, itemType)
-            stats.count = count
+            stats.count = count.toDouble()
             store.put(stats)
         }
     }
@@ -256,8 +256,8 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
         if (stats == null) {
             stats = jso {
                 item_type = itemType
-                count = 0
-                event_count = 0
+                count = 0L.toDouble()
+                event_count = 0L.toDouble()
             }
             store.add(stats)
         }

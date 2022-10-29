@@ -12,14 +12,14 @@ internal class KottageIndexeddbStatsRepository : KottageStatsRepository {
 
     override suspend fun getLastEvictAt(transaction: Transaction): Long {
         return transaction.store { store ->
-            getOrCreate(store, key).last_evict_at
+            getOrCreate(store, key).last_evict_at.toLong()
         }
     }
 
     override suspend fun updateLastEvictAt(transaction: Transaction, now: Long) {
         transaction.store { store ->
             val stats = getOrCreate(store, key)
-            stats.last_evict_at = now
+            stats.last_evict_at = now.toDouble()
             store.put(stats)
         }
     }
@@ -29,7 +29,7 @@ internal class KottageIndexeddbStatsRepository : KottageStatsRepository {
         if (stats == null) {
             stats = jso {
                 this.key = key
-                last_evict_at = 0L
+                last_evict_at = 0L.toDouble()
             }
             store.add(stats)
         }

@@ -8,6 +8,8 @@ import io.github.irgaly.kottage.internal.database.DatabaseConnection
  *     * https://stackoverflow.com/a/15625231/13403244
  *     * https://w3c.github.io/IndexedDB/#key-construct
  *     * null は index に含まれない
+ * * Kotlin/JS
+ *     * external types https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.js/-js-export/
  */
 internal actual class KottageRepositoryFactory actual constructor(
     private val databaseConnection: DatabaseConnection

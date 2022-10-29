@@ -63,7 +63,7 @@ internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
                 ?.let { list ->
                     list.item_key = itemKey
                     list.item_type = itemType
-                    list.expire_at = expireAt
+                    list.expire_at = expireAt?.toDouble()
                     store.put(list)
                 }
         }
@@ -74,7 +74,7 @@ internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
             store.get(Key(id))
                 ?.unsafeCast<Item_list>()
                 ?.let { list ->
-                    list.expire_at = expireAt
+                    list.expire_at = expireAt?.toDouble()
                     store.put(list)
                 }
         }
@@ -136,7 +136,7 @@ internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
                     // type = type && expire_at < beforeExpireAt
                     bound(
                         arrayOf(type),
-                        arrayOf(type, beforeExpireAt),
+                        arrayOf(type, beforeExpireAt.toDouble()),
                         upperOpen = true
                     )
                 )
@@ -213,7 +213,7 @@ internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
         transaction.statsStore { store ->
             store.add(jso<Item_list_stats> {
                 item_list_type = type
-                this.count = count
+                this.count = count.toDouble()
                 first_item_list_id = firstItemListEntryId
                 last_item_list_id = lastItemListEntryId
             })
@@ -228,57 +228,52 @@ internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
 
     override suspend fun getStatsCount(transaction: Transaction, type: String): Long {
         return transaction.statsStore { store ->
-            store.get(Key(type))?.unsafeCast<Item_list_stats>()?.count ?: 0L
+            store.get(Key(type))?.unsafeCast<Item_list_stats>()?.count?.toLong() ?: 0L
         }
     }
 
     override suspend fun incrementStatsCount(transaction: Transaction, type: String, count: Long) {
         transaction.statsStore { store ->
-            store.get(Key(type))
-                ?.unsafeCast<Item_list_stats>()?.let { stats ->
-                    stats.count += count
-                    store.put(stats)
-                }
+            store.get(Key(type))?.unsafeCast<Item_list_stats>()?.let { stats ->
+                stats.count += count.toDouble()
+                store.put(stats)
+            }
         }
     }
 
     override suspend fun decrementStatsCount(transaction: Transaction, type: String, count: Long) {
         transaction.statsStore { store ->
-            store.get(Key(type))
-                ?.unsafeCast<Item_list_stats>()?.let { stats ->
-                    stats.count -= count
-                    store.put(stats)
-                }
+            store.get(Key(type))?.unsafeCast<Item_list_stats>()?.let { stats ->
+                stats.count -= count.toDouble()
+                store.put(stats)
+            }
         }
     }
 
     override suspend fun updateStatsCount(transaction: Transaction, type: String, count: Long) {
         transaction.statsStore { store ->
-            store.get(Key(type))
-                ?.unsafeCast<Item_list_stats>()?.let { stats ->
-                    stats.count = count
-                    store.put(stats)
-                }
+            store.get(Key(type))?.unsafeCast<Item_list_stats>()?.let { stats ->
+                stats.count = count.toDouble()
+                store.put(stats)
+            }
         }
     }
 
     override suspend fun updateStatsFirstItem(transaction: Transaction, type: String, id: String) {
         transaction.statsStore { store ->
-            store.get(Key(type))
-                ?.unsafeCast<Item_list_stats>()?.let { stats ->
-                    stats.first_item_list_id = id
-                    store.put(stats)
-                }
+            store.get(Key(type))?.unsafeCast<Item_list_stats>()?.let { stats ->
+                stats.first_item_list_id = id
+                store.put(stats)
+            }
         }
     }
 
     override suspend fun updateStatsLastItem(transaction: Transaction, type: String, id: String) {
         transaction.statsStore { store ->
-            store.get(Key(type))
-                ?.unsafeCast<Item_list_stats>()?.let { stats ->
-                    stats.last_item_list_id = id
-                    store.put(stats)
-                }
+            store.get(Key(type))?.unsafeCast<Item_list_stats>()?.let { stats ->
+                stats.last_item_list_id = id
+                store.put(stats)
+            }
         }
     }
 

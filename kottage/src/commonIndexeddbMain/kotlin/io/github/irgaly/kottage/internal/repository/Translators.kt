@@ -13,12 +13,12 @@ internal fun io.github.irgaly.kottage.data.indexeddb.schema.entity.Item.toDomain
         key = Item.keyFromEntityKey(key, type),
         type = type,
         stringValue = string_value,
-        longValue = long_value,
+        longValue = long_value?.toLong(),
         doubleValue = double_value,
         bytesValue = bytes_value,
-        createdAt = created_at,
-        lastReadAt = last_read_at,
-        expireAt = expire_at
+        createdAt = created_at.toLong(),
+        lastReadAt = last_read_at.toLong(),
+        expireAt = expire_at?.toLong()
     )
 }
 
@@ -27,12 +27,12 @@ internal fun Item.toEntity(): io.github.irgaly.kottage.data.indexeddb.schema.ent
         key = getEntityKey()
         type = this@toEntity.type
         string_value = stringValue
-        long_value = longValue
+        long_value = longValue?.toString()
         double_value = doubleValue
         bytes_value = bytesValue
-        created_at = createdAt
-        last_read_at = lastReadAt
-        expire_at = expireAt
+        created_at = createdAt.toDouble()
+        last_read_at = lastReadAt.toDouble()
+        expire_at = expireAt?.toDouble()
     }
 }
 
@@ -44,7 +44,7 @@ internal fun io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_list.toD
         itemKey = item_key,
         previousId = previous_id,
         nextId = next_id,
-        expireAt = expire_at,
+        expireAt = expire_at?.toLong(),
         userInfo = user_info,
         userPreviousKey = user_previous_key,
         userCurrentKey = user_current_key,
@@ -60,7 +60,7 @@ internal fun ItemListEntry.toEntity(): io.github.irgaly.kottage.data.indexeddb.s
         item_key = itemKey
         previous_id = previousId
         next_id = nextId
-        expire_at = expireAt
+        expire_at = expireAt?.toDouble()
         user_info = userInfo
         user_previous_key = userPreviousKey
         user_current_key = userCurrentKey
@@ -71,15 +71,15 @@ internal fun ItemListEntry.toEntity(): io.github.irgaly.kottage.data.indexeddb.s
 internal fun io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_stats.toDomain(): ItemStats {
     return ItemStats(
         itemType = item_type,
-        count = count,
-        eventCount = event_count
+        count = count.toLong(),
+        eventCount = event_count.toLong()
     )
 }
 
 internal fun io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_list_stats.toDomain(): ItemListStats {
     return ItemListStats(
         listType = item_list_type,
-        count = count,
+        count = count.toLong(),
         firstItemPositionId = first_item_list_id,
         lastItemPositionId = last_item_list_id
     )
@@ -88,21 +88,23 @@ internal fun io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_list_sta
 internal fun io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_event.toDomain(): ItemEvent {
     return ItemEvent(
         id = id,
-        createdAt = created_at,
-        expireAt = expire_at,
+        createdAt = created_at.toLong(),
+        expireAt = expire_at?.toLong(),
         itemType = item_type,
         itemKey = item_key,
         itemListId = item_list_id,
         itemListType = item_list_type,
-        eventType = io.github.irgaly.kottage.data.indexeddb.schema.entity.ItemEventType.valueOf(event_type).toDomain()
+        eventType = io.github.irgaly.kottage.data.indexeddb.schema.entity.ItemEventType.valueOf(
+            event_type
+        ).toDomain()
     )
 }
 
 internal fun ItemEvent.toEntity(): io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_event {
     return jso {
         id = this@toEntity.id
-        created_at = createdAt
-        expire_at = expireAt
+        created_at = createdAt.toDouble()
+        expire_at = expireAt?.toDouble()
         item_type = itemType
         item_key = itemKey
         item_list_id = itemListId

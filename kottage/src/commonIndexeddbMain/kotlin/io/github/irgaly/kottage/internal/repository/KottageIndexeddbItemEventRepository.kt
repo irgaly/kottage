@@ -36,7 +36,7 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
                     .openCursor(
                         // item_type = itemType && createdAt < created_at
                         bound(
-                            arrayOf(itemType, createdAt),
+                            arrayOf(itemType, createdAt.toDouble()),
                             arrayOf(itemType, emptyArray<Any>()),
                             lowerOpen = true
                         )
@@ -45,7 +45,7 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
                 store.index("item_event_created_at")
                     .openCursor(
                         // createdAt < created_at
-                        lowerBound(createdAt, true)
+                        lowerBound(createdAt.toDouble(), true)
                     )
             }).let {
                 if (limit != null) it.take(limit) else it
@@ -66,7 +66,7 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
                     ),
                     Cursor.Direction.Previous
                 ).map { cursor ->
-                    cursor.value.unsafeCast<Item_event>().created_at
+                    cursor.value.unsafeCast<Item_event>().created_at.toLong()
                 }.firstOrNull()
         }
     }
@@ -83,7 +83,7 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
                     // item_type = itemType && expire_at <= now
                     bound(
                         arrayOf(itemType),
-                        arrayOf(itemType, now)
+                        arrayOf(itemType, now.toDouble())
                     )
                 ).collect { cursor ->
                     val id = cursor.primaryKey.unsafeCast<String>()
@@ -92,10 +92,9 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
             } else {
                 store.index("item_event_expire_at").openCursor(
                     // expire_at <= now
-                    upperBound(now)
+                    upperBound(now.toDouble())
                 ).collect { cursor ->
-                    val event =
-                        cursor.value.unsafeCast<Item_event>()
+                    val event = cursor.value.unsafeCast<Item_event>()
                     receiver(event.id, event.item_type)
                 }
             }
@@ -138,7 +137,7 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
         transaction.store { store ->
             store.index("item_event_created_at").openCursor(
                 // created_at < createdAt
-                upperBound(createdAt, true)
+                upperBound(createdAt.toDouble(), true)
             ).collect { cursor ->
                 cursor.delete()
             }
@@ -175,14 +174,14 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
 
     override suspend fun getStatsCount(transaction: Transaction, itemType: String): Long {
         return transaction.statsStore { store ->
-            store.get(Key(itemType))?.unsafeCast<Item_stats>()?.event_count ?: 0L
+            store.get(Key(itemType))?.unsafeCast<Item_stats>()?.event_count?.toLong() ?: 0L
         }
     }
 
     override suspend fun incrementStatsCount(transaction: Transaction, itemType: String, count: Long) {
         transaction.statsStore { store ->
             val stats = getOrCreate(store, itemType)
-            stats.event_count += count
+            stats.event_count += count.toDouble()
             store.put(stats)
         }
     }
@@ -190,7 +189,7 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
     override suspend fun decrementStatsCount(transaction: Transaction, itemType: String, count: Long) {
         transaction.statsStore { store ->
             val stats = getOrCreate(store, itemType)
-            stats.event_count -= count
+            stats.event_count -= count.toDouble()
             store.put(stats)
         }
     }
@@ -198,7 +197,7 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
     override suspend fun updateStatsCount(transaction: Transaction, itemType: String, count: Long) {
         transaction.statsStore { store ->
             val stats = getOrCreate(store, itemType)
-            stats.event_count = count
+            stats.event_count = count.toDouble()
             store.put(stats)
         }
     }
@@ -211,8 +210,8 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
         if (stats == null) {
             stats = jso {
                 item_type = itemType
-                count = 0
-                event_count = 0
+                count = 0L.toDouble()
+                event_count = 0L.toDouble()
             }
             store.add(stats)
         }
