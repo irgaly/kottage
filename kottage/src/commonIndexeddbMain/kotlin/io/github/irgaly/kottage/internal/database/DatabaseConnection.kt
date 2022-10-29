@@ -46,11 +46,11 @@ internal actual class DatabaseConnection(
     }
 
     actual suspend fun backupTo(file: String, directoryPath: String) {
-        // no operation with indexeddb
+        console.warn("backupTo() is not supported with indexeddb")
     }
 
     actual suspend fun compact() {
-        TODO("Not yet implemented")
+        // indexeddb is managed by browser, no need to maintain from application
     }
 }
 
