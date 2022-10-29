@@ -9,6 +9,7 @@ import io.github.irgaly.kottage.data.indexeddb.extension.exists
 import io.github.irgaly.kottage.data.indexeddb.extension.jso
 import io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_stats
 import io.github.irgaly.kottage.internal.database.Transaction
+import io.github.irgaly.kottage.internal.extension.iterateWithChunk
 import io.github.irgaly.kottage.internal.extension.take
 import io.github.irgaly.kottage.internal.model.Item
 import io.github.irgaly.kottage.internal.model.ItemStats
@@ -82,15 +83,26 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
         receiver: suspend (key: String) -> Unit
     ) {
         transaction.store { store ->
-            store.index("item_type_created_at").openKeyCursor(
-                // type = itemType && created_at = Any
-                bound(
-                    arrayOf(itemType),
-                    arrayOf(itemType, emptyArray<Any>())
-                )
-            ).collect { cursor ->
-                receiver(cursor.primaryKey.unsafeCast<String>())
-            }
+            store.index("item_type_created_at")
+                .iterateWithChunk<io.github.irgaly.kottage.data.indexeddb.schema.entity.Item, Double>(
+                    this,
+                    chunkSize = 100L,
+                    primaryKey = { it.key },
+                    sortKey = { it.created_at },
+                    initialRange = bound(
+                        // type = itemType && created_at = Any
+                        arrayOf(itemType),
+                        arrayOf(itemType, emptyArray<Any>())
+                    ),
+                    resumeRange = {
+                        bound(
+                            arrayOf(itemType, it.created_at),
+                            arrayOf(itemType, emptyArray<Any>())
+                        )
+                    }
+                ) { item ->
+                    receiver(item.key)
+                }
         }
     }
 
