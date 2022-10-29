@@ -217,7 +217,7 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
     ) {
         transaction.statsStore { store ->
             val stats = getOrCreate(store, itemType)
-            stats.count += 1
+            stats.count += count
             store.put(stats)
         }
     }
@@ -229,7 +229,7 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
     ) {
         transaction.statsStore { store ->
             val stats = getOrCreate(store, itemType)
-            stats.count -= 1
+            stats.count -= count
             store.put(stats)
         }
     }

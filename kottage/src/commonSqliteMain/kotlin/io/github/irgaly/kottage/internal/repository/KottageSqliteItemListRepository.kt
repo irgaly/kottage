@@ -161,7 +161,7 @@ internal class KottageSqliteItemListRepository(
     override suspend fun getStatsCount(transaction: Transaction, type: String): Long {
         return database.item_list_statsQueries
             .select(item_list_type = type)
-            .executeAsOneOrNull()?.count ?: 0
+            .executeAsOneOrNull()?.count ?: 0L
     }
 
     override suspend fun incrementStatsCount(transaction: Transaction, type: String, count: Long) {

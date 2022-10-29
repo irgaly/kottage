@@ -18,11 +18,7 @@ class ItemListStoreSchema: StoreSchema {
                 KeyPath("item_type", "item_key"),
                 false
             )
-            store.createIndex(
-                "item_list_type_item_type_expire_at",
-                KeyPath("type", "item_type", "expire_at"),
-                false
-            )
+            store.createIndex("item_list_type_expire_at", KeyPath("type", "expire_at"), false)
         }
     }
 }

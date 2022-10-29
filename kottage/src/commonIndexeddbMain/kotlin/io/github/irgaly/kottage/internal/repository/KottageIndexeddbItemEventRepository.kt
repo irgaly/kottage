@@ -182,7 +182,7 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
     override suspend fun incrementStatsCount(transaction: Transaction, itemType: String, count: Long) {
         transaction.statsStore { store ->
             val stats = getOrCreate(store, itemType)
-            stats.event_count += 1
+            stats.event_count += count
             store.put(stats)
         }
     }
@@ -190,7 +190,7 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
     override suspend fun decrementStatsCount(transaction: Transaction, itemType: String, count: Long) {
         transaction.statsStore { store ->
             val stats = getOrCreate(store, itemType)
-            stats.event_count -= 1
+            stats.event_count -= count
             store.put(stats)
         }
     }
