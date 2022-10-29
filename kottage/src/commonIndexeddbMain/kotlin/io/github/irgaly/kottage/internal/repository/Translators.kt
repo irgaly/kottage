@@ -25,7 +25,7 @@ internal fun io.github.irgaly.kottage.data.indexeddb.schema.entity.Item.toDomain
 internal fun Item.toEntity(): io.github.irgaly.kottage.data.indexeddb.schema.entity.Item {
     return jso {
         key = getEntityKey()
-        type = type
+        type = this@toEntity.type
         string_value = stringValue
         long_value = longValue
         double_value = doubleValue
@@ -54,8 +54,8 @@ internal fun io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_list.toD
 
 internal fun ItemListEntry.toEntity(): io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_list {
     return jso {
-        id = id
-        type = type
+        id = this@toEntity.id
+        type = this@toEntity.type
         item_type = itemType
         item_key = itemKey
         previous_id = previousId
@@ -100,7 +100,7 @@ internal fun io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_event.to
 
 internal fun ItemEvent.toEntity(): io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_event {
     return jso {
-        id = id
+        id = this@toEntity.id
         created_at = createdAt
         expire_at = expireAt
         item_type = itemType
