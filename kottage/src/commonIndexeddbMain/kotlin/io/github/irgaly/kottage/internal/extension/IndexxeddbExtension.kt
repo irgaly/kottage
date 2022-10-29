@@ -21,13 +21,15 @@ internal suspend fun <Item, SortKey> Queryable.iterateWithChunk(
     sortKey: (item: Item) -> SortKey,
     initialRange: Key,
     resumeRange: (lastItem: Item) -> Key,
-    block: suspend (items: Item) -> Unit
+    limit: Long? = null,
+    block: suspend (items: Item) -> Boolean
 ) {
     with(transaction) {
-        var hasNext = true
+        var takeNext = true
+        var consumed = 0L
         var consumedKeys = mapOf<SortKey, Set<String>>()
         var nextRange = initialRange
-        while (hasNext) {
+        while (takeNext) {
             val results = openCursor(nextRange).map { cursor ->
                 cursor.value.unsafeCast<Item>()
             }.filter {
@@ -35,19 +37,31 @@ internal suspend fun <Item, SortKey> Queryable.iterateWithChunk(
                 consumedKeys[sortKey(it)]?.let { consumed ->
                     (primaryKey(it) !in consumed)
                 } ?: true
-            }.take(chunkSize).toList()
-            results.forEach { block(it) }
-            results.lastOrNull()?.let { lastItem ->
-                val nextSortKey = sortKey(lastItem)
-                nextRange = resumeRange(lastItem)
-                val consumed = results.filter {
-                    (sortKey(it) == nextSortKey)
-                }.map { primaryKey(it) }.toSet()
-                    .union(consumedKeys[nextSortKey] ?: emptySet())
-                // nextSortKey の項目だけを記憶する
-                consumedKeys = mapOf(nextSortKey to consumed)
+            }.take(
+                limit?.let { (it - consumed).coerceAtMost(chunkSize) } ?: chunkSize
+            ).toList()
+            var continueNext = true
+            results.forEach { item ->
+                if (continueNext) {
+                    val canNext = block(item)
+                    consumed++
+                    continueNext = (canNext && (limit?.let { consumed < it } ?: true))
+                }
             }
-            hasNext = (chunkSize <= results.size)
+            val hasNext = (chunkSize <= results.size)
+            takeNext = (continueNext && hasNext)
+            if (takeNext) {
+                results.lastOrNull()?.let { lastItem ->
+                    val nextSortKey = sortKey(lastItem)
+                    nextRange = resumeRange(lastItem)
+                    val keys = results.filter {
+                        (sortKey(it) == nextSortKey)
+                    }.map { primaryKey(it) }.toSet()
+                        .union(consumedKeys[nextSortKey] ?: emptySet())
+                    // nextSortKey の項目だけを記憶する
+                    consumedKeys = mapOf(nextSortKey to keys)
+                }
+            }
         }
     }
 }

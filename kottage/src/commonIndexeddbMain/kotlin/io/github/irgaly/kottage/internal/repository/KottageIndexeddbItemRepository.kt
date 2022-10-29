@@ -15,7 +15,6 @@ import io.github.irgaly.kottage.internal.model.Item
 import io.github.irgaly.kottage.internal.model.ItemStats
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.toList
 
 internal class KottageIndexeddbItemRepository : KottageItemRepository {
@@ -102,6 +101,7 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
                     }
                 ) { item ->
                     receiver(item.key)
+                    true
                 }
         }
     }
@@ -133,6 +133,7 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
                         }
                     ) { item ->
                         receiver(Item.keyFromEntityKey(item.key, itemType), itemType)
+                        true
                     }
             } else {
                 store.index("item_expire_at")
@@ -150,6 +151,7 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
                         }
                     ) { item ->
                         receiver(Item.keyFromEntityKey(item.key, item.type), item.type)
+                        true
                     }
             }
         }
@@ -162,19 +164,27 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
         receiver: suspend (key: String) -> Boolean
     ) {
         transaction.store { store ->
-            var takeNext = true
-            store.index("item_type_last_read_at").openKeyCursor(
-                // type = itemType
-                bound(
-                    arrayOf(itemType),
-                    arrayOf(itemType, emptyArray<Any>())
-                )
-            ).let {
-                if (limit != null) it.take(limit) else it
-            }.takeWhile { takeNext }.collect { cursor ->
-                val key = cursor.primaryKey.unsafeCast<String>()
-                takeNext = receiver(Item.keyFromEntityKey(key, itemType))
-            }
+            store.index("item_type_last_read_at")
+                .iterateWithChunk<io.github.irgaly.kottage.data.indexeddb.schema.entity.Item, Double>(
+                    this,
+                    chunkSize = 100L,
+                    primaryKey = { it.key },
+                    sortKey = { it.last_read_at },
+                    initialRange = bound(
+                        // type = itemType
+                        arrayOf(itemType),
+                        arrayOf(itemType, emptyArray<Any>())
+                    ),
+                    resumeRange = {
+                        bound(
+                            arrayOf(itemType, it.last_read_at),
+                            arrayOf(itemType, emptyArray<Any>())
+                        )
+                    },
+                    limit = limit
+                ) { item ->
+                    receiver(Item.keyFromEntityKey(item.key, itemType))
+                }
         }
     }
 
@@ -185,19 +195,27 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
         receiver: suspend (key: String) -> Boolean
     ) {
         transaction.store { store ->
-            var takeNext = true
-            store.index("item_type_created_at").openKeyCursor(
-                // type = itemType
-                bound(
-                    arrayOf(itemType),
-                    arrayOf(itemType, emptyArray<Any>())
-                )
-            ).let {
-                if (limit != null) it.take(limit) else it
-            }.takeWhile { takeNext }.collect { cursor ->
-                val key = cursor.primaryKey.unsafeCast<String>()
-                takeNext = receiver(Item.keyFromEntityKey(key, itemType))
-            }
+            store.index("item_type_created_at")
+                .iterateWithChunk<io.github.irgaly.kottage.data.indexeddb.schema.entity.Item, Double>(
+                    this,
+                    chunkSize = 100L,
+                    primaryKey = { it.key },
+                    sortKey = { it.created_at },
+                    initialRange = bound(
+                        // type = itemType
+                        arrayOf(itemType),
+                        arrayOf(itemType, emptyArray<Any>())
+                    ),
+                    resumeRange = {
+                        bound(
+                            arrayOf(itemType, it.created_at),
+                            arrayOf(itemType, emptyArray<Any>())
+                        )
+                    },
+                    limit = limit
+                ) { item ->
+                    receiver(Item.keyFromEntityKey(item.key, itemType))
+                }
         }
     }
 
