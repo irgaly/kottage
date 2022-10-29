@@ -1,3 +1,4 @@
 CREATE INDEX item_expire_at ON item(expire_at);
 DROP INDEX item_list_type_item_type_expire_at;
 CREATE INDEX item_list_type_item_key_expire_at ON item_list(type, item_key, expire_at);
+DROP INDEX item_list_item_type;

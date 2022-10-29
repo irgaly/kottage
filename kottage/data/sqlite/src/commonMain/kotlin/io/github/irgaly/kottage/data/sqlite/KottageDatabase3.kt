@@ -82,7 +82,6 @@ class KottageDatabase3(
           |)
           """.trimMargin(), 0
             )
-            driver.execute(null, "CREATE INDEX item_list_item_type ON item_list(item_type)", 0)
             driver.execute(
                 null,
                 "CREATE INDEX item_list_item_type_item_key ON item_list(item_type, item_key)", 0
@@ -122,7 +121,6 @@ class KottageDatabase3(
             )
             driver.execute(null, "CREATE INDEX item_type_expire_at ON item(type, expire_at)", 0)
             driver.execute(null, "CREATE INDEX item_expire_at ON item(expire_at)", 0)
-
             driver.execute(
                 null,
                 "INSERT INTO item_stats(item_type, count, event_count) VALUES('cache1', 1, 1)",
