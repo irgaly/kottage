@@ -3,14 +3,11 @@ package io.github.irgaly.kottage.internal.repository
 import com.juul.indexeddb.Key
 import com.juul.indexeddb.ObjectStore
 import com.juul.indexeddb.WriteTransaction
-import io.github.irgaly.kottage.data.indexeddb.KottageIndexeddbDatabase
 import io.github.irgaly.kottage.data.indexeddb.extension.jso
 import io.github.irgaly.kottage.data.indexeddb.schema.entity.Stats
 import io.github.irgaly.kottage.internal.database.Transaction
 
-internal class KottageIndexeddbStatsRepository(
-    private val database: KottageIndexeddbDatabase
-) : KottageStatsRepository {
+internal class KottageIndexeddbStatsRepository : KottageStatsRepository {
     private val key = "kottage"
 
     override suspend fun getLastEvictAt(transaction: Transaction): Long {

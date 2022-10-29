@@ -127,7 +127,7 @@ internal class KottageSqliteItemEventRepository(
     override suspend fun getStatsCount(transaction: Transaction, itemType: String): Long {
         return database.item_statsQueries
             .select(itemType)
-            .executeAsOneOrNull()?.event_count ?: 0
+            .executeAsOneOrNull()?.event_count ?: 0L
     }
 
     override suspend fun incrementStatsCount(transaction: Transaction, itemType: String, count: Long) {

@@ -2,19 +2,20 @@ package io.github.irgaly.kottage.internal.repository
 
 import com.juul.indexeddb.ObjectStore
 import com.juul.indexeddb.WriteTransaction
-import io.github.irgaly.kottage.data.indexeddb.KottageIndexeddbDatabase
 import io.github.irgaly.kottage.internal.database.Transaction
 import io.github.irgaly.kottage.internal.model.ItemListEntry
 import io.github.irgaly.kottage.internal.model.ItemListStats
 
-internal class KottageIndexeddbItemListRepository(
-    private val database: KottageIndexeddbDatabase
-) : KottageItemListRepository {
+internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
     override suspend fun upsert(transaction: Transaction, entry: ItemListEntry) {
         TODO("Not yet implemented")
     }
 
-    override suspend fun updatePreviousId(transaction: Transaction, id: String, previousId: String?) {
+    override suspend fun updatePreviousId(
+        transaction: Transaction,
+        id: String,
+        previousId: String?
+    ) {
         TODO("Not yet implemented")
     }
 

@@ -5,29 +5,18 @@ import com.juul.indexeddb.ObjectStore
 import com.juul.indexeddb.WriteTransaction
 import com.juul.indexeddb.bound
 import com.juul.indexeddb.upperBound
-import io.github.irgaly.kottage.data.indexeddb.KottageIndexeddbDatabase
 import io.github.irgaly.kottage.data.indexeddb.extension.exists
 import io.github.irgaly.kottage.data.indexeddb.extension.jso
 import io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_stats
 import io.github.irgaly.kottage.internal.database.Transaction
+import io.github.irgaly.kottage.internal.extension.take
 import io.github.irgaly.kottage.internal.model.Item
 import io.github.irgaly.kottage.internal.model.ItemStats
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.toList
 
-/**
- * Note:
- * * indexeddb comparison
- *     * https://stackoverflow.com/a/15625231/13403244
- *     * https://w3c.github.io/IndexedDB/#key-construct
- *     * null は index に含まれない
- */
-internal class KottageIndexeddbItemRepository(
-    private val database: KottageIndexeddbDatabase
-) : KottageItemRepository {
+internal class KottageIndexeddbItemRepository : KottageItemRepository {
     override suspend fun upsert(transaction: Transaction, item: Item) {
         transaction.store { store ->
             store.put(item.toEntity())
@@ -142,17 +131,15 @@ internal class KottageIndexeddbItemRepository(
         receiver: suspend (key: String) -> Boolean
     ) {
         transaction.store { store ->
-            var consumed = 0L
             store.index("item_type_last_read_at").openKeyCursor(
                 // type = itemType
                 bound(
                     arrayOf(itemType),
                     arrayOf(itemType, emptyArray<Any>())
                 )
-            ).takeWhile {
-                limit?.let { consumed < it } ?: true
+            ).let {
+                if (limit != null) it.take(limit) else it
             }.collect { cursor ->
-                consumed++
                 val key = cursor.primaryKey.unsafeCast<String>()
                 receiver(Item.keyFromEntityKey(key, itemType))
             }
@@ -166,17 +153,15 @@ internal class KottageIndexeddbItemRepository(
         receiver: suspend (key: String) -> Boolean
     ) {
         transaction.store { store ->
-            var consumed = 0L
             store.index("item_type_created_at").openKeyCursor(
                 // type = itemType
                 bound(
                     arrayOf(itemType),
                     arrayOf(itemType, emptyArray<Any>())
                 )
-            ).takeWhile {
-                limit?.let { consumed < it } ?: true
+            ).let {
+                if (limit != null) it.take(limit) else it
             }.collect { cursor ->
-                consumed++
                 val key = cursor.primaryKey.unsafeCast<String>()
                 receiver(Item.keyFromEntityKey(key, itemType))
             }
@@ -192,15 +177,12 @@ internal class KottageIndexeddbItemRepository(
     override suspend fun getEmptyStats(transaction: Transaction, limit: Long): List<ItemStats> {
         return transaction.statsStore { store ->
             // SQLite 側に合わせて index なしで総当たり処理
-            var consumed = 0L
             store.openCursor().map { cursor ->
-                cursor.value.unsafeCast<Item_stats>().toDomain()
+                cursor.value.unsafeCast<Item_stats>()
             }.filter { stats ->
-                ((stats.count <= 0) && (stats.eventCount <= 0))
-            }.takeWhile {
-                (consumed < limit)
-            }.onEach {
-                consumed++
+                ((stats.count <= 0) && (stats.event_count <= 0))
+            }.take(limit).map {
+                it.toDomain()
             }.toList()
         }
     }
@@ -224,7 +206,7 @@ internal class KottageIndexeddbItemRepository(
 
     override suspend fun getStatsCount(transaction: Transaction, itemType: String): Long {
         return transaction.statsStore { store ->
-            store.get(Key(itemType))?.unsafeCast<Item_stats>()?.toDomain()?.count ?: 0
+            store.get(Key(itemType))?.unsafeCast<Item_stats>()?.count ?: 0
         }
     }
 
