@@ -5,6 +5,7 @@ import com.juul.indexeddb.ObjectStore
 import com.juul.indexeddb.WriteTransaction
 import com.juul.indexeddb.bound
 import com.juul.indexeddb.external.IDBKeyRange.Companion.only
+import com.juul.indexeddb.lowerBound
 import io.github.irgaly.kottage.data.indexeddb.extension.jso
 import io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_list
 import io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_list_stats
@@ -176,9 +177,20 @@ internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
 
     override suspend fun getAllTypes(transaction: Transaction, receiver: suspend (type: String) -> Unit) {
         transaction.statsStore { store ->
-            store.openKeyCursor().collect { cursor ->
-                val itemListType = cursor.primaryKey.unsafeCast<String>()
-                receiver(itemListType)
+            val limit = 100L
+            var hasNext = true
+            var nextRange: Key? = null
+            while (hasNext) {
+                val results = store.openKeyCursor(nextRange)
+                    .take(limit)
+                    .map { cursor ->
+                        cursor.primaryKey.unsafeCast<String>()
+                    }.toList()
+                // indexeddb は cursor を開いている間に対象が delete されると cursor がずれてしまう。
+                // cursor を閉じてから小分けに receiver を実行する
+                results.forEach { receiver(it) }
+                nextRange = results.lastOrNull()?.let { lowerBound(it, open = true) }
+                hasNext = (limit <= results.size)
             }
         }
     }
