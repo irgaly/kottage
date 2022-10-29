@@ -12,7 +12,7 @@ class ItemListStoreSchema: StoreSchema {
             objectStore("item_list")
         }
         if (oldVersion < 3) {
-            store.createIndex("item_list_item_type", KeyPath("item_type"), false)
+            store.createIndex("item_list_type", KeyPath("type"), false)
             store.createIndex(
                 "item_list_item_type_item_key",
                 KeyPath("item_type", "item_key"),

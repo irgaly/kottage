@@ -158,7 +158,7 @@ internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
 
     override suspend fun getCount(transaction: Transaction, type: String): Long {
         return transaction.store { store ->
-            store.index("item_list_item_type").count(
+            store.index("item_list_type").count(
                 Key(type)
             ).toLong()
         }
@@ -166,7 +166,7 @@ internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
 
     override suspend fun getInvalidatedItemCount(transaction: Transaction, type: String): Long {
         return transaction.store { store ->
-            store.index("item_list_item_type").openCursor(
+            store.index("item_list_type").openCursor(
                 Key(type)
             ).count { cursor ->
                 (cursor.value.unsafeCast<Item_list>().item_key == null)
