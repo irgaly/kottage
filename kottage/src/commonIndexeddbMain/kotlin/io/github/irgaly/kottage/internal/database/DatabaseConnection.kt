@@ -8,6 +8,7 @@ import io.github.irgaly.kottage.data.indexeddb.schema.entity.Item
 import io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_event
 import io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_stats
 import io.github.irgaly.kottage.data.indexeddb.schema.entity.Stats
+import io.github.irgaly.kottage.platform.Files
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -51,7 +52,8 @@ internal actual class DatabaseConnection(
     }
 
     actual suspend fun backupTo(file: String, directoryPath: String) {
-        console.warn("backupTo() is not supported with indexeddb")
+        require(!file.contains(Files.separator)) { "file contains separator: $file" }
+        console.warn("backupTo() is not supported with indexeddb\n")
     }
 
     actual suspend fun compact() {
