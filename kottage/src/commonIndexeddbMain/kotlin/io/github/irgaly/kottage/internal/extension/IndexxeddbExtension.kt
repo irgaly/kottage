@@ -1,6 +1,7 @@
 package io.github.irgaly.kottage.internal.extension
 
 import com.juul.indexeddb.Key
+import com.juul.indexeddb.ObjectStore
 import com.juul.indexeddb.Queryable
 import com.juul.indexeddb.WriteTransaction
 import kotlinx.coroutines.flow.filter
@@ -10,14 +11,11 @@ import kotlinx.coroutines.flow.toList
 /**
  * chunkSize ごとにアイテムを処理する
  * 重複可能な SortKey にも対応
- *
- * cursor を処理している間に対象が delete されると cursor がずれてしまうため
- * chunkSize ごとに cursor を閉じて処理する
  */
-internal suspend fun <Item, SortKey> Queryable.iterateWithChunk(
+internal suspend fun <Item, PrimaryKey, SortKey> Queryable.iterateWithChunk(
     transaction: WriteTransaction,
     chunkSize: Long,
-    primaryKey: (item: Item) -> String,
+    primaryKey: (item: Item) -> PrimaryKey,
     sortKey: (item: Item) -> SortKey,
     initialRange: Key,
     resumeRange: (lastItem: Item) -> Key,
@@ -27,7 +25,7 @@ internal suspend fun <Item, SortKey> Queryable.iterateWithChunk(
     with(transaction) {
         var takeNext = true
         var consumed = 0L
-        var consumedKeys = mapOf<SortKey, Set<String>>()
+        var consumedKeys = mapOf<SortKey, Set<PrimaryKey>>()
         var nextRange = initialRange
         while (takeNext) {
             val results = openCursor(nextRange).map { cursor ->
@@ -63,5 +61,39 @@ internal suspend fun <Item, SortKey> Queryable.iterateWithChunk(
                 }
             }
         }
+    }
+}
+
+/**
+ * chunkSize ごとにデータを取得して削除する
+ */
+internal suspend fun <Item, PrimaryKey> Queryable.deleteWithChunk(
+    transaction: WriteTransaction,
+    store: ObjectStore,
+    query: Key,
+    chunkSize: Long,
+    primaryKey: (item: Item) -> PrimaryKey,
+    limit: Long? = null,
+    onDelete: (suspend (items: Item) -> Unit)? = null
+): Long {
+    return with(transaction) {
+        var takeNext = true
+        var deleted = 0L
+        while (takeNext) {
+            val results = openCursor(query)
+                .take(
+                    limit?.let { (it - deleted).coerceAtMost(chunkSize) } ?: chunkSize
+                ).map {
+                    it.value.unsafeCast<Item>()
+                }.toList()
+            results.forEach {
+                store.delete(Key(primaryKey(it)))
+                deleted++
+                onDelete?.invoke(it)
+            }
+            val hasNext = (chunkSize <= results.size)
+            takeNext = (hasNext && (limit?.let { deleted < it } ?: true))
+        }
+        deleted
     }
 }

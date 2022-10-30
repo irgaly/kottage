@@ -11,6 +11,7 @@ import io.github.irgaly.kottage.data.indexeddb.extension.jso
 import io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_event
 import io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_stats
 import io.github.irgaly.kottage.internal.database.Transaction
+import io.github.irgaly.kottage.internal.extension.deleteWithChunk
 import io.github.irgaly.kottage.internal.extension.take
 import io.github.irgaly.kottage.internal.model.ItemEvent
 import kotlinx.coroutines.flow.firstOrNull
@@ -96,27 +97,33 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
         onDelete: (suspend (id: String, itemType: String) -> Unit)?
     ): Long {
         return transaction.store { store ->
-            var deleted = 0L
-            (if (itemType != null) {
-                store.index("item_event_item_type_expire_at").openCursor(
-                    // item_type = itemType && expire_at <= now
-                    bound(
-                        arrayOf(itemType),
-                        arrayOf(itemType, now.toDouble())
-                    )
-                )
+            if (itemType != null) {
+                store.index("item_event_item_type_expire_at")
+                    .deleteWithChunk<Item_event, String>(
+                        this,
+                        store = store,
+                        query = bound(
+                            // item_type = itemType && expire_at <= now
+                            arrayOf(itemType),
+                            arrayOf(itemType, now.toDouble())
+                        ),
+                        chunkSize = 100L,
+                        primaryKey = { it.id }
+                    ) {
+                        onDelete?.invoke(it.id, it.item_type)
+                    }
             } else {
-                store.index("item_event_expire_at").openCursor(
-                    // expire_at <= now
-                    upperBound(now.toDouble())
-                )
-            }).collect { cursor ->
-                val event = cursor.value.unsafeCast<Item_event>()
-                cursor.delete()
-                onDelete?.invoke(event.id, event.item_type)
-                deleted++
+                store.index("item_event_expire_at")
+                    .deleteWithChunk<Item_event, String>(
+                        this,
+                        store = store,
+                        query = upperBound(now.toDouble()), // expire_at <= now
+                        chunkSize = 100L,
+                        primaryKey = { it.id }
+                    ) {
+                        onDelete?.invoke(it.id, it.item_type)
+                    }
             }
-            deleted
         }
     }
 

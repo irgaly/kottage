@@ -83,7 +83,7 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
     ) {
         transaction.store { store ->
             store.index("item_type_created_at")
-                .iterateWithChunk<io.github.irgaly.kottage.data.indexeddb.schema.entity.Item, Double>(
+                .iterateWithChunk<io.github.irgaly.kottage.data.indexeddb.schema.entity.Item, String, Double>(
                     this,
                     chunkSize = 100L,
                     primaryKey = { it.key },
@@ -115,7 +115,7 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
         transaction.store { store ->
             if (itemType != null) {
                 store.index("item_type_expire_at")
-                    .iterateWithChunk<io.github.irgaly.kottage.data.indexeddb.schema.entity.Item, Double>(
+                    .iterateWithChunk<io.github.irgaly.kottage.data.indexeddb.schema.entity.Item, String, Double>(
                         this,
                         chunkSize = 100L,
                         primaryKey = { it.key },
@@ -137,7 +137,7 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
                     }
             } else {
                 store.index("item_expire_at")
-                    .iterateWithChunk<io.github.irgaly.kottage.data.indexeddb.schema.entity.Item, Double>(
+                    .iterateWithChunk<io.github.irgaly.kottage.data.indexeddb.schema.entity.Item, String, Double>(
                         this,
                         chunkSize = 100L,
                         primaryKey = { it.key },
@@ -165,7 +165,7 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
     ) {
         transaction.store { store ->
             store.index("item_type_last_read_at")
-                .iterateWithChunk<io.github.irgaly.kottage.data.indexeddb.schema.entity.Item, Double>(
+                .iterateWithChunk<io.github.irgaly.kottage.data.indexeddb.schema.entity.Item, String, Double>(
                     this,
                     chunkSize = 100L,
                     primaryKey = { it.key },
@@ -196,7 +196,7 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
     ) {
         transaction.store { store ->
             store.index("item_type_created_at")
-                .iterateWithChunk<io.github.irgaly.kottage.data.indexeddb.schema.entity.Item, Double>(
+                .iterateWithChunk<io.github.irgaly.kottage.data.indexeddb.schema.entity.Item, String, Double>(
                     this,
                     chunkSize = 100L,
                     primaryKey = { it.key },
