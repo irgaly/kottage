@@ -44,7 +44,7 @@ jobs:
           restore-keys: ${{ runner.os }}-kotlin-native-${{ steps.get-month.outputs.month }}-
       - uses: actions/cache@v3
         with:
-          path:
+          path: |
             ~/.gradle/caches/build-cache-*
             ~/.gradle/caches/[0-9]*.*
             .gradle
