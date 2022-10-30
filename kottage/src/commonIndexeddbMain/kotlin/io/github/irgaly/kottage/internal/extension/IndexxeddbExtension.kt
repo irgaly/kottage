@@ -17,7 +17,7 @@ internal suspend fun <Item, PrimaryKey, SortKey> Queryable.iterateWithChunk(
     chunkSize: Long,
     primaryKey: (item: Item) -> PrimaryKey,
     sortKey: (item: Item) -> SortKey,
-    initialRange: Key,
+    initialRange: Key?,
     resumeRange: (lastItem: Item) -> Key,
     limit: Long? = null,
     block: suspend (items: Item) -> Boolean

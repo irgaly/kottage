@@ -10,6 +10,7 @@ import io.github.irgaly.kottage.data.indexeddb.extension.jso
 import io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_list
 import io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_list_stats
 import io.github.irgaly.kottage.internal.database.Transaction
+import io.github.irgaly.kottage.internal.extension.iterateWithChunk
 import io.github.irgaly.kottage.internal.extension.take
 import io.github.irgaly.kottage.internal.model.ItemListEntry
 import io.github.irgaly.kottage.internal.model.ItemListStats
@@ -177,20 +178,16 @@ internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
 
     override suspend fun getAllTypes(transaction: Transaction, receiver: suspend (type: String) -> Unit) {
         transaction.statsStore { store ->
-            val limit = 100L
-            var hasNext = true
-            var nextRange: Key? = null
-            while (hasNext) {
-                val results = store.openKeyCursor(nextRange)
-                    .take(limit)
-                    .map { cursor ->
-                        cursor.primaryKey.unsafeCast<String>()
-                    }.toList()
-                // indexeddb は cursor を開いている間に対象が delete されると cursor がずれてしまう。
-                // cursor を閉じてから小分けに receiver を実行する
-                results.forEach { receiver(it) }
-                nextRange = results.lastOrNull()?.let { lowerBound(it, open = true) }
-                hasNext = (limit <= results.size)
+            store.iterateWithChunk<Item_list_stats, String, String>(
+                this,
+                chunkSize = 100L,
+                primaryKey = { it.item_list_type },
+                sortKey = { it.item_list_type },
+                initialRange = null,
+                resumeRange = { lowerBound(it.item_list_type, open = true) }
+            ) {
+                receiver(it.item_list_type)
+                true
             }
         }
     }
