@@ -14,7 +14,7 @@ class KottageIndexeddbDatabase(
 ) {
     companion object {
         suspend fun open(name: String): KottageIndexeddbDatabase {
-            val database = openDatabase(name, 2) { database, oldVersion, newVersion ->
+            val database = openDatabase(name, 3) { database, oldVersion, newVersion ->
                 with(ItemStoreSchema()) { migrate(database, oldVersion, newVersion) }
                 with(ItemEventStoreSchema()) { migrate(database, oldVersion, newVersion) }
                 with(ItemListStoreSchema()) { migrate(database, oldVersion, newVersion) }
