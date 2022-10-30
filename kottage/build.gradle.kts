@@ -1,3 +1,4 @@
+import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
@@ -32,7 +33,19 @@ kotlin {
     macosArm64(configure = configureXcf)
     // JS
     js(IR) {
-        browser()
+        browser {
+            if (
+                System.getenv().containsKey("GITHUB_ACTIONS")
+                && OperatingSystem.current().isMacOsX
+            ) {
+                testTask {
+                    useKarma {
+                        useChromeHeadless()
+                        useConfigDirectory(rootProject.file(".github/karma.config.d"))
+                    }
+                }
+            }
+        }
         // nodejs has no indexeddb support
         //nodejs()
     }
@@ -75,6 +88,13 @@ kotlin {
         val jsMain by getting {
             dependsOn(commonIndexeddbMain)
             dependencies {
+            }
+        }
+        val jsTest by getting {
+            dependencies {
+                // karma-safarinative-launcher だけが Safari を起動できる
+                // https://github.com/karma-runner/karma-safari-launcher/issues/29#issuecomment-870387251
+                implementation(devNpm("karma-safarinative-launcher", "1.1.0"))
             }
         }
         val nativeMain by getting {
