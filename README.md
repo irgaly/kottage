@@ -295,19 +295,32 @@ override fun onCreate(...) { // for example: onCreate
 Kottage is a Kotlin Multiplatform library. Please feel free to report a issue if it doesn't
 work correctly on these platforms.
 
-| Platform              | Target                                                         | Status                                                                        |
-|-----------------------|----------------------------------------------------------------|-------------------------------------------------------------------------------|
-| Kotlin/JVM            | jvm                                                            | :white_check_mark: Supported, :white_check_mark: Tested                       |
-| Kotlin/JS             | js                                                             | :x: Not supported, support in future release.                                 |
-| Kotlin/Android        | android                                                        | :white_check_mark: Supported, :tired_face: currently no automated unit tests. |
-| Kotlin/Native iOS     | iosArm64<br>iosX64(simulator)<br>iosSimulatorArm64             | :white_check_mark: Supported, :+1: Tested as Darwin on macOS                  |
-| Kotlin/Native watchOS | watchosArm64<br>watchosX64(simulator)<br>watchosSimulatorArm64 | :white_check_mark: Supported, :+1: Tested as Darwin on macOS                  |
-| Kotlin/Native tvOS    | tvosArm64<br>tvosX64(simulator)<br>tvosSimulatorArm64          | :white_check_mark: Supported, :+1: Tested as Darwin on macOS                  |
-| Kotlin/Native macOS   | macosArm64<br>macosX64                                         | :white_check_mark: Supported, :white_check_mark: Tested                       |
-| Kotlin/Native Linux   | linuxX64                                                       | :white_check_mark: Supported, :tired_face: currently no automated unit tests. |
-| Kotlin/Native Windows | mingwX64                                                       | :white_check_mark: Supported, :tired_face: currently no automated unit tests. |
+| Platform              | Target                                                         | Status                                                                                   |
+|-----------------------|----------------------------------------------------------------|------------------------------------------------------------------------------------------|
+| Kotlin/JVM            | jvm                                                            | :white_check_mark: Supported, :white_check_mark: Tested                                  |
+| Kotlin/JS             | js browser                                                     | :white_check_mark: Supported, :white_check_mark: Tested on macOS Chrome and macOS Safari |
+| Kotlin/JS             | js nodejs                                                      | :x: Not supported, support in future release.                                            |
+| Kotlin/Android        | android                                                        | :white_check_mark: Supported, :tired_face: currently no automated unit tests.            |
+| Kotlin/Native iOS     | iosArm64<br>iosX64(simulator)<br>iosSimulatorArm64             | :white_check_mark: Supported, :+1: Tested as Darwin on macOS                             |
+| Kotlin/Native watchOS | watchosArm64<br>watchosX64(simulator)<br>watchosSimulatorArm64 | :white_check_mark: Supported, :+1: Tested as Darwin on macOS                             |
+| Kotlin/Native tvOS    | tvosArm64<br>tvosX64(simulator)<br>tvosSimulatorArm64          | :white_check_mark: Supported, :+1: Tested as Darwin on macOS                             |
+| Kotlin/Native macOS   | macosArm64<br>macosX64                                         | :white_check_mark: Supported, :white_check_mark: Tested                                  |
+| Kotlin/Native Linux   | linuxX64                                                       | :white_check_mark: Supported, :tired_face: currently no automated unit tests.            |
+| Kotlin/Native Windows | mingwX64                                                       | :white_check_mark: Supported, :tired_face: currently no automated unit tests.            |
 
-There is also [Kottage for SwiftPM](https://github.com/irgaly/kottage-package) that is **just for experimental** build.
+There is also [Kottage for SwiftPM](https://github.com/irgaly/kottage-package) that is **just for
+experimental** build.
+
+## Kotlin/JS (js Browser) Support
+
+Kottage supports Kottage/JS Browser. Kottage uses IndexedDB as persistent database instead of
+SQLite.
+
+Browsers will clear IndexedDB data when user's disk storage gets low disk space.
+You can request browsers your IndexedDB's data not to be cleared by using `StorageManager.persist()`
+.
+See [Web API documents](https://developer.mozilla.org/en-US/docs/Web/API/StorageManager/persist) for
+more details.
 
 # Kottage Internals
 
