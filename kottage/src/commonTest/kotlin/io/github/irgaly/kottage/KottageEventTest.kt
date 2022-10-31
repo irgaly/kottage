@@ -55,6 +55,7 @@ class KottageEventTest : KottageSpec("kottage_event", body = {
             it("Simple Event を受け取れること") {
                 val (kottage, calendar) = kottage("event")
                 val storage = kottage.cache("event")
+                val storage2 = kottage.cache("event2")
                 kottage.simpleEventFlow.test {
                     calendar.now += 1.seconds
                     storage.put("key1", "value")
@@ -62,6 +63,11 @@ class KottageEventTest : KottageSpec("kottage_event", body = {
                     calendar.now += 1.seconds
                     storage.remove("key1")
                     awaitItem().eventType shouldBe KottageEventType.Delete
+                    calendar.now += 1.seconds
+                    storage.put("key2", "value2")
+                    storage2.put("storage2_key", "value")
+                    awaitItem().itemType shouldBe storage.name
+                    awaitItem().itemType shouldBe storage2.name
                 }
             }
             it("List Event を受け取れること") {
