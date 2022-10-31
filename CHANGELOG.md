@@ -1,3 +1,23 @@
+# v1.3.0 - 2022/10/31 JST
+
+#### Features
+
+* :tada: Kotlin/JS browser support [#58](https://github.com/irgaly/kottage/pull/58)
+
+#### Changes
+
+* change: Database schema to v3
+  * add item_expire_at index [#59](https://github.com/irgaly/kottage/pull/59)
+  * fix item_list_type_item_type_expire_at to
+    item_list_type_item_key_expire_at [#62](https://github.com/irgaly/kottage/pull/61)
+  * remove unused index [#63](https://github.com/irgaly/kottage/pull/63)
+
+#### Fix
+
+* fix model class's internal modifier [#71](https://github.com/irgaly/kottage/pull/71)
+* fix Event can not be received when that has same create_at
+  time [72](https://github.com/irgaly/kottage/pull/72)
+
 # v1.2.0 - 2022/10/22 JST
 
 #### Changes
