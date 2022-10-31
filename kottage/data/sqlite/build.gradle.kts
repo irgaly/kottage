@@ -24,6 +24,7 @@ kotlin {
         }
         commonTest {
             dependencies {
+                implementation(projects.kottage.core.test)
             }
         }
         val androidMain by getting {
@@ -34,11 +35,6 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation(libs.sqldelight.driver.jvm)
-            }
-        }
-        val jvmTest by getting {
-            dependencies {
-                implementation(projects.kottage.core.test)
             }
         }
         val nativeMain by getting {
