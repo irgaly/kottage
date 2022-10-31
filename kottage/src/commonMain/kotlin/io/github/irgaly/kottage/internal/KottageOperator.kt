@@ -406,7 +406,7 @@ internal class KottageOperator(
         eventType: ItemEventType
     ): String {
         val id = Id.generateUuidV4Short()
-        val latestCreatedAt = (itemEventRepository.getLatestCreatedAt(transaction, itemType) ?: 0)
+        val latestCreatedAt = (itemEventRepository.getLatestCreatedAt(transaction) ?: 0)
         val createdAt = now.coerceAtLeast(latestCreatedAt + 1)
         val expireAt = eventExpireTime?.let { duration ->
             (createdAt + duration.inWholeMilliseconds)

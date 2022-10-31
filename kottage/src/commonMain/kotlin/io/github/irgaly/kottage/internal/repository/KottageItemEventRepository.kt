@@ -12,7 +12,7 @@ internal interface KottageItemEventRepository {
         limit: Long? = null
     ): List<ItemEvent>
 
-    suspend fun getLatestCreatedAt(transaction: Transaction, itemType: String): Long?
+    suspend fun getLatestCreatedAt(transaction: Transaction): Long?
     suspend fun getCount(transaction: Transaction, itemType: String): Long
     suspend fun delete(transaction: Transaction, id: String)
     suspend fun deleteExpiredEvents(

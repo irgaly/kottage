@@ -56,16 +56,12 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
         }
     }
 
-    override suspend fun getLatestCreatedAt(transaction: Transaction, itemType: String): Long? {
+    override suspend fun getLatestCreatedAt(transaction: Transaction): Long? {
         return transaction.store { store ->
-            store.index("item_event_item_type_created_at")
+            store.index("item_event_created_at")
                 .openCursor(
-                    // item_type = itemType && created_at DESC
-                    bound(
-                        arrayOf(itemType),
-                        arrayOf(itemType, emptyArray<Any>())
-                    ),
-                    Cursor.Direction.Previous
+                    // created_at DESC
+                    direction = Cursor.Direction.Previous
                 ).map { cursor ->
                     cursor.value.unsafeCast<Item_event>().created_at.toLong()
                 }.firstOrNull()

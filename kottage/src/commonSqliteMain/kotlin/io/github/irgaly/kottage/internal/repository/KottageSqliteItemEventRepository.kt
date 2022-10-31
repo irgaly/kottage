@@ -52,9 +52,9 @@ internal class KottageSqliteItemEventRepository(
         }
     }
 
-    override suspend fun getLatestCreatedAt(transaction: Transaction, itemType: String): Long? {
+    override suspend fun getLatestCreatedAt(transaction: Transaction): Long? {
         return database.item_eventQueries
-            .selectItemTypeLatestCreatedAt(itemType)
+            .selectLatestCreatedAt()
             .executeAsOneOrNull()
     }
 
