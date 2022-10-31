@@ -1,42 +1,51 @@
 package io.github.irgaly.kottage.internal.repository
 
+import io.github.irgaly.kottage.internal.database.Transaction
 import io.github.irgaly.kottage.internal.model.Item
 import io.github.irgaly.kottage.internal.model.ItemStats
 
 internal interface KottageItemRepository {
-    fun upsert(item: Item)
-    fun updateLastRead(key: String, itemType: String, lastReadAt: Long)
-    fun updateExpireAt(key: String, itemType: String, expireAt: Long)
-    fun exists(key: String, itemType: String): Boolean
-    fun get(key: String, itemType: String): Item?
-    fun getCount(itemType: String): Long
-    fun getAllKeys(itemType: String, receiver: (key: String) -> Unit)
-    fun getExpiredKeys(
+    suspend fun upsert(transaction: Transaction, item: Item)
+    suspend fun updateLastRead(transaction: Transaction, key: String, itemType: String, lastReadAt: Long)
+    suspend fun updateExpireAt(transaction: Transaction, key: String, itemType: String, expireAt: Long)
+    suspend fun exists(transaction: Transaction, key: String, itemType: String): Boolean
+    suspend fun get(transaction: Transaction, key: String, itemType: String): Item?
+    suspend fun getCount(transaction: Transaction, itemType: String): Long
+    suspend fun getAllKeys(
+        transaction: Transaction,
+        itemType: String,
+        receiver: suspend (key: String) -> Unit
+    )
+
+    suspend fun getExpiredKeys(
+        transaction: Transaction,
         now: Long,
         itemType: String? = null,
-        receiver: (key: String, itemType: String) -> Unit
+        receiver: suspend (key: String, itemType: String) -> Unit
     )
 
-    fun getLeastRecentlyUsedKeys(
+    suspend fun getLeastRecentlyUsedKeys(
+        transaction: Transaction,
         itemType: String,
         limit: Long?,
-        receiver: (key: String) -> Boolean
+        receiver: suspend (key: String) -> Boolean
     )
 
-    fun getOlderKeys(
+    suspend fun getOlderKeys(
+        transaction: Transaction,
         itemType: String,
         limit: Long?,
-        receiver: (key: String) -> Boolean
+        receiver: suspend (key: String) -> Boolean
     )
 
-    fun getStats(itemType: String): ItemStats?
-    fun getEmptyStats(limit: Long): List<ItemStats>
+    suspend fun getStats(transaction: Transaction, itemType: String): ItemStats?
+    suspend fun getEmptyStats(transaction: Transaction, limit: Long): List<ItemStats>
 
-    fun delete(key: String, itemType: String)
-    fun deleteAll(itemType: String)
-    fun getStatsCount(itemType: String): Long
-    fun incrementStatsCount(itemType: String, count: Long)
-    fun decrementStatsCount(itemType: String, count: Long)
-    fun updateStatsCount(itemType: String, count: Long)
-    fun deleteStats(itemType: String)
+    suspend fun delete(transaction: Transaction, key: String, itemType: String)
+    suspend fun deleteAll(transaction: Transaction, itemType: String)
+    suspend fun getStatsCount(transaction: Transaction, itemType: String): Long
+    suspend fun incrementStatsCount(transaction: Transaction, itemType: String, count: Long)
+    suspend fun decrementStatsCount(transaction: Transaction, itemType: String, count: Long)
+    suspend fun updateStatsCount(transaction: Transaction, itemType: String, count: Long)
+    suspend fun deleteStats(transaction: Transaction, itemType: String)
 }

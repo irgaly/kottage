@@ -15,7 +15,7 @@ class KottageCacheTest : KottageSpec("kottage_cache", body = {
         context("Cache Expire") {
             val (kottage, calendar) = kottage()
             it("defaultExpireTime 経過で cache が消えること") {
-                val cache = kottage.cache("cache1") {
+                val cache = kottage.cache("defaultExpireTime") {
                     defaultExpireTime = 1.days.duration
                 }
                 cache.put("expire1", "value")
@@ -31,7 +31,7 @@ class KottageCacheTest : KottageSpec("kottage_cache", body = {
                 }
             }
             it("put expireTime 経過で cache が消えること") {
-                val cache = kottage.cache("cache2") {
+                val cache = kottage.cache("put_expireTime") {
                     defaultExpireTime = 2.days.duration
                 }
                 cache.put("expire1", "value", 1.days.duration)
@@ -53,7 +53,7 @@ class KottageCacheTest : KottageSpec("kottage_cache", body = {
             val (compactionKottage, calendar) = kottage("compaction") {
                 autoCompactionDuration = 1.days.duration
             }
-            val cache = compactionKottage.cache("cache1") {
+            val cache = compactionKottage.cache("cache") {
                 defaultExpireTime = 2.days.duration
             }
             it("autoCompactionDuration 経過で cache が自動削除される") {
@@ -75,11 +75,13 @@ class KottageCacheTest : KottageSpec("kottage_cache", body = {
         }
         context("FIFO Strategy") {
             val (kottage, calendar) = kottage()
-            val cache = kottage.cache("cache2") {
-                strategy = KottageFifoStrategy(4, 2)
+            val cache = kottage.cache("fifo") {
+                strategy = KottageFifoStrategy(5, 3)
             }
             it("maxEntryCount を超えたら reduceCount だけ削除される") {
                 cache.put("1", "")
+                // created_at 重複のテスト
+                cache.put("1_2", "")
                 calendar.now += 1.milliseconds
                 cache.put("2", "")
                 calendar.now += 1.milliseconds
@@ -89,6 +91,7 @@ class KottageCacheTest : KottageSpec("kottage_cache", body = {
                 calendar.now += 1.milliseconds
                 cache.put("5", "")
                 cache.exists("1") shouldBe false
+                cache.exists("1_2") shouldBe false
                 cache.exists("2") shouldBe false
                 cache.exists("3") shouldBe true
                 cache.exists("4") shouldBe true
@@ -97,7 +100,7 @@ class KottageCacheTest : KottageSpec("kottage_cache", body = {
         }
         context("LRU Strategy") {
             val (kottage, calendar) = kottage()
-            val cache = kottage.cache("cache3") {
+            val cache = kottage.cache("lru") {
                 strategy = KottageLruStrategy(4, 2)
             }
             it("maxEntryCount を超えたら reduceCount だけ削除される") {

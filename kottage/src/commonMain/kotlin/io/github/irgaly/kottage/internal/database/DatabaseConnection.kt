@@ -8,12 +8,12 @@ internal expect class DatabaseConnection {
     /**
      * Exclusive Transaction
      */
-    suspend fun <R> transactionWithResult(bodyWithReturn: () -> R): R
+    suspend fun <R> transactionWithResult(bodyWithReturn: suspend Transaction.() -> R): R
 
     /**
      * Exclusive Transaction
      */
-    suspend fun transaction(body: () -> Unit)
+    suspend fun transaction(body: suspend Transaction.() -> Unit)
 
 
     /**

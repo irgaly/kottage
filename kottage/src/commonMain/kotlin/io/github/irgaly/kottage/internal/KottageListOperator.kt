@@ -3,6 +3,7 @@ package io.github.irgaly.kottage.internal
 import io.github.irgaly.kottage.KottageListDirection
 import io.github.irgaly.kottage.KottageListOptions
 import io.github.irgaly.kottage.KottageStorageOptions
+import io.github.irgaly.kottage.internal.database.Transaction
 import io.github.irgaly.kottage.internal.model.Item
 import io.github.irgaly.kottage.internal.model.ItemEventType
 import io.github.irgaly.kottage.internal.model.ItemListEntry
@@ -33,14 +34,19 @@ internal class KottageListOperator(
      *
      * @param entries previousId, nextId が正しく設定された Entry
      */
-    fun addListEntries(entries: List<ItemListEntry>, now: Long) {
+    suspend fun addListEntries(
+        transaction: Transaction,
+        entries: List<ItemListEntry>,
+        now: Long
+    ) {
         if (entries.isNotEmpty()) {
-            val hasStats = (itemListRepository.getStats(type = listType) != null)
+            val hasStats = (itemListRepository.getStats(transaction, type = listType) != null)
             val first = entries.first()
             val last = entries.last()
             entries.forEach { entry ->
-                itemListRepository.upsert(entry)
+                itemListRepository.upsert(transaction, entry)
                 operator.addEvent(
+                    transaction,
                     now = now,
                     eventType = ItemEventType.Create,
                     eventExpireTime = storageOptions.eventExpireTime,
@@ -52,30 +58,42 @@ internal class KottageListOperator(
                 )
             }
             first.previousId?.let { previousId ->
-                itemListRepository.updateNextId(id = previousId, nextId = first.id)
+                itemListRepository.updateNextId(
+                    transaction,
+                    id = previousId,
+                    nextId = first.id
+                )
             }
             last.nextId?.let { nextId ->
-                itemListRepository.updatePreviousId(id = nextId, previousId = last.id)
+                itemListRepository.updatePreviousId(
+                    transaction,
+                    id = nextId,
+                    previousId = last.id
+                )
             }
             if (hasStats) {
                 if (first.isFirst) {
                     itemListRepository.updateStatsFirstItem(
+                        transaction,
                         type = listType,
                         id = first.id
                     )
                 }
                 if (last.isLast) {
                     itemListRepository.updateStatsLastItem(
+                        transaction,
                         type = listType,
                         id = last.id
                     )
                 }
                 itemListRepository.incrementStatsCount(
+                    transaction,
                     type = listType,
                     count = entries.size.toLong()
                 )
             } else {
                 itemListRepository.createStats(
+                    transaction,
                     type = listType,
                     count = entries.size.toLong(),
                     firstItemListEntryId = entries.first().id,
@@ -90,10 +108,11 @@ internal class KottageListOperator(
      *
      * positionId の ItemListEntry を取得する
      */
-    fun getListItem(
+    suspend fun getListItem(
+        transaction: Transaction,
         positionId: String
     ): ItemListEntry? {
-        return itemListRepository.get(positionId)?.let { entry ->
+        return itemListRepository.get(transaction, positionId)?.let { entry ->
             if (entry.type == listType) entry else null
         }
     }
@@ -103,14 +122,15 @@ internal class KottageListOperator(
      *
      * positionId からたどり、有効な Entry があればそれを返す
      */
-    fun getAvailableListEntry(
+    suspend fun getAvailableListEntry(
+        transaction: Transaction,
         positionId: String,
         direction: KottageListDirection
     ): ItemListEntry? {
         var nextId: String? = positionId
         var entry: ItemListEntry? = null
         while (entry == null && nextId != null) {
-            val current = itemListRepository.get(nextId)
+            val current = itemListRepository.get(transaction, nextId)
             nextId = when (direction) {
                 KottageListDirection.Forward -> current?.nextId
                 KottageListDirection.Backward -> current?.previousId
@@ -130,20 +150,26 @@ internal class KottageListOperator(
     /**
      * This should be called in transaction
      */
-    fun removeListItem(positionId: String, now: Long): Boolean {
-        val entry = itemListRepository.get(positionId)
+    suspend fun removeListItem(
+        transaction: Transaction,
+        positionId: String,
+        now: Long
+    ): Boolean {
+        val entry = itemListRepository.get(transaction, positionId)
         return if ((entry != null) &&
             entry.itemExists &&
             (entry.type == listType)
         ) {
             val itemKey = checkNotNull(entry.itemKey)
             storageOperator.removeListItemInternal(
+                transaction,
                 positionId = positionId,
                 listType = listType,
                 now = now,
                 entry = entry
             )
             operator.addEvent(
+                transaction,
                 now = now,
                 eventType = ItemEventType.Delete,
                 eventExpireTime = storageOptions.eventExpireTime,
@@ -160,26 +186,28 @@ internal class KottageListOperator(
     /**
      * This should be called in transaction
      */
-    fun getFirstItemPositionId(): String? {
-        return itemListRepository.getStats(listType)?.firstItemPositionId
+    suspend fun getFirstItemPositionId(transaction: Transaction): String? {
+        return itemListRepository.getStats(transaction, listType)?.firstItemPositionId
     }
 
     /**
      * This should be called in transaction
      */
-    fun getLastItemPositionId(): String? {
-        return itemListRepository.getStats(listType)?.lastItemPositionId
+    suspend fun getLastItemPositionId(transaction: Transaction): String? {
+        return itemListRepository.getStats(transaction, listType)?.lastItemPositionId
     }
 
     /**
      * This should be called in transaction
      */
-    fun updateItemKey(
+    suspend fun updateItemKey(
+        transaction: Transaction,
         positionId: String,
         item: Item,
         now: Long
     ) {
         itemListRepository.updateItemKey(
+            transaction,
             id = positionId,
             itemType = item.type,
             itemKey = item.key,
@@ -188,6 +216,7 @@ internal class KottageListOperator(
             }
         )
         operator.addEvent(
+            transaction,
             now = now,
             eventType = ItemEventType.Update,
             eventExpireTime = storageOptions.eventExpireTime,
@@ -204,37 +233,45 @@ internal class KottageListOperator(
      *
      * * リスト全体から削除可能な entity を取り除く
      */
-    fun evictExpiredEntries(now: Long) {
+    suspend fun evictExpiredEntries(
+        transaction: Transaction,
+        now: Long
+    ) {
         operator.evictExpiredListEntries(
-            listType = listType,
+            transaction,
             now = now,
-            beforeExpireAt = null
+            beforeExpireAt = null,
+            listType = listType
         )
     }
 
     /**
      * This should be called in transaction
      */
-    fun invalidateExpiredListEntries(now: Long) {
-        operator.invalidateExpiredListEntries(now = now, listType = listType)
+    suspend fun invalidateExpiredListEntries(
+        transaction: Transaction,
+        now: Long
+    ) {
+        operator.invalidateExpiredListEntries(transaction, now = now, listType = listType)
     }
 
     /**
      * This should be called in transaction
      */
-    fun clear() {
-        itemListRepository.deleteAll(type = listType)
-        itemListRepository.deleteStats(type = listType)
-        itemEventRepository.deleteAllList(listType = listType)
+    suspend fun clear(transaction: Transaction) {
+        itemListRepository.deleteAll(transaction, type = listType)
+        itemListRepository.deleteStats(transaction, type = listType)
+        itemEventRepository.deleteAllList(transaction, listType = listType)
     }
 
     /**
      * This should be called in transaction
      */
-    fun getDebugStatus(): String {
-        val stats = itemListRepository.getStats(type = listType)
-        val invalidatedItemsCount = itemListRepository.getInvalidatedItemCount(type = listType)
-        val itemsCount = itemListRepository.getCount(type = listType)
+    suspend fun getDebugStatus(transaction: Transaction): String {
+        val stats = itemListRepository.getStats(transaction, type = listType)
+        val invalidatedItemsCount =
+            itemListRepository.getInvalidatedItemCount(transaction, type = listType)
+        val itemsCount = itemListRepository.getCount(transaction, type = listType)
         return """
         available items: ${stats?.count ?: "(no stats)"}
         invalidated items: $invalidatedItemsCount
@@ -245,17 +282,21 @@ internal class KottageListOperator(
     /**
      * This should be called in transaction
      */
-    fun getDebugListRawData(): String {
+    suspend fun getDebugListRawData(transaction: Transaction): String {
         val data = StringBuilder()
-        val stats = itemListRepository.getStats(type = listType)
+        val stats = itemListRepository.getStats(transaction, type = listType)
         if (stats != null) {
             var nextId: String? = stats.firstItemPositionId
             data.appendLine("[first] ${stats.firstItemPositionId}")
             while (nextId != null) {
-                val entry = itemListRepository.get(nextId)
+                val entry = itemListRepository.get(transaction, nextId)
                 if (entry != null) {
                     val item = entry.itemKey?.let { itemKey ->
-                        itemRepository.get(key = itemKey, itemType = entry.itemType)
+                        itemRepository.get(
+                            transaction,
+                            key = itemKey,
+                            itemType = entry.itemType
+                        )
                     }
                     data.appendLine(
                         "-> [${entry.id} : expireAt = ${entry.expireAt}]"

@@ -53,6 +53,12 @@ jobs:
       - name: Native macOS X64 Test
         run: |
           ./gradlew macosX64Test
+      - name: JS Browser Test Build
+        run: |
+          ./gradlew jsTestClasses
+      - name: JS Browser Test
+        run: |
+          ./gradlew jsTest
       - uses: EnricoMi/publish-unit-test-result-action/composite@v2
         if: always()
         with:

@@ -9,14 +9,12 @@ android {
 }
 
 kotlin {
-    /*
     // JS
     js(IR) {
         browser()
         // nodejs has no indexeddb support
         //nodejs()
     }
-     */
     sourceSets {
         commonMain {
             dependencies {

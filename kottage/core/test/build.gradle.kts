@@ -3,11 +3,9 @@ plugins {
 }
 
 kotlin {
-    /*
     js(IR) {
         browser()
     }
-     */
     sourceSets {
         commonMain {
             dependencies {

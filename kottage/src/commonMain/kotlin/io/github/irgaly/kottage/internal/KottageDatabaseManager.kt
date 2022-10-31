@@ -5,6 +5,7 @@ import io.github.irgaly.kottage.KottageEventFlow
 import io.github.irgaly.kottage.KottageList
 import io.github.irgaly.kottage.KottageOptions
 import io.github.irgaly.kottage.KottageStorage
+import io.github.irgaly.kottage.internal.database.Transaction
 import io.github.irgaly.kottage.internal.database.createDatabaseConnection
 import io.github.irgaly.kottage.internal.model.ItemEvent
 import io.github.irgaly.kottage.internal.model.ItemEventFlow
@@ -101,10 +102,10 @@ internal class KottageDatabaseManager(
         )
     }
 
-    suspend fun <R> transactionWithResult(bodyWithReturn: () -> R): R =
+    suspend fun <R> transactionWithResult(bodyWithReturn: suspend Transaction.() -> R): R =
         databaseConnection.transactionWithResult(bodyWithReturn)
 
-    suspend fun transaction(body: () -> Unit) = databaseConnection.transaction(body)
+    suspend fun transaction(body: suspend Transaction.() -> Unit) = databaseConnection.transaction(body)
     suspend fun deleteAll() {
         databaseConnection.deleteAll()
     }
@@ -116,22 +117,23 @@ internal class KottageDatabaseManager(
             now - it.inWholeMilliseconds
         }
         val compactionRequired = databaseConnection.transactionWithResult {
-            val required = (force || operator.getAutoCompactionNeeded(now))
+            val required = (force || operator.getAutoCompactionNeeded(this, now))
             if (required) {
                 if (beforeExpireAt != null) {
                     // List Entry の自動削除が有効
                     operator.evictExpiredListEntries(
+                        this,
                         now = now,
                         beforeExpireAt = beforeExpireAt
                     )
                 } else {
                     // List Entry Invalidate のみ
-                    operator.invalidateExpiredListEntries(now = now)
+                    operator.invalidateExpiredListEntries(this, now = now)
                 }
-                operator.evictCaches(now)
-                operator.evictEvents(now)
-                operator.evictEmptyStats()
-                operator.updateLastEvictAt(now)
+                operator.evictCaches(this, now)
+                operator.evictEvents(this, now)
+                operator.evictEmptyStats(this)
+                operator.updateLastEvictAt(this, now)
             }
             required
         }
@@ -160,6 +162,7 @@ internal class KottageDatabaseManager(
             while (remains) {
                 val events = databaseConnection.transactionWithResult {
                     operator.getEvents(
+                        this,
                         afterUnixTimeMillisAt = lastEventTime,
                         limit = limit
                     )

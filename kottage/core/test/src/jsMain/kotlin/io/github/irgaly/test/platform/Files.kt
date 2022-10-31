@@ -3,11 +3,11 @@ package io.github.irgaly.test.platform
 actual class Files {
     actual companion object {
         actual fun createTemporaryDirectory(): String {
-            throw NotImplementedError()
+            return "js-dummy-temporary-directory"
         }
 
         actual fun deleteRecursively(directoryPath: String): Boolean {
-            throw NotImplementedError()
+            return true
         }
     }
 }

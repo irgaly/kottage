@@ -15,6 +15,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 internal actual data class DatabaseConnection(
@@ -36,7 +37,7 @@ internal actual data class DatabaseConnection(
         return body(sqlDriver.await(), database.await())
     }
 
-    actual suspend fun <R> transactionWithResult(bodyWithReturn: () -> R): R =
+    actual suspend fun <R> transactionWithResult(bodyWithReturn: suspend Transaction.() -> R): R =
         withContext(dispatcher) {
             withDatabase { sqlDriver, database ->
                 database.transactionWithResult {
@@ -44,19 +45,40 @@ internal actual data class DatabaseConnection(
                     // restart transaction with EXCLUSIVE
                     sqlDriver.execute(null, "END", 0)
                     sqlDriver.execute(null, "BEGIN EXCLUSIVE", 0)
-                    bodyWithReturn()
+                    var result: R? = null
+                    var finished = false
+                    launch(start = CoroutineStart.UNDISPATCHED) {
+                        // SQLite Transaction はスレッド切り替えなしで実行する
+                        result = bodyWithReturn(Transaction())
+                        finished = true
+                    }
+                    if (!finished) {
+                        // スレッド切り替えなしで実行されたことを保証する
+                        error("database transaction invalid thread error")
+                    }
+                    @Suppress("UNCHECKED_CAST")
+                    result as R
                 }
             }
         }
 
-    actual suspend fun transaction(body: () -> Unit) = withContext(dispatcher) {
+    actual suspend fun transaction(body: suspend Transaction.() -> Unit) = withContext(dispatcher) {
         withDatabase { sqlDriver, database ->
             database.transaction {
                 // here: SQLDelight Transaction = DEFERRED (default)
                 // restart transaction with EXCLUSIVE
                 sqlDriver.execute(null, "END", 0)
                 sqlDriver.execute(null, "BEGIN EXCLUSIVE", 0)
-                body()
+                var finished = false
+                launch(start = CoroutineStart.UNDISPATCHED) {
+                    // SQLite Transaction はスレッド切り替えなしで実行する
+                    body(Transaction())
+                    finished = true
+                }
+                if (!finished) {
+                    // スレッド切り替えなしで実行されたことを保証する
+                    error("database transaction invalid thread error")
+                }
             }
         }
     }
