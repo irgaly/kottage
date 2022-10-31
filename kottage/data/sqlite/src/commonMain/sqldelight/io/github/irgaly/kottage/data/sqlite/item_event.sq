@@ -31,8 +31,8 @@ SELECT id, created_at, expire_at, item_type, item_key, item_list_id, item_list_t
 selectItemTypeAfterCreatedAtLimit:
 SELECT id, created_at, expire_at, item_type, item_key, item_list_id, item_list_type, event_type FROM item_event WHERE item_type = ? AND ? < created_at ORDER BY created_at ASC LIMIT :limit;
 
-selectItemTypeLatestCreatedAt:
-SELECT created_at FROM item_event WHERE item_type = ? ORDER BY created_at DESC LIMIT 1;
+selectLatestCreatedAt:
+SELECT created_at FROM item_event ORDER BY created_at DESC LIMIT 1;
 
 selectOlderCreatedIds:
 SELECT id FROM item_event WHERE item_type = ? ORDER BY created_at ASC LIMIT :limit;
