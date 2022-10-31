@@ -17,10 +17,6 @@ kotlin {
         }
         commonTest {
             dependencies {
-            }
-        }
-        val jvmTest by getting {
-            dependencies {
                 implementation(projects.kottage.core.test)
             }
         }
