@@ -9,7 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - id: get-month
-        run: echo "::set-output name=month::$(TZ=Asia/Tokyo date +%m)"
+        run: echo "month=$(TZ=Asia/Tokyo date +%m)" >> $GITHUB_OUTPUT
       - uses: actions/setup-java@v3
         with:
           distribution: temurin
