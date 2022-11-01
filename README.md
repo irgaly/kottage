@@ -299,7 +299,7 @@ work correctly on these platforms.
 |-----------------------|----------------------------------------------------------------|------------------------------------------------------------------------------------------|
 | Kotlin/JVM            | jvm                                                            | :white_check_mark: Supported, :white_check_mark: Tested                                  |
 | Kotlin/JS             | js browser                                                     | :white_check_mark: Supported, :white_check_mark: Tested on macOS Chrome and macOS Safari |
-| Kotlin/JS             | js nodejs                                                      | :x: Not supported, support in future release.                                            |
+| Kotlin/JS             | js nodejs                                                      | - Not supported, support in future release.                                            |
 | Kotlin/Android        | android                                                        | :white_check_mark: Supported, :tired_face: currently no automated unit tests.            |
 | Kotlin/Native iOS     | iosArm64<br>iosX64(simulator)<br>iosSimulatorArm64             | :white_check_mark: Supported, :+1: Tested as Darwin on macOS                             |
 | Kotlin/Native watchOS | watchosArm64<br>watchosX64(simulator)<br>watchosSimulatorArm64 | :white_check_mark: Supported, :+1: Tested as Darwin on macOS                             |
