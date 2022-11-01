@@ -29,21 +29,42 @@ Kotlin Multiplatform Key-Value Store Local Cache Storage for Single Source of Tr
 
 Add Kottage as gradle dependency.
 
+### Kotlin Multiplatform:
+
 `build.gradle.kts`
 
 ```kotlin
-// For Kotlin Multiplatform
+// For Kotlin Multiplatform:
+plugins {
+    kotlin("multiplatform")
+}
+
 kotlin {
     sourceSets {
         commonMain {
             implementation("io.github.irgaly.kottage:kottage:1.3.0")
         }
     }
+    // ...
+}
+```
+
+### Android or JVM without Kotlin Multiplatform:
+
+`build.gradle.kts`
+
+```kotlin
+// For Kotlin/JVM or Kotlin/Android without Kotlin Multiplatform:
+plugins {
+    id("com.android.application")
+    kotlin("android")
+    // kotlin("jvm") // for JVM Application
 }
 
-// It can be used as a JVM library for Kotlin/JVM or Kotlin/Android
 dependencies {
+    // You can use as JVM library directly
     implementation("io.github.irgaly.kottage:kottage:1.3.0")
+    // ...
 }
 ```
 
