@@ -142,21 +142,33 @@ internal class KottageSqliteItemEventRepository(
             .executeAsOneOrNull()?.event_count ?: 0L
     }
 
-    override suspend fun incrementStatsCount(transaction: Transaction, itemType: String, count: Long) {
+    override suspend fun incrementStatsCount(
+        transaction: Transaction,
+        itemType: String,
+        count: Long
+    ) {
         database.item_statsQueries
             .insertIfNotExists(itemType)
         database.item_statsQueries
             .incrementEventCount(count, itemType)
     }
 
-    override suspend fun decrementStatsCount(transaction: Transaction, itemType: String, count: Long) {
+    override suspend fun decrementStatsCount(
+        transaction: Transaction,
+        itemType: String,
+        count: Long
+    ) {
         database.item_statsQueries
             .insertIfNotExists(itemType)
         database.item_statsQueries
             .decrementEventCount(count, itemType)
     }
 
-    override suspend fun updateStatsCount(transaction: Transaction, itemType: String, count: Long) {
+    override suspend fun updateStatsCount(
+        transaction: Transaction,
+        itemType: String,
+        count: Long
+    ) {
         database.item_statsQueries
             .insertIfNotExists(itemType)
         database.item_statsQueries

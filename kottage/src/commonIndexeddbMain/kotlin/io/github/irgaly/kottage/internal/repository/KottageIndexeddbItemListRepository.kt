@@ -9,6 +9,7 @@ import com.juul.indexeddb.lowerBound
 import io.github.irgaly.kottage.data.indexeddb.extension.jso
 import io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_list
 import io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_list_stats
+import io.github.irgaly.kottage.internal.database.IndexeddbTransaction
 import io.github.irgaly.kottage.internal.database.Transaction
 import io.github.irgaly.kottage.internal.extension.iterateWithChunk
 import io.github.irgaly.kottage.internal.extension.take
@@ -22,7 +23,7 @@ import kotlinx.coroutines.flow.toList
 internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
     override suspend fun upsert(transaction: Transaction, entry: ItemListEntry) {
         transaction.store { store ->
-            store.put(entry.toEntity())
+            store.put(entry.toIndexeddbEntity())
         }
     }
 
@@ -41,7 +42,11 @@ internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
         }
     }
 
-    override suspend fun updateNextId(transaction: Transaction, id: String, nextId: String?) {
+    override suspend fun updateNextId(
+        transaction: Transaction,
+        id: String,
+        nextId: String?
+    ) {
         transaction.store { store ->
             store.get(Key(id))
                 ?.unsafeCast<Item_list>()
@@ -71,7 +76,11 @@ internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
         }
     }
 
-    override suspend fun updateExpireAt(transaction: Transaction, id: String, expireAt: Long?) {
+    override suspend fun updateExpireAt(
+        transaction: Transaction,
+        id: String,
+        expireAt: Long?
+    ) {
         transaction.store { store ->
             store.get(Key(id))
                 ?.unsafeCast<Item_list>()
@@ -115,7 +124,11 @@ internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
         }
     }
 
-    override suspend fun getIds(transaction: Transaction, itemType: String, itemKey: String): List<String> {
+    override suspend fun getIds(
+        transaction: Transaction,
+        itemType: String,
+        itemKey: String
+    ): List<String> {
         return transaction.store { store ->
             store.index("item_list_item_type_item_key").openKeyCursor(
                 // item_type = itemType && item_key = itemKey
@@ -166,7 +179,10 @@ internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
         }
     }
 
-    override suspend fun getInvalidatedItemCount(transaction: Transaction, type: String): Long {
+    override suspend fun getInvalidatedItemCount(
+        transaction: Transaction,
+        type: String
+    ): Long {
         return transaction.store { store ->
             store.index("item_list_type").openCursor(
                 Key(type)
@@ -176,7 +192,10 @@ internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
         }
     }
 
-    override suspend fun getAllTypes(transaction: Transaction, receiver: suspend (type: String) -> Unit) {
+    override suspend fun getAllTypes(
+        transaction: Transaction,
+        receiver: suspend (type: String) -> Unit
+    ) {
         transaction.statsStore { store ->
             store.iterateWithChunk<Item_list_stats, String, String>(
                 this,
@@ -241,7 +260,11 @@ internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
         }
     }
 
-    override suspend fun incrementStatsCount(transaction: Transaction, type: String, count: Long) {
+    override suspend fun incrementStatsCount(
+        transaction: Transaction,
+        type: String,
+        count: Long
+    ) {
         transaction.statsStore { store ->
             store.get(Key(type))?.unsafeCast<Item_list_stats>()?.let { stats ->
                 stats.count += count.toDouble()
@@ -250,7 +273,11 @@ internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
         }
     }
 
-    override suspend fun decrementStatsCount(transaction: Transaction, type: String, count: Long) {
+    override suspend fun decrementStatsCount(
+        transaction: Transaction,
+        type: String,
+        count: Long
+    ) {
         transaction.statsStore { store ->
             store.get(Key(type))?.unsafeCast<Item_list_stats>()?.let { stats ->
                 stats.count -= count.toDouble()
@@ -259,7 +286,11 @@ internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
         }
     }
 
-    override suspend fun updateStatsCount(transaction: Transaction, type: String, count: Long) {
+    override suspend fun updateStatsCount(
+        transaction: Transaction,
+        type: String,
+        count: Long
+    ) {
         transaction.statsStore { store ->
             store.get(Key(type))?.unsafeCast<Item_list_stats>()?.let { stats ->
                 stats.count = count.toDouble()
@@ -268,7 +299,11 @@ internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
         }
     }
 
-    override suspend fun updateStatsFirstItem(transaction: Transaction, type: String, id: String) {
+    override suspend fun updateStatsFirstItem(
+        transaction: Transaction,
+        type: String,
+        id: String
+    ) {
         transaction.statsStore { store ->
             store.get(Key(type))?.unsafeCast<Item_list_stats>()?.let { stats ->
                 stats.first_item_list_id = id
@@ -277,7 +312,11 @@ internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
         }
     }
 
-    override suspend fun updateStatsLastItem(transaction: Transaction, type: String, id: String) {
+    override suspend fun updateStatsLastItem(
+        transaction: Transaction,
+        type: String,
+        id: String
+    ) {
         transaction.statsStore { store ->
             store.get(Key(type))?.unsafeCast<Item_list_stats>()?.let { stats ->
                 stats.last_item_list_id = id
@@ -293,10 +332,10 @@ internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
     }
 
     private inline fun <R> Transaction.store(block: WriteTransaction.(store: ObjectStore) -> R): R {
-        return with(transaction) { block(transaction.objectStore("item_list")) }
+        return with((this as IndexeddbTransaction).transaction) { block(transaction.objectStore("item_list")) }
     }
 
     private inline fun <R> Transaction.statsStore(block: WriteTransaction.(store: ObjectStore) -> R): R {
-        return with(transaction) { block(transaction.objectStore("item_list_stats")) }
+        return with((this as IndexeddbTransaction).transaction) { block(transaction.objectStore("item_list_stats")) }
     }
 }

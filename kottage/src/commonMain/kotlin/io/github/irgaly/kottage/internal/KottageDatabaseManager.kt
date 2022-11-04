@@ -6,10 +6,9 @@ import io.github.irgaly.kottage.KottageList
 import io.github.irgaly.kottage.KottageOptions
 import io.github.irgaly.kottage.KottageStorage
 import io.github.irgaly.kottage.internal.database.Transaction
-import io.github.irgaly.kottage.internal.database.createDatabaseConnection
 import io.github.irgaly.kottage.internal.model.ItemEvent
 import io.github.irgaly.kottage.internal.model.ItemEventFlow
-import io.github.irgaly.kottage.internal.repository.KottageRepositoryFactory
+import io.github.irgaly.kottage.internal.platform.PlatformFactory
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -29,14 +28,15 @@ internal class KottageDatabaseManager(
     private val scope: CoroutineScope = CoroutineScope(dispatcher + SupervisorJob())
 ) {
     private val databaseConnection by lazy {
-        createDatabaseConnection(fileName, directoryPath, environment, dispatcher)
+        PlatformFactory().createDatabaseConnectionFactory()
+            .createDatabaseConnection(fileName, directoryPath, environment, dispatcher)
     }
 
     private val calendar get() = environment.calendar
     private val _eventFlow = ItemEventFlow(environment.calendar.nowUnixTimeMillis(), scope)
 
     private val repositoryFactory by lazy {
-        KottageRepositoryFactory(databaseConnection)
+        PlatformFactory().createKottageRepositoryFactory(databaseConnection)
     }
 
     @OptIn(DelicateCoroutinesApi::class)

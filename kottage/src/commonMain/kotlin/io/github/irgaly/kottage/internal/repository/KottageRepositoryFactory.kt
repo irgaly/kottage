@@ -1,10 +1,6 @@
 package io.github.irgaly.kottage.internal.repository
 
-import io.github.irgaly.kottage.internal.database.DatabaseConnection
-
-internal expect class KottageRepositoryFactory(
-    databaseConnection: DatabaseConnection
-) {
+internal interface KottageRepositoryFactory {
     suspend fun createItemRepository(): KottageItemRepository
     suspend fun createItemListRepository(): KottageItemListRepository
     suspend fun createItemEventRepository(): KottageItemEventRepository

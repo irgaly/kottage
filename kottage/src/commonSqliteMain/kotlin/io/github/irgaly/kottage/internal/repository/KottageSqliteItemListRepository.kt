@@ -15,7 +15,11 @@ internal class KottageSqliteItemListRepository(
             .replace(entry.toEntity())
     }
 
-    override suspend fun updatePreviousId(transaction: Transaction, id: String, previousId: String?) {
+    override suspend fun updatePreviousId(
+        transaction: Transaction,
+        id: String,
+        previousId: String?
+    ) {
         database.item_listQueries
             .updatePreviousId(
                 previous_id = previousId,
@@ -47,7 +51,11 @@ internal class KottageSqliteItemListRepository(
             )
     }
 
-    override suspend fun updateExpireAt(transaction: Transaction, id: String, expireAt: Long?) {
+    override suspend fun updateExpireAt(
+        transaction: Transaction,
+        id: String,
+        expireAt: Long?
+    ) {
         database.item_listQueries
             .updateExpireAt(
                 expire_at = expireAt,
@@ -71,7 +79,11 @@ internal class KottageSqliteItemListRepository(
             .executeAsOneOrNull()?.toDomain()
     }
 
-    override suspend fun getIds(transaction: Transaction, itemType: String, itemKey: String): List<String> {
+    override suspend fun getIds(
+        transaction: Transaction,
+        itemType: String,
+        itemKey: String
+    ): List<String> {
         return database.item_listQueries
             .selectIdFromItem(
                 item_type = itemType,
@@ -107,13 +119,19 @@ internal class KottageSqliteItemListRepository(
             .executeAsOne()
     }
 
-    override suspend fun getInvalidatedItemCount(transaction: Transaction, type: String): Long {
+    override suspend fun getInvalidatedItemCount(
+        transaction: Transaction,
+        type: String
+    ): Long {
         return database.item_listQueries
             .countInvalidatedItem(type = type)
             .executeAsOne()
     }
 
-    override suspend fun getAllTypes(transaction: Transaction, receiver: suspend (type: String) -> Unit) {
+    override suspend fun getAllTypes(
+        transaction: Transaction,
+        receiver: suspend (type: String) -> Unit
+    ) {
         database.item_list_statsQueries
             .selectAllItemListType()
             .execute().use { cursor ->
@@ -164,7 +182,11 @@ internal class KottageSqliteItemListRepository(
             .executeAsOneOrNull()?.count ?: 0L
     }
 
-    override suspend fun incrementStatsCount(transaction: Transaction, type: String, count: Long) {
+    override suspend fun incrementStatsCount(
+        transaction: Transaction,
+        type: String,
+        count: Long
+    ) {
         database.item_list_statsQueries
             .incrementCount(
                 count = count,
@@ -172,7 +194,11 @@ internal class KottageSqliteItemListRepository(
             )
     }
 
-    override suspend fun decrementStatsCount(transaction: Transaction, type: String, count: Long) {
+    override suspend fun decrementStatsCount(
+        transaction: Transaction,
+        type: String,
+        count: Long
+    ) {
         database.item_list_statsQueries
             .decrementCount(
                 count = count,
@@ -180,7 +206,11 @@ internal class KottageSqliteItemListRepository(
             )
     }
 
-    override suspend fun updateStatsCount(transaction: Transaction, type: String, count: Long) {
+    override suspend fun updateStatsCount(
+        transaction: Transaction,
+        type: String,
+        count: Long
+    ) {
         database.item_list_statsQueries
             .updateCount(
                 count = count,
@@ -188,7 +218,11 @@ internal class KottageSqliteItemListRepository(
             )
     }
 
-    override suspend fun updateStatsFirstItem(transaction: Transaction, type: String, id: String) {
+    override suspend fun updateStatsFirstItem(
+        transaction: Transaction,
+        type: String,
+        id: String
+    ) {
         database.item_list_statsQueries
             .updateFirstItemListId(
                 first_item_list_id = id,
@@ -196,7 +230,11 @@ internal class KottageSqliteItemListRepository(
             )
     }
 
-    override suspend fun updateStatsLastItem(transaction: Transaction, type: String, id: String) {
+    override suspend fun updateStatsLastItem(
+        transaction: Transaction,
+        type: String,
+        id: String
+    ) {
         database.item_list_statsQueries
             .updateLastItemListId(
                 last_item_list_id = id,

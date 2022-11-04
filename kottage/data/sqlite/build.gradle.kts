@@ -15,6 +15,10 @@ android {
 }
 
 kotlin {
+    // JS
+    js(IR) {
+        browser()
+    }
     sourceSets {
         commonMain {
             dependencies {

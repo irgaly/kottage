@@ -8,6 +8,7 @@ import com.juul.indexeddb.upperBound
 import io.github.irgaly.kottage.data.indexeddb.extension.exists
 import io.github.irgaly.kottage.data.indexeddb.extension.jso
 import io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_stats
+import io.github.irgaly.kottage.internal.database.IndexeddbTransaction
 import io.github.irgaly.kottage.internal.database.Transaction
 import io.github.irgaly.kottage.internal.extension.iterateWithChunk
 import io.github.irgaly.kottage.internal.extension.take
@@ -20,7 +21,7 @@ import kotlinx.coroutines.flow.toList
 internal class KottageIndexeddbItemRepository : KottageItemRepository {
     override suspend fun upsert(transaction: Transaction, item: Item) {
         transaction.store { store ->
-            store.put(item.toEntity())
+            store.put(item.toIndexeddbEntity())
         }
     }
 
@@ -56,13 +57,21 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
         }
     }
 
-    override suspend fun exists(transaction: Transaction, key: String, itemType: String): Boolean {
+    override suspend fun exists(
+        transaction: Transaction,
+        key: String,
+        itemType: String
+    ): Boolean {
         return transaction.store { store ->
             exists(store, Key(Item.toEntityKey(key, itemType)))
         }
     }
 
-    override suspend fun get(transaction: Transaction, key: String, itemType: String): Item? {
+    override suspend fun get(
+        transaction: Transaction,
+        key: String,
+        itemType: String
+    ): Item? {
         return transaction.store { store ->
             store.get(Key(Item.toEntityKey(key, itemType)))
                 ?.unsafeCast<io.github.irgaly.kottage.data.indexeddb.schema.entity.Item>()
@@ -225,7 +234,10 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
         }
     }
 
-    override suspend fun getEmptyStats(transaction: Transaction, limit: Long): List<ItemStats> {
+    override suspend fun getEmptyStats(
+        transaction: Transaction,
+        limit: Long
+    ): List<ItemStats> {
         return transaction.statsStore { store ->
             // SQLite 側に合わせて index なしで総当たり処理
             store.openCursor().map { cursor ->
@@ -285,7 +297,11 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
         }
     }
 
-    override suspend fun updateStatsCount(transaction: Transaction, itemType: String, count: Long) {
+    override suspend fun updateStatsCount(
+        transaction: Transaction,
+        itemType: String,
+        count: Long
+    ) {
         transaction.statsStore { store ->
             val stats = getOrCreate(store, itemType)
             stats.count = count.toDouble()
@@ -316,10 +332,10 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
     }
 
     private inline fun <R> Transaction.store(block: WriteTransaction.(store: ObjectStore) -> R): R {
-        return with(transaction) { block(transaction.objectStore("item")) }
+        return with((this as IndexeddbTransaction).transaction) { block(transaction.objectStore("item")) }
     }
 
     private inline fun <R> Transaction.statsStore(block: WriteTransaction.(store: ObjectStore) -> R): R {
-        return with(transaction) { block(transaction.objectStore("item_stats")) }
+        return with((this as IndexeddbTransaction).transaction) { block(transaction.objectStore("item_stats")) }
     }
 }

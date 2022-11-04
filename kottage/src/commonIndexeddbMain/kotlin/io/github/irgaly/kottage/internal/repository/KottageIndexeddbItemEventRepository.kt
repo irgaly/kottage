@@ -10,6 +10,7 @@ import com.juul.indexeddb.upperBound
 import io.github.irgaly.kottage.data.indexeddb.extension.jso
 import io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_event
 import io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_stats
+import io.github.irgaly.kottage.internal.database.IndexeddbTransaction
 import io.github.irgaly.kottage.internal.database.Transaction
 import io.github.irgaly.kottage.internal.extension.deleteWithChunk
 import io.github.irgaly.kottage.internal.extension.take
@@ -21,7 +22,7 @@ import kotlinx.coroutines.flow.toList
 internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository {
     override suspend fun create(transaction: Transaction, itemEvent: ItemEvent) {
         transaction.store { store ->
-            store.add(itemEvent.toEntity())
+            store.add(itemEvent.toIndexeddbEntity())
         }
     }
 
@@ -186,7 +187,11 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
         }
     }
 
-    override suspend fun incrementStatsCount(transaction: Transaction, itemType: String, count: Long) {
+    override suspend fun incrementStatsCount(
+        transaction: Transaction,
+        itemType: String,
+        count: Long
+    ) {
         transaction.statsStore { store ->
             val stats = getOrCreate(store, itemType)
             stats.event_count += count.toDouble()
@@ -194,7 +199,11 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
         }
     }
 
-    override suspend fun decrementStatsCount(transaction: Transaction, itemType: String, count: Long) {
+    override suspend fun decrementStatsCount(
+        transaction: Transaction,
+        itemType: String,
+        count: Long
+    ) {
         transaction.statsStore { store ->
             val stats = getOrCreate(store, itemType)
             stats.event_count -= count.toDouble()
@@ -202,7 +211,11 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
         }
     }
 
-    override suspend fun updateStatsCount(transaction: Transaction, itemType: String, count: Long) {
+    override suspend fun updateStatsCount(
+        transaction: Transaction,
+        itemType: String,
+        count: Long
+    ) {
         transaction.statsStore { store ->
             val stats = getOrCreate(store, itemType)
             stats.event_count = count.toDouble()
@@ -227,10 +240,10 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
     }
 
     private inline fun <R> Transaction.store(block: WriteTransaction.(store: ObjectStore) -> R): R {
-        return with(transaction) { block(transaction.objectStore("item_event")) }
+        return with((this as IndexeddbTransaction).transaction) { block(transaction.objectStore("item_event")) }
     }
 
     private inline fun <R> Transaction.statsStore(block: WriteTransaction.(store: ObjectStore) -> R): R {
-        return with(transaction) { block(transaction.objectStore("item_stats")) }
+        return with((this as IndexeddbTransaction).transaction) { block(transaction.objectStore("item_stats")) }
     }
 }
