@@ -51,11 +51,22 @@ jobs:
           restore-keys: ${{ runner.os }}-gradle-build-${{ github.workflow }}-${{ steps.get-month.outputs.month }}-
       - name: Update Dependencies Graph
         run: ./gradlew projectDependencyGraph
+      - uses: crazy-max/ghaction-import-gpg@v4
+        id: gpg
+        with:
+          gpg_private_key: ${{ secrets.SIGNING_PGP_KEY }}
+          passphrase: ${{ secrets.SIGNING_PGP_PASSWORD }}
+          git_config_global: true
+          git_user_signingkey: true
+          git_commit_gpgsign: true
       - name: Commit changes
+        env:
+          GIT_AUTHOR_NAME: irgaly
+          GIT_AUTHOR_EMAIL: ${{ steps.gpg.outputs.email }}
+          GIT_COMMITTER_NAME: irgaly
+          GIT_COMMITTER_EMAIL: ${{ steps.gpg.outputs.email }}
         shell: bash +e {0}
         run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
           git commit -am "Update Project Dependencies Graph" && git push origin HEAD
           exit 0
 
