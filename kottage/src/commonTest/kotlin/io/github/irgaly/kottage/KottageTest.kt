@@ -133,6 +133,16 @@ class KottageTest : KottageSpec("kottage", body = {
                 storage.get<Float>("float") shouldBe 0f
                 storage.get<Double>("float") shouldBe 0.0
             }
+            it("Max Min: Double, Float") {
+                storage.put("double_min", Double.MIN_VALUE)
+                storage.put("double_max", Double.MAX_VALUE)
+                storage.put("float_min", Float.MIN_VALUE)
+                storage.put("float_max", Float.MAX_VALUE)
+                storage.get<Double>("double_min") shouldBe Double.MIN_VALUE
+                storage.get<Double>("double_max") shouldBe Double.MAX_VALUE
+                storage.get<Float>("float_min") shouldBe Float.MIN_VALUE
+                storage.get<Float>("float_max") shouldBe Float.MAX_VALUE
+            }
             it("Long, Int, Short, Byte, Boolean") {
                 storage.put("long", 0L)
                 storage.put("int", 0)
@@ -147,6 +157,24 @@ class KottageTest : KottageSpec("kottage", body = {
                 storage.get<Int>("byte") shouldBe 0
                 storage.get<Byte>("int") shouldBe 0.toByte()
                 storage.get<Boolean>("long") shouldBe false
+            }
+            it("Max Min: Long, Int, Short, Byte") {
+                storage.put("long_max", Long.MAX_VALUE)
+                storage.put("long_min", Long.MIN_VALUE)
+                storage.put("int_max", Int.MAX_VALUE)
+                storage.put("int_min", Int.MIN_VALUE)
+                storage.put("short_max", Short.MAX_VALUE)
+                storage.put("short_min", Short.MIN_VALUE)
+                storage.put("byte_max", Byte.MAX_VALUE)
+                storage.put("byte_min", Byte.MIN_VALUE)
+                storage.get<Long>("long_min") shouldBe Long.MIN_VALUE
+                storage.get<Long>("long_max") shouldBe Long.MAX_VALUE
+                storage.get<Long>("int_min") shouldBe Int.MIN_VALUE
+                storage.get<Long>("int_max") shouldBe Int.MAX_VALUE
+                storage.get<Long>("short_min") shouldBe Short.MIN_VALUE
+                storage.get<Long>("short_max") shouldBe Short.MAX_VALUE
+                storage.get<Long>("byte_min") shouldBe Byte.MIN_VALUE
+                storage.get<Long>("byte_max") shouldBe Byte.MAX_VALUE
             }
             it("ByteArray") {
                 storage.put("bytearray", byteArrayOf(0, 1))
