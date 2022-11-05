@@ -5,12 +5,11 @@ import io.github.irgaly.kottage.internal.database.DatabaseConnectionFactory
 import io.github.irgaly.kottage.internal.database.IndexeddbDatabaseConnectionFactory
 import io.github.irgaly.kottage.internal.repository.KottageIndexeddbRepositoryFactory
 import io.github.irgaly.kottage.internal.repository.KottageRepositoryFactory
-import kotlinx.browser.window
+import io.github.irgaly.kottage.platform.isBrowser
 
 internal actual class PlatformFactory {
     actual fun createKottageRepositoryFactory(databaseConnection: DatabaseConnection): KottageRepositoryFactory {
-        @Suppress("SENSELESS_COMPARISON")
-        return if (window != null) {
+        return if (isBrowser()) {
             KottageIndexeddbRepositoryFactory()
         } else {
             TODO()
@@ -18,8 +17,7 @@ internal actual class PlatformFactory {
     }
 
     actual fun createDatabaseConnectionFactory(): DatabaseConnectionFactory {
-        @Suppress("SENSELESS_COMPARISON")
-        return if (window != null) {
+        return if (isBrowser()) {
             IndexeddbDatabaseConnectionFactory()
         } else {
             TODO()

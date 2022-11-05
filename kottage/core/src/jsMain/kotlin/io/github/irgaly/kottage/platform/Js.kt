@@ -1,13 +1,11 @@
 package io.github.irgaly.kottage.platform
 
-import kotlinx.browser.window
-
+@Suppress("unused")
 fun isBrowser(): Boolean {
-    @Suppress("SENSELESS_COMPARISON")
-    return (window != null)
+    return (js("typeof window") != "undefined")
 }
 
+@Suppress("unused")
 fun isNodejs(): Boolean {
-    @Suppress("SENSELESS_COMPARISON")
-    return (window == null)
+    return (js("typeof window") == "undefined")
 }
