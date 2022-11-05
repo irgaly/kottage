@@ -5,16 +5,16 @@ import com.squareup.sqldelight.db.SqlCursor
 import com.squareup.sqldelight.db.SqlDriver
 import com.squareup.sqldelight.db.SqlPreparedStatement
 import io.github.irgaly.kottage.data.sqlite.external.Database
+import io.github.irgaly.kottage.data.sqlite.external.IteratorReturnResult
+import io.github.irgaly.kottage.data.sqlite.external.Statement
 import io.github.irgaly.kottage.data.sqlite.external.prepareStatement
 import io.github.irgaly.kottage.data.sqlite.external.run
 import org.khronos.webgl.Int8Array
 import org.khronos.webgl.Uint8Array
-import io.github.irgaly.kottage.data.sqlite.external.IteratorReturnResult
-import io.github.irgaly.kottage.data.sqlite.external.Statement
 
 class NodejsSqlDriver(
     val db: Database
-): SqlDriver {
+) : SqlDriver {
     private var transaction: Transacter.Transaction? = null
 
     override fun executeQuery(
@@ -33,7 +33,8 @@ class NodejsSqlDriver(
         identifier: Int?,
         sql: String,
         parameters: Int,
-        binders: (SqlPreparedStatement.() -> Unit)?) {
+        binders: (SqlPreparedStatement.() -> Unit)?
+    ) {
         return createOrGetStatement(identifier, sql).run {
             bind(binders)
             run()
@@ -98,12 +99,28 @@ private class NodejsSqlCursor(statement: Statement<Array<Any>>) : SqlCursor {
         currentRow = result.value
         return result.done
     }
-    override fun getString(index: Int): String? = currentRow?.get(index)?.unsafeCast<String>()
-    override fun getLong(index: Int): Long? = currentRow?.get(index)?.unsafeCast<Double>()?.toLong()
-    override fun getBytes(index: Int): ByteArray? = (currentRow?.get(index)?.unsafeCast<Uint8Array>())?.let {
-        Int8Array(it.buffer).unsafeCast<ByteArray>()
+
+    override fun getString(index: Int): String? {
+        return currentRow?.get(index)?.unsafeCast<String>()
     }
-    override fun getDouble(index: Int): Double? = currentRow?.get(index)?.unsafeCast<Double>()
+
+    override fun getLong(index: Int): Long? {
+        val value = currentRow?.get(index)
+        // PRAGMA user_version や count(*) など SQLite 機能で Number が返されたときは
+        // Number -> Long の返還が必要
+        return if (value is Number) value.toLong() else value?.unsafeCast<String>()?.toLong()
+    }
+
+    override fun getBytes(index: Int): ByteArray? {
+        return (currentRow?.get(index)?.unsafeCast<Uint8Array>())?.let {
+            Int8Array(it.buffer).unsafeCast<ByteArray>()
+        }
+    }
+
+    override fun getDouble(index: Int): Double? {
+        return currentRow?.get(index)?.unsafeCast<Double>()
+    }
+
     override fun close() {}
 }
 
@@ -116,7 +133,7 @@ private class NodejsSqlPreparedStatement : SqlPreparedStatement {
     }
 
     override fun bindLong(index: Int, long: Long?) {
-        parameters.add(long?.toDouble())
+        parameters.add(long?.toString())
     }
 
     override fun bindDouble(index: Int, double: Double?) {
