@@ -1,13 +1,24 @@
 package io.github.irgaly.kottage.platform
 
+private val fs: dynamic get() = js("require('fs')")
+
 actual class Files {
     actual companion object {
         actual fun exists(path: String): Boolean {
-            throw UnsupportedOperationException("browser js cannot access to File Storage")
+            return if (isBrowser()) {
+                throw UnsupportedOperationException("browser js cannot access to File Storage")
+            } else {
+                fs.existsSync(path).unsafeCast<Boolean>()
+            }
         }
 
         actual fun mkdirs(directoryPath: String): Boolean {
-            throw UnsupportedOperationException("browser js cannot access to File Storage")
+            return if (isBrowser()) {
+                throw UnsupportedOperationException("browser js cannot access to File Storage")
+            } else {
+                fs.mkdirSync(directoryPath, js("{recursive: true}"))
+                true
+            }
         }
 
         actual val separator: String = "/"

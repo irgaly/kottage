@@ -3,8 +3,10 @@ package io.github.irgaly.kottage.internal.platform
 import io.github.irgaly.kottage.internal.database.DatabaseConnection
 import io.github.irgaly.kottage.internal.database.DatabaseConnectionFactory
 import io.github.irgaly.kottage.internal.database.IndexeddbDatabaseConnectionFactory
+import io.github.irgaly.kottage.internal.database.SqliteDatabaseConnectionFactory
 import io.github.irgaly.kottage.internal.repository.KottageIndexeddbRepositoryFactory
 import io.github.irgaly.kottage.internal.repository.KottageRepositoryFactory
+import io.github.irgaly.kottage.internal.repository.KottageSqliteRepositoryFactory
 import io.github.irgaly.kottage.platform.isBrowser
 
 internal actual class PlatformFactory {
@@ -12,7 +14,7 @@ internal actual class PlatformFactory {
         return if (isBrowser()) {
             KottageIndexeddbRepositoryFactory()
         } else {
-            TODO()
+            KottageSqliteRepositoryFactory(databaseConnection)
         }
     }
 
@@ -20,7 +22,7 @@ internal actual class PlatformFactory {
         return if (isBrowser()) {
             IndexeddbDatabaseConnectionFactory()
         } else {
-            TODO()
+            SqliteDatabaseConnectionFactory()
         }
     }
 }

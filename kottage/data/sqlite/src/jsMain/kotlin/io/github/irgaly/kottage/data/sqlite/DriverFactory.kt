@@ -2,7 +2,7 @@ package io.github.irgaly.kottage.data.sqlite
 
 import com.squareup.sqldelight.db.SqlDriver
 import com.squareup.sqldelight.db.use
-import io.github.irgaly.kottage.data.sqlite.external.BetterSqlite3Database
+import io.github.irgaly.kottage.data.sqlite.external.DatabaseConstructor
 import io.github.irgaly.kottage.platform.Context
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -16,7 +16,7 @@ actual class DriverFactory actual constructor(
         directoryPath: String,
         schema: SqlDriver.Schema
     ): SqlDriver {
-        val driver = NodejsSqlDriver(BetterSqlite3Database("$directoryPath/$fileName"))
+        val driver = NodejsSqlDriver(betterSqlite3Database("$directoryPath/$fileName"))
         migrateIfNeeded(driver, schema)
         return driver
     }
@@ -40,3 +40,6 @@ actual class DriverFactory actual constructor(
         }
     }
 }
+
+private val betterSqlite3Database: DatabaseConstructor
+    get() = js("require('better-sqlite3')").unsafeCast<DatabaseConstructor>()

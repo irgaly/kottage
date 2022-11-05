@@ -9,14 +9,8 @@
 
 package io.github.irgaly.kottage.data.sqlite.external
 
-import kotlin.js.*
-
 typealias VariableArgFunction = (params: Any) -> Any
 
 typealias ArgumentTypes<F> = Any
 
 typealias BetterSqlite3SqliteError = Error
-
-@JsNonModule
-@JsModule("better-sqlite3")
-external val BetterSqlite3Database: DatabaseConstructor
