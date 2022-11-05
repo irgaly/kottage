@@ -17,7 +17,7 @@ android {
 kotlin {
     // JS
     js(IR) {
-        browser()
+        nodejs()
     }
     sourceSets {
         commonMain {

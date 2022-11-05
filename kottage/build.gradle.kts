@@ -46,8 +46,7 @@ kotlin {
                 }
             }
         }
-        // nodejs has no indexeddb support
-        //nodejs()
+        nodejs()
     }
     sourceSets {
         commonMain {
