@@ -7,9 +7,9 @@
 )
 package io.github.irgaly.kottage.data.sqlite.external
 
-import kotlin.js.*
+import kotlin.js.Promise
 
-external interface Statement<BindParameters : Array<Any>> {
+external interface Statement<BindParameters : Array<Any?>> {
     var database: Database
     var source: String
     var reader: Boolean

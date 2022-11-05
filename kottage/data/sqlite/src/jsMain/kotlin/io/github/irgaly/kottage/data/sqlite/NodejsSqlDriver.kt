@@ -41,11 +41,11 @@ class NodejsSqlDriver(
         }
     }
 
-    private fun Statement<Array<Any>>.bind(binders: (SqlPreparedStatement.() -> Unit)?) {
+    private fun Statement<Array<Any?>>.bind(binders: (SqlPreparedStatement.() -> Unit)?) {
         binders?.let {
             val bound = NodejsSqlPreparedStatement()
             binders(bound)
-            bind(bound.parameters.filterNotNull().toTypedArray())
+            bind(bound.parameters.toTypedArray())
         }
     }
 
@@ -53,7 +53,7 @@ class NodejsSqlDriver(
         @Suppress("UNUSED_PARAMETER")
         identifier: Int?,
         sql: String
-    ): Statement<Array<Any>> {
+    ): Statement<Array<Any?>> {
         return db.prepareStatement(sql)
     }
 
@@ -91,7 +91,7 @@ class NodejsSqlDriver(
     }
 }
 
-private class NodejsSqlCursor(statement: Statement<Array<Any>>) : SqlCursor {
+private class NodejsSqlCursor(statement: Statement<Array<Any?>>) : SqlCursor {
     val iterator = statement.iterate()
     var currentRow: Array<dynamic>? = null
     override fun next(): Boolean {
