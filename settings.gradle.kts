@@ -30,6 +30,7 @@ include(
     ":kottage:core",
     ":kottage:core:test",
     ":sample:android",
-    ":sample:js-browser"
+    ":sample:js-browser",
+    ":sample:js-nodejs"
 )
 includeBuild("build-logic")
