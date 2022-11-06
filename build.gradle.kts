@@ -1,3 +1,4 @@
+import io.github.irgaly.buildlogic.execute
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
@@ -107,7 +108,8 @@ subprojects {
 
 plugins.withType<NodeJsRootPlugin> {
     configure<NodeJsRootExtension> {
-        nodeVersion = "18.11.0"
+        // kotlinNpmInstall で使う node をなるべく実行環境のものに揃える
+        nodeVersion = execute("node --version || echo v18.12.0").removePrefix("v")
     }
 }
 

@@ -7,6 +7,7 @@ import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.kotlin.dsl.*
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import java.io.ByteArrayOutputStream
 
 /**
  * android build 共通設定を適用する
@@ -56,6 +57,19 @@ fun VersionCatalog.version(name: String): String {
  */
 fun VersionCatalog.pluginId(name: String): String {
     return findPlugin(name).get().get().pluginId
+}
+
+/**
+ * Execute shell command
+ */
+fun Project.execute(vararg commands: String): String {
+    val out = ByteArrayOutputStream()
+    exec {
+        commandLine = listOf("sh", "-c") + commands
+        standardOutput = out
+        isIgnoreExitValue = true
+    }
+    return out.toString().trim()
 }
 
 /**
