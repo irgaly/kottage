@@ -67,7 +67,7 @@ class NodejsSqlDriver(
         val transaction = Transaction(enclosing)
         this.transaction = transaction
         if (enclosing == null) {
-            db.prepareStatement("BEGIN TRANSACTION", false).run()
+            db.run("BEGIN TRANSACTION")
         }
         return transaction
     }
@@ -102,7 +102,7 @@ private class NodejsSqlCursor(statement: Statement<Array<Any?>>) : SqlCursor {
     override fun next(): Boolean {
         val result = iterator.next().unsafeCast<IteratorReturnResult<Array<dynamic>>>()
         currentRow = result.value
-        return result.done
+        return !result.done
     }
 
     override fun getString(index: Int): String? {
@@ -110,10 +110,7 @@ private class NodejsSqlCursor(statement: Statement<Array<Any?>>) : SqlCursor {
     }
 
     override fun getLong(index: Int): Long? {
-        val value = currentRow?.get(index)
-        // PRAGMA user_version や count(*) など SQLite 機能で Number が返されたときは
-        // Number -> Long の返還が必要
-        return if (value is Number) value.toLong() else value?.unsafeCast<String>()?.toLong()
+        return currentRow?.get(index)?.unsafeCast<Number>()?.toLong()
     }
 
     override fun getBytes(index: Int): ByteArray? {
@@ -126,7 +123,11 @@ private class NodejsSqlCursor(statement: Statement<Array<Any?>>) : SqlCursor {
         return currentRow?.get(index)?.unsafeCast<Double>()
     }
 
-    override fun close() {}
+    override fun close() {
+        @Suppress("UNUSED_VARIABLE")
+        val localIterator = iterator
+        js("localIterator.return()")
+    }
 }
 
 private class NodejsSqlPreparedStatement : SqlPreparedStatement {
@@ -134,11 +135,13 @@ private class NodejsSqlPreparedStatement : SqlPreparedStatement {
     val parameters = mutableListOf<Any?>()
 
     override fun bindBytes(index: Int, bytes: ByteArray?) {
-        parameters.add(bytes?.toTypedArray())
+        parameters.add(bytes?.let {
+            Uint8Array(it.toTypedArray())
+        })
     }
 
     override fun bindLong(index: Int, long: Long?) {
-        parameters.add(long?.toString())
+        parameters.add(long?.toDouble())
     }
 
     override fun bindDouble(index: Int, double: Double?) {
