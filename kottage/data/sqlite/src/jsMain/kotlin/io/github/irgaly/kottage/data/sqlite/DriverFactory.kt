@@ -33,7 +33,7 @@ actual class DriverFactory actual constructor(
         //   * JavaScript なのでシングルスレッドであり serialized は不要
         val driver = NodejsSqlDriver(
             betterSqlite3Database(
-                "$directoryPath/$fileName",
+                "$directoryPath/$fileName.db",
                 js("{}").unsafeCast<Options>().apply {
                     timeout = 3000
                 }
