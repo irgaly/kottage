@@ -1,4 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -100,6 +102,12 @@ subprojects {
             )
             sign(extensions.getByType<PublishingExtension>().publications)
         }
+    }
+}
+
+plugins.withType<NodeJsRootPlugin> {
+    configure<NodeJsRootExtension> {
+        nodeVersion = "18.11.0"
     }
 }
 
