@@ -124,6 +124,7 @@ val installBetterSqlite3 by tasks.registering(Exec::class) {
     mustRunAfter(rootProject.tasks.withType<KotlinNpmInstallTask>())
     inputs.files(betterSqlite3.resolve("package.json"))
     outputs.files(betterSqlite3.resolve("build/Release/better_sqlite3.node"))
+    outputs.cacheIf { true }
     workingDir = betterSqlite3
     commandLine = if (isGitHubActions) {
         listOf("npm", "run", "install")
