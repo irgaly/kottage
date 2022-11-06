@@ -17,13 +17,17 @@ class NodejsSqlDriver(
 ) : SqlDriver {
     private var transaction: Transacter.Transaction? = null
 
+    init {
+        db.unsafeMode(true)
+    }
+
     override fun executeQuery(
         identifier: Int?,
         sql: String,
         parameters: Int,
         binders: (SqlPreparedStatement.() -> Unit)?
     ): SqlCursor {
-        return createOrGetStatement(identifier, sql).run {
+        return createOrGetStatement(identifier, sql, true).run {
             bind(binders)
             NodejsSqlCursor(this)
         }
@@ -35,7 +39,7 @@ class NodejsSqlDriver(
         parameters: Int,
         binders: (SqlPreparedStatement.() -> Unit)?
     ) {
-        return createOrGetStatement(identifier, sql).run {
+        return createOrGetStatement(identifier, sql, false).run {
             bind(binders)
             run()
         }
@@ -52,9 +56,10 @@ class NodejsSqlDriver(
     private fun createOrGetStatement(
         @Suppress("UNUSED_PARAMETER")
         identifier: Int?,
-        sql: String
+        sql: String,
+        query: Boolean
     ): Statement<Array<Any?>> {
-        return db.prepareStatement(sql)
+        return db.prepareStatement(sql, query)
     }
 
     override fun newTransaction(): Transacter.Transaction {
@@ -62,7 +67,7 @@ class NodejsSqlDriver(
         val transaction = Transaction(enclosing)
         this.transaction = transaction
         if (enclosing == null) {
-            db.prepareStatement("BEGIN TRANSACTION").run()
+            db.prepareStatement("BEGIN TRANSACTION", false).run()
         }
         return transaction
     }

@@ -1,11 +1,13 @@
 package io.github.irgaly.kottage.data.sqlite.external
 
-fun Database.prepareStatement(source: String): Statement<Array<Any?>> {
+fun Database.prepareStatement(source: String, query: Boolean): Statement<Array<Any?>> {
     return prepare(source).unsafeCast<Statement<Array<Any?>>>().apply {
-        raw(true)
+        if (query) {
+            raw(true)
+        }
     }
 }
 
 fun Database.run(source: String): RunResult {
-    return prepareStatement(source).run()
+    return prepareStatement(source, false).run()
 }
