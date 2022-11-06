@@ -113,6 +113,21 @@ plugins.withType<NodeJsRootPlugin> {
     }
 }
 
+val installBetterSqlite3 by tasks.registering(Exec::class) {
+    val betterSqlite3 = rootProject.buildDir.resolve("js/node_modules/better-sqlite3")
+    mustRunAfter(rootProject.tasks.withType<org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask>())
+    inputs.files(betterSqlite3.resolve("package.json"))
+    outputs.files(betterSqlite3.resolve("build/Release/better_sqlite3.node"))
+    outputs.cacheIf { true }
+    workingDir = betterSqlite3
+    commandLine = if (System.getenv().containsKey("GITHUB_ACTIONS")) {
+        listOf("npm", "run", "install")
+    } else {
+        // pyenv で python2 をインストールしている前提で実行する
+        listOf("sh", "-c", "PATH=$(pyenv root)/shims:\$PATH npm run install")
+    }
+}
+
 nexusPublishing {
     repositories {
         sonatype {

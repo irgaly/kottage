@@ -2,7 +2,6 @@ import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
-import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask
 import org.jetbrains.kotlin.gradle.targets.js.testing.KotlinJsTest
 
 plugins {
@@ -15,8 +14,6 @@ plugins {
 android {
     namespace = "io.github.irgaly.kottage"
 }
-
-val isGitHubActions = System.getenv().containsKey("GITHUB_ACTIONS")
 
 kotlin {
     val xcf = XCFramework("Kottage")
@@ -38,7 +35,9 @@ kotlin {
     // JS
     js(IR) {
         browser {
-            if (isGitHubActions && OperatingSystem.current().isMacOsX) {
+            if (System.getenv().containsKey("GITHUB_ACTIONS")
+                && OperatingSystem.current().isMacOsX
+            ) {
                 testTask {
                     useKarma {
                         useChromeHeadless()
@@ -118,22 +117,6 @@ val javadocJar by tasks.registering(Jar::class) {
     archiveClassifier.set("javadoc")
 }
 
-
-val installBetterSqlite3 by tasks.registering(Exec::class) {
-    val betterSqlite3 = rootProject.buildDir.resolve("js/node_modules/better-sqlite3")
-    mustRunAfter(rootProject.tasks.withType<KotlinNpmInstallTask>())
-    inputs.files(betterSqlite3.resolve("package.json"))
-    outputs.files(betterSqlite3.resolve("build/Release/better_sqlite3.node"))
-    outputs.cacheIf { true }
-    workingDir = betterSqlite3
-    commandLine = if (isGitHubActions) {
-        listOf("npm", "run", "install")
-    } else {
-        // pyenv で python2 をインストールしている前提で実行する
-        listOf("sh", "-c", "PATH=$(pyenv root)/shims:\$PATH npm run install")
-    }
-}
-
 val jsNodeTest by tasks.named<KotlinJsTest>("jsNodeTest") {
-    dependsOn(installBetterSqlite3)
+    dependsOn(rootProject.tasks.named("installBetterSqlite3"))
 }
