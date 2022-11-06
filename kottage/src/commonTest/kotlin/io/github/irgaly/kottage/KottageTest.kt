@@ -158,17 +158,21 @@ class KottageTest : KottageSpec("kottage", body = {
                 storage.get<Byte>("int") shouldBe 0.toByte()
                 storage.get<Boolean>("long") shouldBe false
             }
-            it("Max Min: Long, Int, Short, Byte") {
-                storage.put("long_max", Long.MAX_VALUE)
+            it("Min Max: Long, Int, Short, Byte") {
                 storage.put("long_min", Long.MIN_VALUE)
-                storage.put("int_max", Int.MAX_VALUE)
+                storage.put("long_max", Long.MAX_VALUE)
+                storage.put("long_min_10", (Long.MIN_VALUE + 10)) // nodejs BigInt テスト
+                storage.put("long_max_10", (Long.MAX_VALUE - 10))
                 storage.put("int_min", Int.MIN_VALUE)
-                storage.put("short_max", Short.MAX_VALUE)
+                storage.put("int_max", Int.MAX_VALUE)
                 storage.put("short_min", Short.MIN_VALUE)
-                storage.put("byte_max", Byte.MAX_VALUE)
+                storage.put("short_max", Short.MAX_VALUE)
                 storage.put("byte_min", Byte.MIN_VALUE)
+                storage.put("byte_max", Byte.MAX_VALUE)
                 storage.get<Long>("long_min") shouldBe Long.MIN_VALUE
                 storage.get<Long>("long_max") shouldBe Long.MAX_VALUE
+                storage.get<Long>("long_min_10") shouldBe (Long.MIN_VALUE + 10)
+                storage.get<Long>("long_max_10") shouldBe (Long.MAX_VALUE - 10)
                 storage.get<Long>("int_min") shouldBe Int.MIN_VALUE
                 storage.get<Long>("int_max") shouldBe Int.MAX_VALUE
                 storage.get<Long>("short_min") shouldBe Short.MIN_VALUE

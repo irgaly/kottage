@@ -110,7 +110,7 @@ private class NodejsSqlCursor(statement: Statement<Array<Any?>>) : SqlCursor {
     }
 
     override fun getLong(index: Int): Long? {
-        return currentRow?.get(index)?.unsafeCast<Number>()?.toLong()
+        return currentRow?.get(index)?.unsafeCast<JsBigInt>()?.toString()?.toLong()
     }
 
     override fun getBytes(index: Int): ByteArray? {
@@ -141,7 +141,7 @@ private class NodejsSqlPreparedStatement : SqlPreparedStatement {
     }
 
     override fun bindLong(index: Int, long: Long?) {
-        parameters.add(long?.toDouble())
+        parameters.add(long?.let { BigInt(it.toString()) })
     }
 
     override fun bindDouble(index: Int, double: Double?) {
@@ -152,3 +152,8 @@ private class NodejsSqlPreparedStatement : SqlPreparedStatement {
         parameters.add(string)
     }
 }
+
+private external fun BigInt(value: String): JsBigInt
+
+@JsName("BigInt")
+private external class JsBigInt
