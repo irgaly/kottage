@@ -75,14 +75,14 @@ kotlin {
                 implementation(projects.kottage.data.indexeddb)
             }
         }
-        val sqliteFactoryMain by creating {
+        val sqliteMain by creating {
             dependsOn(commonSqliteMain)
         }
         val androidMain by getting {
-            dependsOn(sqliteFactoryMain)
+            dependsOn(sqliteMain)
         }
         val jvmMain by getting {
-            dependsOn(sqliteFactoryMain)
+            dependsOn(sqliteMain)
         }
         val jsMain by getting {
             dependsOn(commonSqliteMain)
@@ -96,7 +96,7 @@ kotlin {
             }
         }
         val nativeMain by getting {
-            dependsOn(sqliteFactoryMain)
+            dependsOn(sqliteMain)
         }
     }
     targets.withType<KotlinNativeTarget> {
