@@ -182,7 +182,12 @@ class KottageTest : KottageSpec("kottage", body = {
             }
             it("ByteArray") {
                 storage.put("bytearray", byteArrayOf(0, 1))
+                storage.put("bytearray_min_max", byteArrayOf(Byte.MIN_VALUE, Byte.MAX_VALUE))
                 storage.get<ByteArray>("bytearray") shouldBe byteArrayOf(0, 1)
+                storage.get<ByteArray>("bytearray_min_max") shouldBe byteArrayOf(
+                    Byte.MIN_VALUE,
+                    Byte.MAX_VALUE
+                )
             }
             it("String") {
                 storage.put("string", "test")
