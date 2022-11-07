@@ -586,8 +586,7 @@ CoroutinesInternalError: Fatal exception in coroutines machinery for AwaitContin
 
 To prevent this error, you should build FFI file with a custom Gradle Task.
 
-* Make sure your machine environment has `node` and `python2` (**python3 is
-  not supported building better-sqlite3**)
+* Make sure your machine environment has `node` v19 or newer.
 * Specify node version of Kotlin/JS Task to same version of your build environment. Then
   register `installBetterSqlite3` task. This task
   make `{rootProject}/build/js/node_modules/better-sqlite3/build/Release/better_sqlite3.node`.
@@ -598,18 +597,25 @@ To prevent this error, you should build FFI file with a custom Gradle Task.
 ...
 plugins.withType<NodeJsRootPlugin> {
     configure<NodeJsRootExtension> {
-        nodeVersion = execute("node --version || echo v18.12.0").removePrefix("v")
+        nodeVersion = execute("node --version || echo v$nodeVersion").removePrefix("v")
     }
 }
 
 val installBetterSqlite3 by tasks.registering(Exec::class) {
-    val betterSqlite3 = rootProject.buildDir.resolve("js/node_modules/better-sqlite3")
-    mustRunAfter(rootProject.tasks.withType<KotlinNpmInstallTask>())
+    val betterSqlite3 = buildDir.resolve("js/node_modules/better-sqlite3")
+    dependsOn(tasks.withType<KotlinNpmInstallTask>())
     inputs.files(betterSqlite3.resolve("package.json"))
+    inputs.property("node-version", provider { execute("node --version") })
     outputs.files(betterSqlite3.resolve("build/Release/better_sqlite3.node"))
     outputs.cacheIf { true }
     workingDir = betterSqlite3
-    commandLine = listOf("npm", "run", "install")
+    //listOf("npm", "run", "install")
+    // workaround for node v19: https://github.com/WiseLibs/better-sqlite3/pull/870
+    listOf(
+        "sh",
+        "-c",
+        "cd ../..;npm install WiseLibs/better-sqlite3#pull/870/head;rm package-lock.json"
+    )
 }
 
 fun Project.execute(vararg commands: String): String {
