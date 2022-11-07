@@ -13,10 +13,7 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(projects.kottage)
-            }
-        }
-        val jsMain by getting {
-            dependencies {
+                //implementation(libs.kottage)
             }
         }
     }
