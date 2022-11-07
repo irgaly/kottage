@@ -14,11 +14,6 @@
 * ログはアプリ側からDIする
 * storage.get(Key("key", typeOf(Int))) くらいは用意してもいいかも
 
-TODO:
-
-* 任意の暗号化ロジックを差し込めるようにする
-* item count = 0 のときに stats データを削除する
-
 ---
 
 # List Cache
