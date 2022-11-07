@@ -631,7 +631,7 @@ fun Project.execute(vararg commands: String): String {
 ```
 
 * Add NodeJsExec Task's dependency
-  setting. ([sample build.gradle.kts is here](sample/js-nodejs/build.gradle.kts))
+  setting. ([sample sample/js-nodejs/build.gradle.kts is here](sample/js-nodejs/build.gradle.kts))
 
 `{nodejs project}/build.gradle.kts`
 
