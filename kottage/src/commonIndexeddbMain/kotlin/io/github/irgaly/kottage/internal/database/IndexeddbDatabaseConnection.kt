@@ -38,7 +38,12 @@ internal class IndexeddbDatabaseConnection(
     }
 
     override suspend fun deleteAll() {
-        TODO("Not yet implemented")
+        val database = database.await()
+        database.database.writeTransaction(*allStoreSchemaNames()) {
+            allStoreSchemaNames().forEach {
+                objectStore(it).clear()
+            }
+        }
     }
 
     override suspend fun getDatabaseStatus(): String {
