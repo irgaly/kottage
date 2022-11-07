@@ -31,6 +31,13 @@ class KottageTest : KottageSpec("kottage", body = {
                     kottage().first.compact()
                 }
             }
+            it("clear() をエラーなく実行できる") {
+                val kottage = kottage("clear").first
+                kottage.cache("cache").put("test", "test")
+                shouldNotThrowAny {
+                    kottage.clear()
+                }
+            }
             it("export() でバックアップを作成できる") {
                 kottage().first.export("backup.db", tempDirectory)
             }
