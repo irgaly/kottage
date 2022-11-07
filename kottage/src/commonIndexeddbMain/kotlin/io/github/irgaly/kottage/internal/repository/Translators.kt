@@ -22,10 +22,10 @@ internal fun io.github.irgaly.kottage.data.indexeddb.schema.entity.Item.toDomain
     )
 }
 
-internal fun Item.toEntity(): io.github.irgaly.kottage.data.indexeddb.schema.entity.Item {
+internal fun Item.toIndexeddbEntity(): io.github.irgaly.kottage.data.indexeddb.schema.entity.Item {
     return jso {
         key = getEntityKey()
-        type = this@toEntity.type
+        type = this@toIndexeddbEntity.type
         string_value = stringValue
         long_value = longValue?.toString()
         double_value = doubleValue
@@ -52,10 +52,10 @@ internal fun io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_list.toD
     )
 }
 
-internal fun ItemListEntry.toEntity(): io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_list {
+internal fun ItemListEntry.toIndexeddbEntity(): io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_list {
     return jso {
-        id = this@toEntity.id
-        type = this@toEntity.type
+        id = this@toIndexeddbEntity.id
+        type = this@toIndexeddbEntity.type
         item_type = itemType
         item_key = itemKey
         previous_id = previousId
@@ -100,20 +100,20 @@ internal fun io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_event.to
     )
 }
 
-internal fun ItemEvent.toEntity(): io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_event {
+internal fun ItemEvent.toIndexeddbEntity(): io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_event {
     return jso {
-        id = this@toEntity.id
+        id = this@toIndexeddbEntity.id
         created_at = createdAt.toDouble()
         expire_at = expireAt?.toDouble()
         item_type = itemType
         item_key = itemKey
         item_list_id = itemListId
         item_list_type = itemListType
-        event_type = eventType.toEntity().name
+        event_type = eventType.toIndexeddbEntity().name
     }
 }
 
-internal fun ItemEventType.toEntity(): io.github.irgaly.kottage.data.indexeddb.schema.entity.ItemEventType {
+internal fun ItemEventType.toIndexeddbEntity(): io.github.irgaly.kottage.data.indexeddb.schema.entity.ItemEventType {
     return when (this) {
         ItemEventType.Create -> io.github.irgaly.kottage.data.indexeddb.schema.entity.ItemEventType.Create
         ItemEventType.Update -> io.github.irgaly.kottage.data.indexeddb.schema.entity.ItemEventType.Update

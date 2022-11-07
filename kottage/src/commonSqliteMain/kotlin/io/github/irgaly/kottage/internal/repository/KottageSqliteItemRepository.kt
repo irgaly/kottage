@@ -35,7 +35,11 @@ internal class KottageSqliteItemRepository(
             .updateExpireAt(expireAt, Item.toEntityKey(key, itemType))
     }
 
-    override suspend fun exists(transaction: Transaction, key: String, itemType: String): Boolean {
+    override suspend fun exists(
+        transaction: Transaction,
+        key: String,
+        itemType: String
+    ): Boolean {
         return database.itemQueries
             .selectKey(Item.toEntityKey(key, itemType))
             .executeAsExists()
@@ -160,7 +164,10 @@ internal class KottageSqliteItemRepository(
             .executeAsOneOrNull()?.toDomain()
     }
 
-    override suspend fun getEmptyStats(transaction: Transaction, limit: Long): List<ItemStats> {
+    override suspend fun getEmptyStats(
+        transaction: Transaction,
+        limit: Long
+    ): List<ItemStats> {
         // クリーンアップ用途だけなので、selectEmptyStats Query はインデックスを使わない
         return database.item_statsQueries
             .selectEmptyStats(limit = limit)
@@ -183,21 +190,33 @@ internal class KottageSqliteItemRepository(
             .executeAsOneOrNull()?.count ?: 0
     }
 
-    override suspend fun incrementStatsCount(transaction: Transaction, itemType: String, count: Long) {
+    override suspend fun incrementStatsCount(
+        transaction: Transaction,
+        itemType: String,
+        count: Long
+    ) {
         database.item_statsQueries
             .insertIfNotExists(itemType)
         database.item_statsQueries
             .incrementCount(count, itemType)
     }
 
-    override suspend fun decrementStatsCount(transaction: Transaction, itemType: String, count: Long) {
+    override suspend fun decrementStatsCount(
+        transaction: Transaction,
+        itemType: String,
+        count: Long
+    ) {
         database.item_statsQueries
             .insertIfNotExists(itemType)
         database.item_statsQueries
             .decrementCount(count, itemType)
     }
 
-    override suspend fun updateStatsCount(transaction: Transaction, itemType: String, count: Long) {
+    override suspend fun updateStatsCount(
+        transaction: Transaction,
+        itemType: String,
+        count: Long
+    ) {
         database.item_statsQueries
             .insertIfNotExists(itemType)
         database.item_statsQueries

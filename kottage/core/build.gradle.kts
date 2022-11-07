@@ -12,8 +12,7 @@ kotlin {
     // JS
     js(IR) {
         browser()
-        // nodejs has no indexeddb support
-        //nodejs()
+        nodejs()
     }
     sourceSets {
         commonMain {

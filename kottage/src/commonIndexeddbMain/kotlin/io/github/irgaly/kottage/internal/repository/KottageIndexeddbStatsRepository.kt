@@ -5,6 +5,7 @@ import com.juul.indexeddb.ObjectStore
 import com.juul.indexeddb.WriteTransaction
 import io.github.irgaly.kottage.data.indexeddb.extension.jso
 import io.github.irgaly.kottage.data.indexeddb.schema.entity.Stats
+import io.github.irgaly.kottage.internal.database.IndexeddbTransaction
 import io.github.irgaly.kottage.internal.database.Transaction
 
 internal class KottageIndexeddbStatsRepository : KottageStatsRepository {
@@ -37,6 +38,6 @@ internal class KottageIndexeddbStatsRepository : KottageStatsRepository {
     }
 
     private inline fun <R> Transaction.store(block: WriteTransaction.(store: ObjectStore) -> R): R {
-        return with(transaction) { block(transaction.objectStore("stats")) }
+        return with((this as IndexeddbTransaction).transaction) { block(transaction.objectStore("stats")) }
     }
 }

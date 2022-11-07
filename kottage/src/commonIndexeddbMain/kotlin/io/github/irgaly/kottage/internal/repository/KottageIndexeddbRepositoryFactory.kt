@@ -1,7 +1,5 @@
 package io.github.irgaly.kottage.internal.repository
 
-import io.github.irgaly.kottage.internal.database.DatabaseConnection
-
 /**
  * Note:
  * * indexeddb comparison
@@ -18,22 +16,20 @@ import io.github.irgaly.kottage.internal.database.DatabaseConnection
  *         * Transaction 内の並列処理は整合性が保てないため、cursor Flow 内では非同期処理を使わないようにする
  *         * 例外として: cursor.delete() だけの実行なら許可する
  */
-internal actual class KottageRepositoryFactory actual constructor(
-    private val databaseConnection: DatabaseConnection
-) {
-    actual suspend fun createItemRepository(): KottageItemRepository {
+internal class KottageIndexeddbRepositoryFactory: KottageRepositoryFactory {
+    override suspend fun createItemRepository(): KottageItemRepository {
         return KottageIndexeddbItemRepository()
     }
 
-    actual suspend fun createItemListRepository(): KottageItemListRepository {
+    override suspend fun createItemListRepository(): KottageItemListRepository {
         return KottageIndexeddbItemListRepository()
     }
 
-    actual suspend fun createItemEventRepository(): KottageItemEventRepository {
+    override suspend fun createItemEventRepository(): KottageItemEventRepository {
         return KottageIndexeddbItemEventRepository()
     }
 
-    actual suspend fun createStatsRepository(): KottageStatsRepository {
+    override suspend fun createStatsRepository(): KottageStatsRepository {
         return KottageIndexeddbStatsRepository()
     }
 }

@@ -2,6 +2,6 @@ package io.github.irgaly.kottage.internal.database
 
 import com.juul.indexeddb.WriteTransaction
 
-internal actual class Transaction(
+internal class IndexeddbTransaction(
     val transaction: WriteTransaction
-)
+) : Transaction

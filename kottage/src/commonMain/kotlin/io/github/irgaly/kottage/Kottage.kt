@@ -2,6 +2,7 @@ package io.github.irgaly.kottage
 
 import io.github.irgaly.kottage.internal.KottageDatabaseManager
 import io.github.irgaly.kottage.internal.KottageStorageImpl
+import io.github.irgaly.kottage.internal.platform.PlatformFactory
 import io.github.irgaly.kottage.platform.Files
 import io.github.irgaly.kottage.strategy.KottageFifoStrategy
 import io.github.irgaly.kottage.strategy.KottageKvsStrategy
@@ -53,7 +54,7 @@ class Kottage(
             version: Int,
             dispatcher: CoroutineDispatcher = Dispatchers.Default
         ) {
-            io.github.irgaly.kottage.internal.database.createOldDatabase(
+            PlatformFactory().createDatabaseConnectionFactory().createOldDatabase(
                 fileName = name,
                 directoryPath = directoryPath,
                 environment = environment,

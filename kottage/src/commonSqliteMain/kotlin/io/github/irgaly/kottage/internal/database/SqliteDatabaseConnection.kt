@@ -1,13 +1,8 @@
 package io.github.irgaly.kottage.internal.database
 
-import com.squareup.sqldelight.EnumColumnAdapter
 import com.squareup.sqldelight.db.SqlDriver
 import com.squareup.sqldelight.db.use
-import io.github.irgaly.kottage.KottageEnvironment
-import io.github.irgaly.kottage.data.sqlite.DriverFactory
-import io.github.irgaly.kottage.data.sqlite.Item_event
 import io.github.irgaly.kottage.data.sqlite.KottageDatabase
-import io.github.irgaly.kottage.data.sqlite.createDriver
 import io.github.irgaly.kottage.platform.Files
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineStart
@@ -18,11 +13,11 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-internal actual data class DatabaseConnection(
+internal data class SqliteDatabaseConnection(
     private val sqlDriverProvider: suspend () -> SqlDriver,
     private val databaseProvider: suspend (sqlDriver: SqlDriver) -> KottageDatabase,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default
-) {
+): DatabaseConnection {
     @OptIn(DelicateCoroutinesApi::class)
     private val sqlDriver = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
         sqlDriverProvider()
@@ -37,7 +32,7 @@ internal actual data class DatabaseConnection(
         return body(sqlDriver.await(), database.await())
     }
 
-    actual suspend fun <R> transactionWithResult(bodyWithReturn: suspend Transaction.() -> R): R =
+    override suspend fun <R> transactionWithResult(bodyWithReturn: suspend Transaction.() -> R): R =
         withContext(dispatcher) {
             withDatabase { sqlDriver, database ->
                 database.transactionWithResult {
@@ -49,7 +44,7 @@ internal actual data class DatabaseConnection(
                     var finished = false
                     launch(start = CoroutineStart.UNDISPATCHED) {
                         // SQLite Transaction はスレッド切り替えなしで実行する
-                        result = bodyWithReturn(Transaction())
+                        result = bodyWithReturn(SqliteTransaction())
                         finished = true
                     }
                     if (!finished) {
@@ -62,17 +57,18 @@ internal actual data class DatabaseConnection(
             }
         }
 
-    actual suspend fun transaction(body: suspend Transaction.() -> Unit) = withContext(dispatcher) {
-        withDatabase { sqlDriver, database ->
-            database.transaction {
-                // here: SQLDelight Transaction = DEFERRED (default)
-                // restart transaction with EXCLUSIVE
-                sqlDriver.execute(null, "END", 0)
-                sqlDriver.execute(null, "BEGIN EXCLUSIVE", 0)
-                var finished = false
-                launch(start = CoroutineStart.UNDISPATCHED) {
-                    // SQLite Transaction はスレッド切り替えなしで実行する
-                    body(Transaction())
+    override suspend fun transaction(body: suspend Transaction.() -> Unit) =
+        withContext(dispatcher) {
+            withDatabase { sqlDriver, database ->
+                database.transaction {
+                    // here: SQLDelight Transaction = DEFERRED (default)
+                    // restart transaction with EXCLUSIVE
+                    sqlDriver.execute(null, "END", 0)
+                    sqlDriver.execute(null, "BEGIN EXCLUSIVE", 0)
+                    var finished = false
+                    launch(start = CoroutineStart.UNDISPATCHED) {
+                        // SQLite Transaction はスレッド切り替えなしで実行する
+                        body(SqliteTransaction())
                     finished = true
                 }
                 if (!finished) {
@@ -83,7 +79,7 @@ internal actual data class DatabaseConnection(
         }
     }
 
-    actual suspend fun deleteAll() = withContext(dispatcher) {
+    override suspend fun deleteAll() = withContext(dispatcher) {
         withDatabase { _, database ->
             database.transaction {
                 database.itemQueries.deleteAll()
@@ -96,7 +92,7 @@ internal actual data class DatabaseConnection(
         }
     }
 
-    actual suspend fun compact() = withContext(dispatcher) {
+    override suspend fun compact() = withContext(dispatcher) {
         withDatabase { sqlDriver, _ ->
             // reduce WAL file size to zero / https://www.sqlite.org/pragma.html#pragma_wal_checkpoint
             sqlDriver.executeQuery(null, "PRAGMA wal_checkpoint(TRUNCATE)", 0).close()
@@ -105,7 +101,7 @@ internal actual data class DatabaseConnection(
         }
     }
 
-    actual suspend fun backupTo(file: String, directoryPath: String) = withContext(dispatcher) {
+    override suspend fun backupTo(file: String, directoryPath: String) = withContext(dispatcher) {
         withDatabase { sqlDriver, _ ->
             require(!file.contains(Files.separator)) { "file contains separator: $file" }
             if (!Files.exists(directoryPath)) {
@@ -119,7 +115,7 @@ internal actual data class DatabaseConnection(
         }
     }
 
-    actual suspend fun getDatabaseStatus(): String = withContext(dispatcher) {
+    override suspend fun getDatabaseStatus(): String = withContext(dispatcher) {
         withDatabase { sqlDriver, database ->
             database.transactionWithResult {
                 //val userVersion = database.pragmaQueries.getUserVersion()
@@ -226,42 +222,5 @@ internal actual data class DatabaseConnection(
                 """.trimIndent()
             }
         }
-    }
-}
-
-internal actual fun createDatabaseConnection(
-    fileName: String,
-    directoryPath: String,
-    environment: KottageEnvironment,
-    dispatcher: CoroutineDispatcher
-): DatabaseConnection {
-    require(!fileName.contains(Files.separator)) { "fileName contains separator: $fileName" }
-    return DatabaseConnection({
-        if (!Files.exists(directoryPath)) {
-            Files.mkdirs(directoryPath)
-        }
-        DriverFactory(
-            environment.context.context,
-            dispatcher
-        ).createDriver(fileName, directoryPath)
-    }, { sqlDriver ->
-        KottageDatabase(sqlDriver, Item_event.Adapter(EnumColumnAdapter()))
-    }, dispatcher)
-}
-
-internal actual suspend fun createOldDatabase(
-    fileName: String,
-    directoryPath: String,
-    environment: KottageEnvironment,
-    version: Int,
-    dispatcher: CoroutineDispatcher
-) {
-    withContext(dispatcher) {
-        require(!fileName.contains(Files.separator)) { "fileName contains separator: $fileName" }
-        DriverFactory(
-            environment.context.context,
-            dispatcher
-        ).createDriver(fileName, directoryPath, version)
-            .execute(null, "PRAGMA no_operation /* execution for opening connection */", 0)
     }
 }

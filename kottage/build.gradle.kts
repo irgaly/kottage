@@ -2,6 +2,7 @@ import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
+import org.jetbrains.kotlin.gradle.targets.js.testing.KotlinJsTest
 
 plugins {
     id(libs.plugins.buildlogic.multiplatform.library.get().pluginId)
@@ -34,8 +35,7 @@ kotlin {
     // JS
     js(IR) {
         browser {
-            if (
-                System.getenv().containsKey("GITHUB_ACTIONS")
+            if (System.getenv().containsKey("GITHUB_ACTIONS")
                 && OperatingSystem.current().isMacOsX
             ) {
                 testTask {
@@ -46,8 +46,7 @@ kotlin {
                 }
             }
         }
-        // nodejs has no indexeddb support
-        //nodejs()
+        nodejs()
     }
     sourceSets {
         commonMain {
@@ -75,20 +74,18 @@ kotlin {
                 implementation(projects.kottage.data.indexeddb)
             }
         }
-        val androidMain by getting {
+        val sqliteMain by creating {
             dependsOn(commonSqliteMain)
-            dependencies {
-            }
+        }
+        val androidMain by getting {
+            dependsOn(sqliteMain)
         }
         val jvmMain by getting {
-            dependsOn(commonSqliteMain)
-            dependencies {
-            }
+            dependsOn(sqliteMain)
         }
         val jsMain by getting {
+            dependsOn(commonSqliteMain)
             dependsOn(commonIndexeddbMain)
-            dependencies {
-            }
         }
         val jsTest by getting {
             dependencies {
@@ -98,10 +95,7 @@ kotlin {
             }
         }
         val nativeMain by getting {
-            dependsOn(commonSqliteMain)
-            dependencies {
-                implementation(projects.kottage.data.sqlite)
-            }
+            dependsOn(sqliteMain)
         }
     }
     targets.withType<KotlinNativeTarget> {
@@ -121,4 +115,8 @@ val javadocJar by tasks.registering(Jar::class) {
     dependsOn(dokkaHtml)
     from(dokkaHtml.outputDirectory)
     archiveClassifier.set("javadoc")
+}
+
+val jsNodeTest by tasks.named<KotlinJsTest>("jsNodeTest") {
+    dependsOn(rootProject.tasks.named("installBetterSqlite3"))
 }
