@@ -1,3 +1,13 @@
+# v1.4.0 - 2022/11/08 JST
+
+#### Features
+
+* :tada: Kotlin/JS nodejs support [#79](https://github.com/irgaly/kottage/pull/79)
+
+#### Fix
+
+* implement Kottage.clear() on JS browser [#83](https://github.com/irgaly/kottage/pull/83)
+
 # v1.3.0 - 2022/10/31 JST
 
 #### Features
