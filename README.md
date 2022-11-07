@@ -611,6 +611,16 @@ val installBetterSqlite3 by tasks.registering(Exec::class) {
     workingDir = betterSqlite3
     commandLine = listOf("npm", "run", "install")
 }
+
+fun Project.execute(vararg commands: String): String {
+    val out = ByteArrayOutputStream()
+    exec {
+        commandLine = listOf("sh", "-c") + commands
+        standardOutput = out
+        isIgnoreExitValue = true
+    }
+    return out.toString().trim()
+}
 ...
 ```
 
