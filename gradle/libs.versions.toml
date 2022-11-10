@@ -33,7 +33,7 @@ sqldelight-driver-jvm = { module = "com.squareup.sqldelight:sqlite-driver", vers
 sqldelight-driver-native = { module = "com.squareup.sqldelight:native-driver", version.ref = "sqldelight" }
 sqldelight-driver-js = { module = "com.squareup.sqldelight:sqljs-driver", version.ref = "sqldelight" }
 indexeddb = { module = "com.juul.indexeddb:core", version = "0.3.0" }
-klock = { module = "com.soywiz.korlibs.klock:klock", version = "3.2.0" }
+klock = { module = "com.soywiz.korlibs.klock:klock", version = "3.4.0" }
 kodein-di = { module = "org.kodein.di:kodein-di", version = "7.15.0" }
 kottage = { module = "io.github.irgaly.kottage:kottage", version.ref = "kottage" }
 
