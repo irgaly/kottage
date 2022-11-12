@@ -45,7 +45,7 @@ test-common = [
 [plugins]
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization" }
 kotest-multiplatform = { id = "io.kotest.multiplatform" }
-compose = { id = "org.jetbrains.compose", version = "1.1.0" }
+compose = { id = "org.jetbrains.compose", version = "1.2.1" }
 sqldelight = { id = "com.squareup.sqldelight", version.ref = "sqldelight" }
 buildlogic-android-library = { id = "build-logic.android.library" }
 buildlogic-multiplatform-library = { id = "build-logic.multiplatform.library" }
