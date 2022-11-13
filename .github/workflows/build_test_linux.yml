@@ -6,7 +6,16 @@ on: push
 jobs:
   build-test:
     runs-on: ubuntu-latest
+    container:
+      image: gcc:7.3
     steps:
+      - name: Setup Container
+        run: |
+          # glibc 2.27 以下を使うために gcc:7.3 イメージを利用
+          echo "deb [trusted=yes] http://deb.debian.org/debian stretch-backports main" >> /etc/apt/sources.list
+          apt update
+          # VACUUM INTO のために sqlite 3.27 以上にアップデート
+          apt-get -yt stretch-backports install libsqlite3-dev
       - uses: actions/checkout@v3
       - id: get-month
         run: echo "month=$(TZ=Asia/Tokyo date +%m)" >> $GITHUB_OUTPUT
@@ -47,13 +56,25 @@ jobs:
       - name: Linux Test
         run: |
           ./gradlew linuxX64Test
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results
+          path: "**/build/test-results/*/*.xml"
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-reports
+          path: "**/build/reports/tests/*"
+  upload-test:
+    runs-on: ubuntu-latest
+    needs: [ build-test ]
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: test-results
       - uses: EnricoMi/publish-unit-test-result-action/composite@v2
         if: always()
         with:
           junit_files: "**/build/test-results/*/*.xml"
           comment_mode: off
-      - uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: test-results
-          path: "**/build/reports/tests/*"

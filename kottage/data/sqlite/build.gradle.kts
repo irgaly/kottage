@@ -1,3 +1,6 @@
+import org.gradle.internal.os.OperatingSystem
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+
 plugins {
     id(libs.plugins.buildlogic.multiplatform.library.get().pluginId)
     id(libs.plugins.buildlogic.android.library.get().pluginId)
@@ -50,6 +53,17 @@ kotlin {
             dependencies {
                 implementation(npm("better-sqlite3", "7.6.2"))
                 //implementation(npm("@types/better-sqlite3", "7.6.2", generateExternals = true))
+            }
+        }
+    }
+    if (System.getenv().containsKey("GITHUB_ACTIONS")
+        && OperatingSystem.current().isLinux
+    ) {
+        targets.withType<KotlinNativeTarget> {
+            if ("linux" in name) {
+                binaries.all {
+                    linkerOpts.add("-L/usr/lib/x86_64-linux-gnu")
+                }
             }
         }
     }
