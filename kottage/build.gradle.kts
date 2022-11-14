@@ -99,12 +99,17 @@ kotlin {
         }
     }
     targets.withType<KotlinNativeTarget> {
-        if (listOf("ios", "macos", "tvos", "watchos").any { it in name }) {
+        if (listOf("ios", "macos", "tvos", "watchos", "linux").any { it in name }) {
             binaries.all {
                 // fix test build: "Undefined symbols for architecture arm64:"
                 // https://github.com/cashapp/sqldelight/issues/3296
                 // https://github.com/cashapp/sqldelight/blob/ee8eb4390dedaaf735937896aef9f0ed56f3281e/drivers/native-driver/build.gradle
                 linkerOpts.add("-lsqlite3")
+                if (System.getenv().containsKey("GITHUB_ACTIONS")
+                    && OperatingSystem.current().isLinux
+                ) {
+                    linkerOpts.add("-L/usr/lib/x86_64-linux-gnu")
+                }
             }
         }
     }

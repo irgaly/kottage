@@ -5,7 +5,7 @@ actual class Context {
         private set
 
     actual constructor() {
-        throw NotImplementedError("use context constructor on Android platform")
+        throw UnsupportedOperationException("use context constructor on Android platform")
     }
 
     constructor(context: android.content.Context) {
