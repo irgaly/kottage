@@ -4,6 +4,7 @@ import io.github.irgaly.kottage.internal.KottageDatabaseManager
 import io.github.irgaly.kottage.internal.KottageStorageImpl
 import io.github.irgaly.kottage.internal.platform.PlatformFactory
 import io.github.irgaly.kottage.platform.Files
+import io.github.irgaly.kottage.platform.KottageSystemCalendar
 import io.github.irgaly.kottage.strategy.KottageFifoStrategy
 import io.github.irgaly.kottage.strategy.KottageKvsStrategy
 import kotlinx.coroutines.CoroutineDispatcher
@@ -110,7 +111,7 @@ class Kottage(
             options,
             this.options,
             databaseManager,
-            environment.calendar,
+            environment.calendar ?: KottageSystemCalendar(),
             { databaseManager.compact() },
             dispatcher
         )
@@ -139,7 +140,7 @@ class Kottage(
             options,
             this.options,
             databaseManager,
-            environment.calendar,
+            environment.calendar ?: KottageSystemCalendar(),
             { databaseManager.compact() },
             dispatcher
         )
