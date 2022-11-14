@@ -96,14 +96,8 @@ import io.github.irgaly.kottage.platform.contextOf
 // * Android Cache Directory: context.getCacheDir().path
 val databaseDirectory: String = ...
 val kottageEnvironment: KottageEnvironment = KottageEnvironment(
-    context = contextOf(context), // for Android, set a KottageContext with Android Context object
-    //context = KottageContext(), // for other platforms, set an empty KottageContext
-    calendar = object : KottageCalendar {
-        override fun nowUnixTimeMillis(): Long {
-            // for example: JVM / Android Unix Time implementation
-            return System.currentTimeMillis
-        }
-    }
+    context = contextOf(context) // for Android, set a KottageContext with Android Context object
+    //context = KottageContext() // for other platforms, set an empty KottageContext
 )
 // Initialize with Kottage database information.
 val kottage: Kottage = Kottage(
