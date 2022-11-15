@@ -8,5 +8,5 @@ import io.github.irgaly.kottage.platform.KottageContext
  */
 data class KottageEnvironment(
     val context: KottageContext,
-    val calendar: KottageCalendar
+    val calendar: KottageCalendar? = null
 )

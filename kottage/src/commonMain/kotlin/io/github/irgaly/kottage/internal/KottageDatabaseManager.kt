@@ -9,6 +9,7 @@ import io.github.irgaly.kottage.internal.database.Transaction
 import io.github.irgaly.kottage.internal.model.ItemEvent
 import io.github.irgaly.kottage.internal.model.ItemEventFlow
 import io.github.irgaly.kottage.internal.platform.PlatformFactory
+import io.github.irgaly.kottage.platform.KottageSystemCalendar
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -32,8 +33,8 @@ internal class KottageDatabaseManager(
             .createDatabaseConnection(fileName, directoryPath, environment, dispatcher)
     }
 
-    private val calendar get() = environment.calendar
-    private val _eventFlow = ItemEventFlow(environment.calendar.nowUnixTimeMillis(), scope)
+    private val calendar = (environment.calendar ?: KottageSystemCalendar())
+    private val _eventFlow = ItemEventFlow(calendar.nowUnixTimeMillis(), scope)
 
     private val repositoryFactory by lazy {
         PlatformFactory().createKottageRepositoryFactory(databaseConnection)
