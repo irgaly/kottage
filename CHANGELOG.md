@@ -1,3 +1,9 @@
+# v1.4.1 - 2022/11/15 JST
+
+#### Improve
+
+* add default KottageCalendar implementation [#94](https://github.com/irgaly/kottage/pull/94)
+
 # v1.4.0 - 2022/11/08 JST
 
 #### Features
