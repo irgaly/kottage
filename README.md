@@ -608,7 +608,8 @@ plugins.withType<NodeJsRootPlugin> {
             outputs.files(betterSqlite3.resolve("build/Release/better_sqlite3.node"))
             outputs.cacheIf { true }
             workingDir = betterSqlite3
-            commandLine = listOf("sh", "-c", "$npm run install")
+            commandLine =
+                listOf("sh", "-c", "PATH=:${nodeEnv.nodeDir}/bin:\$PATH $npm run install --verbose")
         }
     }
 }
