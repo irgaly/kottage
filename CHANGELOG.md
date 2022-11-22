@@ -1,3 +1,10 @@
+# v1.4.2 - 2022/11/22 JST
+
+#### Maintenance
+
+* update Kotlin/JS nodejs's better-sqlite3 8.0.0, SQLite3
+  3.40.0 [#86](https://github.com/irgaly/kottage/pull/86)
+
 # v1.4.1 - 2022/11/15 JST
 
 #### Improve
