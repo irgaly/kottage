@@ -609,7 +609,11 @@ plugins.withType<NodeJsRootPlugin> {
             outputs.cacheIf { true }
             workingDir = betterSqlite3
             commandLine =
-                listOf("sh", "-c", "PATH=${nodeEnv.nodeDir}/bin:\$PATH $npm run install --verbose")
+                listOf(
+                    "sh",
+                    "-c",
+                    "PATH=\"${nodeEnv.nodeDir}/bin:\$PATH\" $npm run install --verbose"
+                )
         }
     }
 }
