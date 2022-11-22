@@ -51,8 +51,8 @@ kotlin {
         }
         val jsMain by getting {
             dependencies {
-                implementation(npm("better-sqlite3", "7.6.2"))
-                //implementation(npm("@types/better-sqlite3", "7.6.2", generateExternals = true))
+                implementation(npm("better-sqlite3", "8.0.0"))
+                //implementation(npm("@types/better-sqlite3", "8.0.0", generateExternals = true))
             }
         }
     }

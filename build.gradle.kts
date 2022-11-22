@@ -1,4 +1,3 @@
-import io.github.irgaly.buildlogic.execute
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
@@ -108,29 +107,23 @@ subprojects {
 }
 
 plugins.withType<NodeJsRootPlugin> {
-    configure<NodeJsRootExtension> {
-        // kotlinNpmInstall で使う node をなるべく実行環境のものに揃える
-        nodeVersion = execute("node --version || echo v$nodeVersion").removePrefix("v")
-    }
-}
-
-val installBetterSqlite3 by tasks.registering(Exec::class) {
-    val betterSqlite3 = buildDir.resolve("js/node_modules/better-sqlite3")
-    dependsOn(tasks.withType<KotlinNpmInstallTask>())
-    inputs.files(betterSqlite3.resolve("package.json"))
-    inputs.property("node-version", provider { execute("node --version") })
-    outputs.files(betterSqlite3.resolve("build/Release/better_sqlite3.node"))
-    outputs.cacheIf { true }
-    workingDir = betterSqlite3
-    commandLine = if (System.getenv().containsKey("GITHUB_ACTIONS")) {
-        listOf("npm", "run", "install")
-    } else {
-        // workaround for node v19
-        listOf(
-            "sh",
-            "-c",
-            "cd ../..;npm install WiseLibs/better-sqlite3#pull/870/head;rm package-lock.json"
-        )
+    extensions.configure<NodeJsRootExtension> {
+        nodeVersion = "19.1.0"
+        val installBetterSqlite3 by tasks.registering(Exec::class) {
+            val nodeExtension = this@configure
+            val nodeEnv = nodeExtension.requireConfigured()
+            val node = nodeEnv.nodeExecutable
+            val npm = "\"$node\" \"${nodeEnv.nodeDir}/lib/node_modules/npm/bin/npm-cli.js\""
+            val betterSqlite3 = buildDir.resolve("js/node_modules/better-sqlite3")
+            dependsOn(tasks.withType<KotlinNpmInstallTask>())
+            inputs.files(betterSqlite3.resolve("package.json"))
+            inputs.property("node-version", nodeVersion)
+            outputs.files(betterSqlite3.resolve("build/Release/better_sqlite3.node"))
+            outputs.cacheIf { true }
+            workingDir = betterSqlite3
+            commandLine =
+                listOf("sh", "-c", "PATH=:${nodeEnv.nodeDir}/bin:\$PATH $npm run install --verbose")
+        }
     }
 }
 
