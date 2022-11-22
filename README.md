@@ -580,46 +580,37 @@ CoroutinesInternalError: Fatal exception in coroutines machinery for AwaitContin
 
 To prevent this error, you should build FFI file with a custom Gradle Task.
 
-* Make sure your machine environment has `node` v19 or newer.
-* Specify node version of Kotlin/JS Task to same version of your build environment. Then
-  register `installBetterSqlite3` task. This task
+* Make sure your machine environment has `python3`.
+* Register `installBetterSqlite3` task. This task will
   make `{rootProject}/build/js/node_modules/better-sqlite3/build/Release/better_sqlite3.node`.
 
 `{rootProject}/build.gradle.kts` ([sample build.gradle.kts is here](build.gradle.kts))
 
 ```kotlin
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
+import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask
+
 ...
 plugins.withType<NodeJsRootPlugin> {
-    configure<NodeJsRootExtension> {
-        nodeVersion = execute("node --version || echo v$nodeVersion").removePrefix("v")
+    extensions.configure<NodeJsRootExtension> {
+        // Choose any version you want to use from https://nodejs.org/en/download/releases/
+        nodeVersion = "19.1.0"
+        val installBetterSqlite3 by tasks.registering(Exec::class) {
+            val nodeExtension = this@configure
+            val nodeEnv = nodeExtension.requireConfigured()
+            val node = nodeEnv.nodeExecutable
+            val npm = "\"$node\" \"${nodeEnv.nodeDir}/lib/node_modules/npm/bin/npm-cli.js\""
+            val betterSqlite3 = buildDir.resolve("js/node_modules/better-sqlite3")
+            dependsOn(tasks.withType<KotlinNpmInstallTask>())
+            inputs.files(betterSqlite3.resolve("package.json"))
+            inputs.property("node-version", nodeVersion)
+            outputs.files(betterSqlite3.resolve("build/Release/better_sqlite3.node"))
+            outputs.cacheIf { true }
+            workingDir = betterSqlite3
+            commandLine = listOf("sh", "-c", "$npm run install")
+        }
     }
-}
-
-val installBetterSqlite3 by tasks.registering(Exec::class) {
-    val betterSqlite3 = buildDir.resolve("js/node_modules/better-sqlite3")
-    dependsOn(tasks.withType<KotlinNpmInstallTask>())
-    inputs.files(betterSqlite3.resolve("package.json"))
-    inputs.property("node-version", provider { execute("node --version") })
-    outputs.files(betterSqlite3.resolve("build/Release/better_sqlite3.node"))
-    outputs.cacheIf { true }
-    workingDir = betterSqlite3
-    //listOf("npm", "run", "install")
-    // workaround for node v19: https://github.com/WiseLibs/better-sqlite3/pull/870
-    listOf(
-        "sh",
-        "-c",
-        "cd ../..;npm install WiseLibs/better-sqlite3#pull/870/head;rm package-lock.json"
-    )
-}
-
-fun Project.execute(vararg commands: String): String {
-    val out = ByteArrayOutputStream()
-    exec {
-        commandLine = listOf("sh", "-c") + commands
-        standardOutput = out
-        isIgnoreExitValue = true
-    }
-    return out.toString().trim()
 }
 ...
 ```
@@ -647,8 +638,8 @@ tasks.withType<NodeJsExec>().configureEach {
 ...
 ```
 
-* Then, execute `jsNodeRun` (jsNodeDevelopmentRun or jsNodeProductionRun) task and no FFI errors
-  will be occurred.
+* Then, execute `jsNodeRun` (jsNodeDevelopmentRun or jsNodeProductionRun) task. There are no FFI
+  errors.
 
 # Kottage Internals
 
