@@ -3,7 +3,6 @@ import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
 import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jetbrains.kotlin.konan.file.File
 
 plugins {
     `kotlin-dsl` apply false
@@ -109,7 +108,7 @@ subprojects {
 
 plugins.withType<NodeJsRootPlugin> {
     extensions.configure<NodeJsRootExtension> {
-        nodeVersion = "19.0.1"
+        nodeVersion = "19.1.0"
         val installBetterSqlite3 by tasks.registering(Exec::class) {
             val nodeExtension = this@configure
             val nodeEnv = nodeExtension.requireConfigured()
@@ -117,22 +116,12 @@ plugins.withType<NodeJsRootPlugin> {
             val npm = "\"$node\" \"${nodeEnv.nodeDir}/lib/node_modules/npm/bin/npm-cli.js\""
             val betterSqlite3 = buildDir.resolve("js/node_modules/better-sqlite3")
             dependsOn(tasks.withType<KotlinNpmInstallTask>())
-            // workaround for node v19
-            //inputs.files(betterSqlite3.resolve("package.json"))
+            inputs.files(betterSqlite3.resolve("package.json"))
             inputs.property("node-version", nodeVersion)
             outputs.files(betterSqlite3.resolve("build/Release/better_sqlite3.node"))
             outputs.cacheIf { true }
             workingDir = betterSqlite3
-            commandLine = if (System.getenv().containsKey("GITHUB_ACTIONS")) {
-                listOf("sh", "-c", "npm run install")
-            } else {
-                // workaround for node v19
-                listOf(
-                    "sh",
-                    "-c",
-                    "cd ../..;$npm install WiseLibs/better-sqlite3#pull/870/head;rm package-lock.json"
-                )
-            }
+            commandLine = listOf("sh", "-c", "$npm run install")
         }
     }
 }
