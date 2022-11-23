@@ -324,8 +324,46 @@ override fun onCreate(...) { // for example: onCreate
         }
     }
 }
-
 ```
+
+# Encryption
+
+User defined encryption are supported. **Only KVS value part is encrypted**, while other part (KVS
+key, storage name...) remains plain data.
+
+| part                         | stored data |
+|------------------------------|-------------|
+| KVS value                    | encrypted   |
+| KVS key                      | plain       |
+| Kottage name (SQL file name) | plain       |
+| Kottage Storage name         | plain       |
+| Kottage List name            | plain       |
+| KottageListMetaData          | plain       |
+| KottageEvent                 | plain       |
+
+```kotlin
+val storage: KottageStorage = kottage.storage("encrypted_storage") {
+    encoder = object : KottageEncoder {
+        override fun encode(value: ByteArray): ByteArray {
+            // Your encoding logic (plain ByteArray to encrypted ByteArray) here
+            return ...
+        }
+
+        override fun decode(encoded: ByteArray): ByteArray {
+            // Your decoding logic (encrypted ByteArray to plain ByteArray) here
+            return ...
+        }
+    }
+}
+// storage's values are encrypted
+storage.put("long_value", 100L)
+storage.put("string_value", "value")
+val longValue: Long = storage.get("long_value") // => 100L
+val stringValue: String = storage.get("long_value") // => "value"
+```
+
+* Recommendation: [Krypto](https://docs.korge.org/krypto/) is a cool library to use encryption
+  feature in Kotlin Multiplatform.
 
 # Supporting Data Types
 
