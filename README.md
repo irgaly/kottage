@@ -12,9 +12,10 @@ Kotlin Multiplatform Key-Value Store Local Cache Storage for Single Source of Tr
         * Expiration Time
         * FIFO Strategy
         * LRU Strategy
-* KVS Cache mode / KVS Storage mode
+* KVS Cache mode
     * Expired items are evicted automatically
-    * There is a storage mode with no item expiration
+* KVS Storage mode
+    * no item expiration
 * List structures for Paging are supported
 * Support primitive values and `@Serializable` classes
 
@@ -156,6 +157,34 @@ val value2: Int = storage.get<Int>("item2")
 val value3: Boolean = storage.get<Boolean>("item3")
 storage.exists("item4") // => false
 storage.getOrNull<String>("item4") // => null
+```
+
+### Property Delegation
+
+KottageStorage provides property delegate.
+
+```kotlin
+val storage: KottageStorage = kottage.storage("app_configs")
+
+val myConfig: String by storage.property { "default value" }
+val myConfigNullable: String? by storage.nullableProperty()
+
+myConfig.write("value")
+val config: String = myConfig.read()
+```
+
+For example, this is strictly typed data access class:
+
+```kotlin
+class AppConfiguration(kottage: Kottage) {
+    private val storage: KottageStorage = kottage.storage("app_configs")
+    val myConfig: String by storage.property { "default value" }
+    val myConfigNullable: String? by storage.nullableProperty()
+}
+
+val configuration: AppConfiguration = AppConfiguration(kottage)
+configuration.myConfig.write("value")
+val config: String = configuration.myConfig.read()
 ```
 
 ### List / Paging
