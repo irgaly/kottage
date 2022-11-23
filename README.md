@@ -12,9 +12,10 @@ Kotlin Multiplatform Key-Value Store Local Cache Storage for Single Source of Tr
         * Expiration Time
         * FIFO Strategy
         * LRU Strategy
-* KVS Cache mode / KVS Storage mode
+* KVS Cache mode
     * Expired items are evicted automatically
-    * There is a storage mode with no item expiration
+* KVS Storage mode
+    * no item expiration
 * List structures for Paging are supported
 * Support primitive values and `@Serializable` classes
 
@@ -158,6 +159,34 @@ storage.exists("item4") // => false
 storage.getOrNull<String>("item4") // => null
 ```
 
+### Property Delegation
+
+KottageStorage provides property delegate.
+
+```kotlin
+val storage: KottageStorage = kottage.storage("app_configs")
+
+val myConfig: String by storage.property { "default value" }
+val myConfigNullable: String? by storage.nullableProperty()
+
+myConfig.write("value")
+val config: String = myConfig.read()
+```
+
+For example, this is strictly typed data access class:
+
+```kotlin
+class AppConfiguration(kottage: Kottage) {
+    private val storage: KottageStorage = kottage.storage("app_configs")
+    val myConfig: String by storage.property { "default value" }
+    val myConfigNullable: String? by storage.nullableProperty()
+}
+
+val configuration: AppConfiguration = AppConfiguration(kottage)
+configuration.myConfig.write("value")
+val config: String = configuration.myConfig.read()
+```
+
 ### List / Paging
 
 Kottage has a List feature for make Paging UIs and for Single Source of Truth.
@@ -295,8 +324,46 @@ override fun onCreate(...) { // for example: onCreate
         }
     }
 }
-
 ```
+
+# Encryption
+
+User defined encryption are supported. **Only KVS value part is encrypted**, while other part (KVS
+key, storage name...) remains plain data.
+
+| part                         | stored data |
+|------------------------------|-------------|
+| KVS value                    | encrypted   |
+| KVS key                      | plain       |
+| Kottage name (SQL file name) | plain       |
+| Kottage Storage name         | plain       |
+| Kottage List name            | plain       |
+| KottageListMetaData          | plain       |
+| KottageEvent                 | plain       |
+
+```kotlin
+val storage: KottageStorage = kottage.storage("encrypted_storage") {
+    encoder = object : KottageEncoder {
+        override fun encode(value: ByteArray): ByteArray {
+            // Your encoding logic (plain ByteArray to encrypted ByteArray) here
+            return ...
+        }
+
+        override fun decode(encoded: ByteArray): ByteArray {
+            // Your decoding logic (encrypted ByteArray to plain ByteArray) here
+            return ...
+        }
+    }
+}
+// storage's values are encrypted
+storage.put("long_value", 100L)
+storage.put("string_value", "value")
+val longValue: Long = storage.get("long_value") // => 100L
+val stringValue: String = storage.get("long_value") // => "value"
+```
+
+* Recommendation: [Krypto](https://docs.korge.org/krypto/) is a cool library to use encryption
+  feature in Kotlin Multiplatform.
 
 # Supporting Data Types
 
