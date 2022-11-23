@@ -33,6 +33,15 @@
       "matchPackageNames": [
         "io.kotest.multiplatform"
       ]
+    },
+    {
+      "groupName": "docker gcc",
+      "matchPackageNames": [
+        "gcc"
+      ],
+      "matchDatasources": [
+        "docker"
+      ]
     }
   ]
 }
