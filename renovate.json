@@ -1,5 +1,4 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:base",
     "schedule:quarterly"
@@ -36,6 +35,7 @@
     },
     {
       "groupName": "docker gcc",
+      "enabled": false,
       "matchPackageNames": [
         "gcc"
       ],
