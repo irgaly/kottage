@@ -7,7 +7,7 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
     container:
-      image: gcc:7.3
+      image: gcc:7.5
     steps:
       - name: Setup Container
         run: |
