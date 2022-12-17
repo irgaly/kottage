@@ -24,5 +24,6 @@ dependencies {
     implementation(libs.androidx.lifecycle)
     implementation(libs.bundles.compose)
     implementation(libs.kotlinx.serialization)
+    implementation(libs.faker)
     implementation(projects.kottage)
 }
