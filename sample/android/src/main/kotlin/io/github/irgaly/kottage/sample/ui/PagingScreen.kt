@@ -13,19 +13,28 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import io.github.serpro69.kfaker.faker
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemsIndexed
+import io.github.irgaly.kottage.sample.data.AnimalSource
 
 @Composable
 fun PagingScreen() {
-    val faker = remember { faker{}  }
+    val items = remember {
+        Pager(
+            PagingConfig(pageSize = 10)
+        ) {
+            AnimalSource()
+        }
+    }.flow.collectAsLazyPagingItems()
     Surface {
         LazyColumn(
             Modifier.fillMaxSize()
         ) {
-            items(10) {
+            itemsIndexed(items) { index, item ->
                 Row(
                     Modifier
                         .fillMaxWidth()
@@ -33,7 +42,7 @@ fun PagingScreen() {
                         .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(faker.animal.name().replaceFirstChar { it.uppercase() })
+                    Text("${"%4d".format(index)} : ${item?.name}")
                 }
             }
         }
