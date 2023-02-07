@@ -49,6 +49,12 @@ class KottageListTest : KottageSpec("kottage_list", body = {
                     println(list.getDebugListRawData())
                 }
             }
+            it("missing") {
+                val cache = kottage().first.cache("missing")
+                val list = cache.list("list_missing")
+                list.get("missing_key") shouldBe null
+                list.getPageFrom("missing_key", 10).isEmpty shouldBe true
+            }
             it("update") {
                 val cache = kottage().first.cache("update")
                 val list = cache.list("list_update")

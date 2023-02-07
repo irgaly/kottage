@@ -79,15 +79,16 @@ internal class KottageListImpl(
                     (pageSize?.let { items.size < it } != false)
                     && (nextPositionId != null)
                 ) {
-                    listOperator.getAvailableListEntry(
+                    val entry = listOperator.getAvailableListEntry(
                         this,
                         positionId = nextPositionId,
                         direction = direction
-                    )?.let { entry ->
-                        nextPositionId = when (direction) {
-                            KottageListDirection.Forward -> entry.nextId
-                            KottageListDirection.Backward -> entry.previousId
-                        }
+                    )
+                    nextPositionId = when (direction) {
+                        KottageListDirection.Forward -> entry?.nextId
+                        KottageListDirection.Backward -> entry?.previousId
+                    }
+                    if (entry != null) {
                         val itemKey = checkNotNull(entry.itemKey)
                         val item = checkNotNull(
                             storageOperator.getOrNull(this, key = itemKey, now = null)
