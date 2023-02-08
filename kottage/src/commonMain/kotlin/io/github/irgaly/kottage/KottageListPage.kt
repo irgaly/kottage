@@ -15,4 +15,5 @@ data class KottageListPage(
     val hasNext: Boolean
 ) {
     val isEmpty: Boolean get() = items.isEmpty()
+    val isNotEmpty: Boolean get() = items.isNotEmpty()
 }
