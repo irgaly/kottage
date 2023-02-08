@@ -272,34 +272,17 @@ fun PagingScreen(
                         }
                     }
                 }
-                when {
-                    items.loadState.refresh is LoadState.Loading -> {
-                        item("refresh") {
-                            Box(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .height(56.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator(
-                                    Modifier.size(24.dp)
-                                )
-                            }
-                        }
-                    }
-
-                    items.loadState.append is LoadState.Loading -> {
-                        item("append") {
-                            Box(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .height(56.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator(
-                                    Modifier.size(24.dp)
-                                )
-                            }
+                if (items.loadState.append is LoadState.Loading) {
+                    item("append") {
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                Modifier.size(24.dp)
+                            )
                         }
                     }
                 }
