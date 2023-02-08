@@ -20,6 +20,12 @@ class AnimalRemoteMediator(
         "animal"
     ).list("animal_list")
 
+    override suspend fun initialize(): InitializeAction {
+        // trigger loading first page if local cache is empty
+        return if (list.isEmpty()) InitializeAction.LAUNCH_INITIAL_REFRESH
+        else InitializeAction.SKIP_INITIAL_REFRESH
+    }
+
     override suspend fun load(
         loadType: LoadType,
         state: PagingState<String, AnimalSource.Item>
