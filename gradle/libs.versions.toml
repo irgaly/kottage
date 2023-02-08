@@ -23,6 +23,7 @@ androidx-core = { module = "androidx.core:core-ktx", version = "1.9.0" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.5.0" }
 androidx-lifecycle = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version = "2.5.1" }
 compose-bom = { group = "androidx.compose", name = "compose-bom", version = "2022.11.00" }
+compose-material = { module = "androidx.compose.material:material" }
 compose-material3 = { module = "androidx.compose.material3:material3" }
 compose-uiTooling = { module = "androidx.compose.ui:ui-tooling" }
 compose-paging = { module = "androidx.paging:paging-compose", version = "1.0.0-alpha17" }
@@ -46,7 +47,7 @@ faker = { module = "io.github.serpro69:kotlin-faker", version = "1.12.0" }
 test-common = [
     "kotlin-reflect", "kotlinx-coroutines-test", "test-kotest-engine",
     "test-kotest-assertions", "test-turbine"]
-compose = ["compose-material3", "compose-uiTooling", "compose-paging", "compose-navigation"]
+compose = ["compose-material", "compose-material3", "compose-uiTooling", "compose-paging", "compose-navigation"]
 
 [plugins]
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization" }
