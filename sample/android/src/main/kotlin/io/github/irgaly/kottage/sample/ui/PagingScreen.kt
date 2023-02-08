@@ -303,13 +303,14 @@ fun PagingScreen(
 @Composable
 private fun PagingScreenPreview() {
     MaterialTheme {
+        val kottage = Kottage(
+            name = "preview_dummy",
+            directoryPath = "preview_dummy",
+            KottageEnvironment(contextOf(LocalContext.current))
+        )
         PagingScreen(
-            kottage = Kottage(
-                name = "preview_dummy",
-                directoryPath = "preview_dummy",
-                KottageEnvironment(contextOf(LocalContext.current))
-            ),
-            animalRemoteRepository = AnimalRemoteRepository()
+            kottage = kottage,
+            animalRemoteRepository = AnimalRemoteRepository(kottage = kottage)
         )
     }
 }

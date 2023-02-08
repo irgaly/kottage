@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
                     )
                 }
                 val animalRemoteRepository = remember {
-                    AnimalRemoteRepository()
+                    AnimalRemoteRepository(kottage = kottage)
                 }
                 NavHost(navController, startDestination = "menu") {
                     composable("menu") {
