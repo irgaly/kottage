@@ -40,6 +40,8 @@ internal class KottageDatabaseManager(
         PlatformFactory().createKottageRepositoryFactory(databaseConnection)
     }
 
+    val databaseConnectionClosed: Boolean get() = databaseConnection.closed
+
     @OptIn(DelicateCoroutinesApi::class)
     val itemRepository = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
         repositoryFactory.createItemRepository()
@@ -188,5 +190,9 @@ internal class KottageDatabaseManager(
             operator,
             dispatcher
         )
+    }
+
+    suspend fun closeDatabaseConnection() {
+        databaseConnection.close()
     }
 }

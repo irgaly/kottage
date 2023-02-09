@@ -9,53 +9,100 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 internal class IndexeddbDatabaseConnection(
     private val databaseName: String,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : DatabaseConnection {
+    private val mutex = Mutex()
+
     @OptIn(DelicateCoroutinesApi::class)
     val database = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
         KottageIndexeddbDatabase.open(databaseName)
     }
 
+    override var closed: Boolean = false
+        private set
+
     override suspend fun <R> transactionWithResult(bodyWithReturn: suspend Transaction.() -> R): R {
-        val database = database.await()
-        return database.database.writeTransaction(*allStoreSchemaNames()) {
-            with(IndexeddbTransaction(this)) {
-                bodyWithReturn()
+        return mutex.withLock {
+            if (closed) {
+                error("Database connection is closed")
+            }
+            val database = database.await()
+            database.database.writeTransaction(*allStoreSchemaNames()) {
+                with(IndexeddbTransaction(this)) {
+                    bodyWithReturn()
+                }
             }
         }
     }
 
     override suspend fun transaction(body: suspend Transaction.() -> Unit) {
-        val database = database.await()
-        database.database.writeTransaction(*allStoreSchemaNames()) {
-            with(IndexeddbTransaction(this)) {
-                body()
+        mutex.withLock {
+            if (closed) {
+                error("Database connection is closed")
+            }
+            val database = database.await()
+            database.database.writeTransaction(*allStoreSchemaNames()) {
+                with(IndexeddbTransaction(this)) {
+                    body()
+                }
             }
         }
     }
 
     override suspend fun deleteAll() {
-        val database = database.await()
-        database.database.writeTransaction(*allStoreSchemaNames()) {
-            allStoreSchemaNames().forEach {
-                objectStore(it).clear()
+        mutex.withLock {
+            if (closed) {
+                error("Database connection is closed")
+            }
+            val database = database.await()
+            database.database.writeTransaction(*allStoreSchemaNames()) {
+                allStoreSchemaNames().forEach {
+                    objectStore(it).clear()
+                }
             }
         }
     }
 
     override suspend fun getDatabaseStatus(): String {
-        return "no status for indexeddb"
+        return mutex.withLock {
+            if (closed) {
+                error("Database connection is closed")
+            }
+            "no status for indexeddb"
+        }
     }
 
     override suspend fun backupTo(file: String, directoryPath: String) {
-        require(!file.contains(Files.separator)) { "file contains separator: $file" }
-        console.warn("backupTo() is not supported with indexeddb\n")
+        mutex.withLock {
+            if (closed) {
+                error("Database connection is closed")
+            }
+            require(!file.contains(Files.separator)) { "file contains separator: $file" }
+            console.warn("backupTo() is not supported with indexeddb\n")
+        }
     }
 
     override suspend fun compact() {
-        // indexeddb is managed by browser, no need to maintain from application
+        mutex.withLock {
+            if (closed) {
+                error("Database connection is closed")
+            }
+            // indexeddb is managed by browser, no need to maintain from application
+        }
+    }
+
+    override suspend fun close() {
+        mutex.withLock {
+            if (!closed) {
+                val database = database.await()
+                database.database.close()
+                closed = true
+            }
+        }
     }
 }

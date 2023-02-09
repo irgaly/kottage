@@ -84,6 +84,14 @@ class Kottage(
     val simpleEventFlow: Flow<KottageEvent> =
         databaseManager.eventFlow.map { KottageEvent.from(it) }
 
+    /**
+     * Database Connection is closed or not.
+     *
+     * If Kottage is closed, all database operation of this kottage instance will be fail.
+     * A closed Kottage instance cannot be reused.
+     */
+    val closed: Boolean get() = databaseManager.databaseConnectionClosed
+
     init {
         require(!name.contains(Files.separator)) { "name contains separator: $name" }
     }
@@ -171,6 +179,15 @@ class Kottage(
 
     suspend fun export(file: String, directoryPath: String) {
         databaseManager.backupTo(file, directoryPath)
+    }
+
+    /**
+     * Close Database connection
+     *
+     * If this Kottage instance is already closed, this method do nothing.
+     */
+    suspend fun close() {
+        databaseManager.closeDatabaseConnection()
     }
 
     data class DatabaseFiles(
