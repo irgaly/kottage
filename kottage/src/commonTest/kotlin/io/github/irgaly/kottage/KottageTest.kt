@@ -99,12 +99,23 @@ class KottageTest : KottageSpec("kottage", body = {
             }
         }
         context("Connection") {
-            val directory = "$tempDirectory/subdirectory"
-            val subdirectoryKottage = buildKottage("test", directory).first
-            val storage = subdirectoryKottage.storage("storage1")
             it("ディレクトリが存在しなくてもファイルを作成できる") {
+                val directory = "$tempDirectory/subdirectory"
+                val subdirectoryKottage = buildKottage("test", directory).first
+                val storage = subdirectoryKottage.storage("storage1")
                 shouldNotThrowAny {
                     storage.put("key", "test")
+                }
+            }
+            it("close() 後は IllegalStateException") {
+                val kottage = kottage("connection_close").first
+                val storage = kottage.storage("test")
+                storage.put("test", "test")
+                kottage.closed shouldBe false
+                kottage.close()
+                kottage.closed shouldBe true
+                shouldThrow<IllegalStateException> {
+                    storage.get<String>("test")
                 }
             }
         }
