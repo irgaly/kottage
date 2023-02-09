@@ -306,7 +306,8 @@ private fun PagingScreenPreview() {
         val kottage = Kottage(
             name = "preview_dummy",
             directoryPath = "preview_dummy",
-            KottageEnvironment(contextOf(LocalContext.current))
+            KottageEnvironment(contextOf(LocalContext.current)),
+            rememberCoroutineScope()
         )
         PagingScreen(
             kottage = kottage,

@@ -7,6 +7,9 @@ import io.github.irgaly.kottage.platform.TestCalendar
 import io.github.irgaly.test.extension.tempdir
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.test.TestScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 
 /**
  * kotest JS ではネストしたテストや DescribeSpec は使えない
@@ -24,21 +27,27 @@ open class KottageSpec(
     constructor() : this("KottageSpec::dummy")
 
     val tempDirectory: String
+    val specScope: CoroutineScope
 
     init {
         tempDirectory = tempdir(clearTempDirectoryAfterSpec)
+        specScope = CoroutineScope(Dispatchers.Default)
         context("debug 機能", fun ContextScope.() {
             it("tempDirectory 表示") {
                 println("tempDirectory = $tempDirectory")
             }
         })
         body()
+        this.afterSpec {
+            specScope.cancel()
+        }
     }
 
     fun kottage(
         name: String = this.name,
+        scope: CoroutineScope = specScope,
         builder: (KottageOptions.Builder.() -> Unit)? = null
-    ): Pair<Kottage, TestCalendar> = buildKottage(name, tempDirectory, builder)
+    ): Pair<Kottage, TestCalendar> = buildKottage(name, tempDirectory, scope, builder)
 
     fun it(name: String, test: suspend TestScope.() -> Unit) {
         test(name, test)

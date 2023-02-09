@@ -9,16 +9,20 @@ import io.github.irgaly.kottage.strategy.KottageFifoStrategy
 import io.github.irgaly.kottage.strategy.KottageKvsStrategy
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlin.time.Duration.Companion.days
 
 /**
  * Kotlin KVS Kottage
  *
+ * @param scope Kottage instance's lifecycle scope. This Kottage instance is automatically closed at the end of the scope.
  * @throws IllegalArgumentException name contains file separator
  */
 @Suppress("MemberVisibilityCanBePrivate", "unused")
@@ -26,9 +30,9 @@ class Kottage(
     val name: String,
     val directoryPath: String,
     val environment: KottageEnvironment,
+    val scope: CoroutineScope,
     val json: Json = Json,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
-    private val scope: CoroutineScope = CoroutineScope(dispatcher + SupervisorJob()),
     val optionsBuilder: (KottageOptions.Builder.() -> Unit)? = null
 ) {
     companion object {
@@ -73,7 +77,7 @@ class Kottage(
     }.build()
 
     private val databaseManager: KottageDatabaseManager =
-        KottageDatabaseManager(name, directoryPath, options, environment, dispatcher, scope)
+        KottageDatabaseManager(name, directoryPath, options, environment, scope, dispatcher)
 
     /**
      * Simple KottageEvent Flow
@@ -94,6 +98,15 @@ class Kottage(
 
     init {
         require(!name.contains(Files.separator)) { "name contains separator: $name" }
+        checkNotNull(scope.coroutineContext[Job]) {
+            "CoroutineScope does not have Job context. for example, GlobalScope has no Job, so GlobalScope is not allowed to pass to Kottage."
+        }.invokeOnCompletion {
+            @OptIn(DelicateCoroutinesApi::class)
+            GlobalScope.launch {
+                // 親 scope は終了しているため、GlobalScope で close 処理を実行する
+                close()
+            }
+        }
     }
 
     /**
@@ -185,6 +198,9 @@ class Kottage(
      * Close Database connection
      *
      * If this Kottage instance is already closed, this method do nothing.
+     *
+     * Kottage instance is automatically closed at the end of CoroutineScope that is passed with constructor parameter.
+     * So you don't have to call close() manually, if the scope's lifecycle equals Kottage instance's lifecycle.
      */
     suspend fun close() {
         databaseManager.closeDatabaseConnection()

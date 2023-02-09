@@ -16,7 +16,6 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 
@@ -25,8 +24,8 @@ internal class KottageDatabaseManager(
     directoryPath: String,
     private val options: KottageOptions,
     private val environment: KottageEnvironment,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
-    private val scope: CoroutineScope = CoroutineScope(dispatcher + SupervisorJob())
+    scope: CoroutineScope,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
 ) {
     private val databaseConnection by lazy {
         PlatformFactory().createDatabaseConnectionFactory()
