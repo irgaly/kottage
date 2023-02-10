@@ -11,6 +11,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -79,6 +80,8 @@ class Kottage(
     private val databaseManager: KottageDatabaseManager =
         KottageDatabaseManager(name, directoryPath, options, environment, scope, dispatcher)
 
+    private val completionHandler: DisposableHandle
+
     /**
      * Simple KottageEvent Flow
      * This is a simple hot flow.
@@ -98,13 +101,19 @@ class Kottage(
 
     init {
         require(!name.contains(Files.separator)) { "name contains separator: $name" }
-        checkNotNull(scope.coroutineContext[Job]) {
+        completionHandler = checkNotNull(scope.coroutineContext[Job]) {
             "CoroutineScope does not have Job context. for example, GlobalScope has no Job, so GlobalScope is not allowed to pass to Kottage."
         }.invokeOnCompletion {
             @OptIn(DelicateCoroutinesApi::class)
             GlobalScope.launch {
-                // 親 scope は終了しているため、GlobalScope で close 処理を実行する
-                close()
+                try {
+                    // 親 scope は終了しているため、GlobalScope で close 処理を実行する
+                    close()
+                } catch (error: Exception) {
+                    // GlobalScope で例外を発生させてはならない
+                    // クローズ処理であるため、失敗してもエラーログだけ残す
+                    environment.logger?.error("Kottage.close() error by CoroutineScope invokeOnCompletion : $error")
+                }
             }
         }
     }
@@ -204,6 +213,7 @@ class Kottage(
      */
     suspend fun close() {
         databaseManager.closeDatabaseConnection()
+        completionHandler.dispose()
     }
 
     data class DatabaseFiles(
