@@ -43,9 +43,36 @@ internal class KottageStorageOperator(
             itemListType = null,
             maxEventEntryCount = storageOptions.maxEventEntryCount
         )
+        if (!isCreate) {
+            itemListRepository.getIds(
+                transaction,
+                itemType = itemType,
+                itemKey = item.key
+            ).forEach { itemListEntryId ->
+                val entry = checkNotNull(itemListRepository.get(transaction, itemListEntryId))
+                operator.addEvent(
+                    transaction,
+                    now = now,
+                    eventType = ItemEventType.Update,
+                    eventExpireTime = storageOptions.eventExpireTime,
+                    itemType = itemType,
+                    itemKey = item.key,
+                    itemListId = entry.id,
+                    itemListType = entry.type,
+                    maxEventEntryCount = storageOptions.maxEventEntryCount
+                )
+            }
+        }
         if (isCreate) {
             val count = itemRepository.getStatsCount(transaction, item.type)
-            storageOptions.strategy.onPostItemCreate(KottageTransaction(transaction), item.key, item.type, count, now, operator)
+            storageOptions.strategy.onPostItemCreate(
+                KottageTransaction(transaction),
+                item.key,
+                item.type,
+                count,
+                now,
+                operator
+            )
         }
     }
 
