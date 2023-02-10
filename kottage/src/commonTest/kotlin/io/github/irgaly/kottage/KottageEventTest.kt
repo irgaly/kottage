@@ -75,14 +75,50 @@ class KottageEventTest : KottageSpec("kottage_event", body = {
                 val cache = kottage.cache("event_list")
                 val list = cache.list("list_event_list")
                 cache.eventFlow().filter { it.listType != null }.test {
-                    list.add("key1", "value1")
+                    val entry1 = list.add("key1", "value1")
                     awaitItem().let {
                         it.listPositionId shouldNotBe null
                         it.listType shouldBe "list_event_list"
                         it.eventType shouldBe KottageEventType.Create
                     }
                     calendar.now += 1.seconds
-                    list.remove(checkNotNull(list.getFirst()).positionId)
+                    cache.put("key1", "value2")
+                    awaitItem().let {
+                        it.listPositionId shouldNotBe null
+                        it.listType shouldBe "list_event_list"
+                        it.eventType shouldBe KottageEventType.Update
+                    }
+                    calendar.now += 1.seconds
+                    list.update(entry1.positionId, "key2", "value2")
+                    awaitItem().let {
+                        it.listPositionId shouldNotBe null
+                        it.listType shouldBe "list_event_list"
+                        it.itemKey shouldBe "key1"
+                        it.eventType shouldBe KottageEventType.Delete
+                    }
+                    awaitItem().let {
+                        it.listPositionId shouldNotBe null
+                        it.listType shouldBe "list_event_list"
+                        it.itemKey shouldBe "key2"
+                        it.eventType shouldBe KottageEventType.Create
+                    }
+                    calendar.now += 1.seconds
+                    cache.put("key3", "value3")
+                    list.updateKey(entry1.positionId, "key3")
+                    awaitItem().let {
+                        it.listPositionId shouldNotBe null
+                        it.listType shouldBe "list_event_list"
+                        it.itemKey shouldBe "key2"
+                        it.eventType shouldBe KottageEventType.Delete
+                    }
+                    awaitItem().let {
+                        it.listPositionId shouldNotBe null
+                        it.listType shouldBe "list_event_list"
+                        it.itemKey shouldBe "key3"
+                        it.eventType shouldBe KottageEventType.Create
+                    }
+                    calendar.now += 1.seconds
+                    list.remove(entry1.positionId)
                     awaitItem().let {
                         it.listPositionId shouldNotBe null
                         it.listType shouldBe "list_event_list"
