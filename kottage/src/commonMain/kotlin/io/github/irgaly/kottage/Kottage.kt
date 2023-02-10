@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration.Companion.days
 
 /**
@@ -65,6 +66,7 @@ class Kottage(
                 directoryPath = directoryPath,
                 environment = environment,
                 dispatcher = dispatcher,
+                scope = CoroutineScope(coroutineContext),
                 version = version
             )
         }
@@ -78,7 +80,14 @@ class Kottage(
     }.build()
 
     private val databaseManager: KottageDatabaseManager =
-        KottageDatabaseManager(name, directoryPath, options, environment, scope, dispatcher)
+        KottageDatabaseManager(
+            name,
+            directoryPath,
+            options,
+            environment,
+            scope,
+            dispatcher
+        )
 
     private val completionHandler: DisposableHandle
 
@@ -143,6 +152,7 @@ class Kottage(
             databaseManager,
             environment.calendar ?: KottageSystemCalendar(),
             { databaseManager.compact() },
+            scope,
             dispatcher
         )
     }
@@ -172,6 +182,7 @@ class Kottage(
             databaseManager,
             environment.calendar ?: KottageSystemCalendar(),
             { databaseManager.compact() },
+            scope,
             dispatcher
         )
     }

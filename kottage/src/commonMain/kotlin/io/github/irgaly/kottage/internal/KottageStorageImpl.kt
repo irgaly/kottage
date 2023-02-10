@@ -17,10 +17,9 @@ import io.github.irgaly.kottage.property.KottageStore
 import io.github.irgaly.kottage.strategy.KottageStrategy
 import io.github.irgaly.kottage.strategy.KottageTransaction
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
@@ -38,8 +37,9 @@ internal class KottageStorageImpl(
     private val databaseManager: KottageDatabaseManager,
     private val calendar: KottageCalendar,
     private val onCompactionRequired: suspend () -> Unit,
+    private val scope: CoroutineScope,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default
-) : KottageStorage {
+) : KottageStorage, CoroutineScope by scope {
     private val encoder = Encoder(json, options.encoder)
 
     private val strategy: KottageStrategy = options.strategy
@@ -48,8 +48,7 @@ internal class KottageStorageImpl(
 
     private suspend fun operator() = databaseManager.operator.await()
 
-    @OptIn(DelicateCoroutinesApi::class)
-    private val storageOperator = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
+    private val storageOperator = async(dispatcher, CoroutineStart.LAZY) {
         databaseManager.getStorageOperator(this@KottageStorageImpl)
     }
 
@@ -221,6 +220,7 @@ internal class KottageStorageImpl(
             databaseManager,
             calendar,
             onCompactionRequired,
+            scope,
             dispatcher
         )
     }

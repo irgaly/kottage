@@ -2,6 +2,7 @@ package io.github.irgaly.kottage.internal.database
 
 import io.github.irgaly.kottage.KottageEnvironment
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 
 internal interface DatabaseConnectionFactory {
@@ -13,6 +14,7 @@ internal interface DatabaseConnectionFactory {
         fileName: String,
         directoryPath: String,
         environment: KottageEnvironment,
+        scope: CoroutineScope,
         dispatcher: CoroutineDispatcher = Dispatchers.Default
     ): DatabaseConnection
 
@@ -21,6 +23,7 @@ internal interface DatabaseConnectionFactory {
         directoryPath: String,
         environment: KottageEnvironment,
         version: Int,
+        scope: CoroutineScope,
         dispatcher: CoroutineDispatcher = Dispatchers.Default
     )
 }

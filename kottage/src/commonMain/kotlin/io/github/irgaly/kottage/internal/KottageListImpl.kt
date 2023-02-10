@@ -18,10 +18,9 @@ import io.github.irgaly.kottage.platform.KottageCalendar
 import io.github.irgaly.kottage.strategy.KottageStrategy
 import io.github.irgaly.kottage.strategy.KottageTransaction
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import kotlin.reflect.KType
@@ -35,20 +34,19 @@ internal class KottageListImpl(
     private val databaseManager: KottageDatabaseManager,
     private val calendar: KottageCalendar,
     private val onCompactionRequired: suspend () -> Unit,
+    scope: CoroutineScope,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default
-): KottageList {
+) : KottageList, CoroutineScope by scope {
     private val itemType: String = storage.name
     private val listType: String = name
     private val strategy: KottageStrategy = storage.options.strategy
     private suspend fun operator() = databaseManager.operator.await()
 
-    @OptIn(DelicateCoroutinesApi::class)
-    private val storageOperator = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
+    private val storageOperator = async(dispatcher, CoroutineStart.LAZY) {
         databaseManager.getStorageOperator(storage)
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
-    private val listOperator = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
+    private val listOperator = async(dispatcher, CoroutineStart.LAZY) {
         databaseManager.getListOperator(this@KottageListImpl, storage)
     }
 

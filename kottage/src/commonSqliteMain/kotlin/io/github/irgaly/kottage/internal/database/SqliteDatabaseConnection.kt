@@ -5,10 +5,9 @@ import com.squareup.sqldelight.db.use
 import io.github.irgaly.kottage.data.sqlite.KottageDatabase
 import io.github.irgaly.kottage.platform.Files
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -18,17 +17,16 @@ import kotlinx.coroutines.withContext
 internal class SqliteDatabaseConnection(
     private val sqlDriverProvider: suspend () -> SqlDriver,
     private val databaseProvider: suspend (sqlDriver: SqlDriver) -> KottageDatabase,
+    scope: CoroutineScope,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default
-) : DatabaseConnection {
+) : DatabaseConnection, CoroutineScope by scope {
     private val mutex = Mutex()
 
-    @OptIn(DelicateCoroutinesApi::class)
-    private val sqlDriver = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
+    private val sqlDriver = async(dispatcher, CoroutineStart.LAZY) {
         sqlDriverProvider()
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
-    val database = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
+    val database = async(dispatcher, CoroutineStart.LAZY) {
         databaseProvider(sqlDriver.await())
     }
 

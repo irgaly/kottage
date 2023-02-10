@@ -4,22 +4,21 @@ import io.github.irgaly.kottage.data.indexeddb.KottageIndexeddbDatabase
 import io.github.irgaly.kottage.data.indexeddb.schema.allStoreSchemaNames
 import io.github.irgaly.kottage.platform.Files
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 internal class IndexeddbDatabaseConnection(
     private val databaseName: String,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
-) : DatabaseConnection {
+    scope: CoroutineScope,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
+) : DatabaseConnection, CoroutineScope by scope {
     private val mutex = Mutex()
 
-    @OptIn(DelicateCoroutinesApi::class)
-    val database = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
+    val database = async(dispatcher, CoroutineStart.LAZY) {
         KottageIndexeddbDatabase.open(databaseName)
     }
 

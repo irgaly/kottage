@@ -13,9 +13,7 @@ import io.github.irgaly.kottage.platform.KottageSystemCalendar
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 
@@ -25,11 +23,11 @@ internal class KottageDatabaseManager(
     private val options: KottageOptions,
     private val environment: KottageEnvironment,
     scope: CoroutineScope,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
-) {
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
+) : CoroutineScope by scope {
     private val databaseConnection by lazy {
         PlatformFactory().createDatabaseConnectionFactory()
-            .createDatabaseConnection(fileName, directoryPath, environment, dispatcher)
+            .createDatabaseConnection(fileName, directoryPath, environment, scope, dispatcher)
     }
 
     private val calendar = (environment.calendar ?: KottageSystemCalendar())
@@ -41,28 +39,23 @@ internal class KottageDatabaseManager(
 
     val databaseConnectionClosed: Boolean get() = databaseConnection.closed
 
-    @OptIn(DelicateCoroutinesApi::class)
-    val itemRepository = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
+    val itemRepository = async(dispatcher, CoroutineStart.LAZY) {
         repositoryFactory.createItemRepository()
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
-    val itemListRepository = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
+    val itemListRepository = async(dispatcher, CoroutineStart.LAZY) {
         repositoryFactory.createItemListRepository()
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
-    val itemEventRepository = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
+    val itemEventRepository = async(dispatcher, CoroutineStart.LAZY) {
         repositoryFactory.createItemEventRepository()
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
-    val statsRepository = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
+    val statsRepository = async(dispatcher, CoroutineStart.LAZY) {
         repositoryFactory.createStatsRepository()
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
-    val operator = GlobalScope.async(dispatcher, CoroutineStart.LAZY) {
+    val operator = async(dispatcher, CoroutineStart.LAZY) {
         KottageOperator(
             options,
             itemRepository.await(),
