@@ -202,30 +202,59 @@ internal class KottageListOperator(
      */
     suspend fun updateItemKey(
         transaction: Transaction,
-        positionId: String,
+        entry: ItemListEntry,
         item: Item,
+        addEventOnUpdate: Boolean,
         now: Long
     ) {
+        val oldItemKey = checkNotNull(entry.itemKey)
         itemListRepository.updateItemKey(
             transaction,
-            id = positionId,
+            id = entry.id,
             itemType = item.type,
             itemKey = item.key,
             expireAt = listOptions.itemExpireTime?.let { duration ->
                 now + duration.inWholeMilliseconds
             }
         )
-        operator.addEvent(
-            transaction,
-            now = now,
-            eventType = ItemEventType.Update,
-            eventExpireTime = storageOptions.eventExpireTime,
-            itemType = item.type,
-            itemKey = item.key,
-            itemListId = positionId,
-            itemListType = listType,
-            maxEventEntryCount = storageOptions.maxEventEntryCount
-        )
+        if (oldItemKey == item.key) {
+            if (addEventOnUpdate) {
+                operator.addEvent(
+                    transaction,
+                    now = now,
+                    eventType = ItemEventType.Update,
+                    eventExpireTime = storageOptions.eventExpireTime,
+                    itemType = item.type,
+                    itemKey = item.key,
+                    itemListId = entry.id,
+                    itemListType = listType,
+                    maxEventEntryCount = storageOptions.maxEventEntryCount
+                )
+            }
+        } else {
+            operator.addEvent(
+                transaction,
+                now = now,
+                eventType = ItemEventType.Delete,
+                eventExpireTime = storageOptions.eventExpireTime,
+                itemType = entry.itemType,
+                itemKey = oldItemKey,
+                itemListId = entry.id,
+                itemListType = listType,
+                maxEventEntryCount = storageOptions.maxEventEntryCount
+            )
+            operator.addEvent(
+                transaction,
+                now = now,
+                eventType = ItemEventType.Create,
+                eventExpireTime = storageOptions.eventExpireTime,
+                itemType = item.type,
+                itemKey = item.key,
+                itemListId = entry.id,
+                itemListType = listType,
+                maxEventEntryCount = storageOptions.maxEventEntryCount
+            )
+        }
     }
 
     /**

@@ -563,7 +563,7 @@ internal class KottageListImpl(
         val entry = transactionWithAutoCompaction(now) { _, _ ->
             val entry = listOperator.getListItem(this, positionId = positionId)
                 ?: throw NoSuchElementException("positionId = $positionId")
-            listOperator.updateItemKey(this, entry.id, item, now)
+            listOperator.updateItemKey(this, entry, item, false, now)
             storageOperator.upsertItem(this, item, now)
             KottageListEntry.from(
                 entry = entry,
@@ -587,7 +587,7 @@ internal class KottageListImpl(
                 ?: throw NoSuchElementException("storage = ${storage.name}, key = $key")
             val entry = listOperator.getListItem(this, positionId = positionId)
                 ?: throw NoSuchElementException("positionId = $positionId")
-            listOperator.updateItemKey(this, entry.id, item, now)
+            listOperator.updateItemKey(this, entry, item, true, now)
             KottageListEntry.from(
                 entry = entry,
                 itemKey = item.key,
