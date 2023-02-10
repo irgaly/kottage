@@ -33,7 +33,7 @@ internal class IndexeddbDatabaseConnectionFactory: DatabaseConnectionFactory {
         dispatcher: CoroutineDispatcher
     ) {
         if (3 <= version) {
-            throw error("version 3 以降の indexeddb 初期化処理の実装が必要")
+            error("version 3 以降の indexeddb 初期化処理の実装が必要")
         }
         IndexeddbDatabaseConnection(
             databaseName = "$directoryPath/$fileName",
