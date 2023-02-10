@@ -9,7 +9,7 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
+import kotlin.coroutines.coroutineContext
 
 /**
  * Resumable Event Flow
@@ -69,7 +70,8 @@ class KottageEventFlow internal constructor(
                         }
                     }
                 }
-                CoroutineScope(currentCoroutineContext()).launch(start = CoroutineStart.UNDISPATCHED) {
+                checkNotNull(coroutineContext[Job]) { "KottageEventFlow: subscriber CoroutineScope should have Job" }
+                CoroutineScope(coroutineContext).launch(start = CoroutineStart.UNDISPATCHED) {
                     // collect を開始した状態で eventFlow.withLock を抜ける
                     eventFlow.flow.let { flow ->
                         if (itemType != null) {
