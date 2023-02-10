@@ -13,7 +13,7 @@ class KottageMigrationTest : KottageSpec("migration", body = {
             val environment = KottageEnvironment(KottageContext(), calendar)
             it("from 1") {
                 Kottage.createOldDatabase("v1", tempDirectory, environment, 1)
-                val kottage = Kottage("v1", tempDirectory, environment)
+                val kottage = Kottage("v1", tempDirectory, environment, specScope)
                 val cache = kottage.cache("cache1")
                 cache.put("key2", "value2")
                 cache.get<String>("key1") shouldBe "value1"
@@ -21,7 +21,7 @@ class KottageMigrationTest : KottageSpec("migration", body = {
             }
             it("from 2") {
                 Kottage.createOldDatabase("v2", tempDirectory, environment, 2)
-                val kottage = Kottage("v2", tempDirectory, environment)
+                val kottage = Kottage("v2", tempDirectory, environment, specScope)
                 val cache = kottage.cache("cache1")
                 cache.put("key2", "value2")
                 cache.get<String>("key1") shouldBe "value1"

@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
@@ -40,11 +41,13 @@ class MainActivity : AppCompatActivity() {
             MaterialTheme {
                 val navController = rememberNavController()
                 val context = LocalContext.current
+                val scope = rememberCoroutineScope()
                 val kottage = remember(context) {
                     Kottage(
                         name = "sample",
                         directoryPath = context.cacheDir.absolutePath,
-                        KottageEnvironment(contextOf(context))
+                        KottageEnvironment(contextOf(context)),
+                        scope
                     )
                 }
                 val animalRemoteRepository = remember {
@@ -69,7 +72,8 @@ class MainActivity : AppCompatActivity() {
                     val kottage2 = Kottage(
                         "test",
                         cacheDir.absolutePath,
-                        KottageEnvironment(contextOf(baseContext))
+                        KottageEnvironment(contextOf(baseContext)),
+                        scope
                     )
                     val storage = kottage2.storage("test")
                     lifecycleScope.launch {

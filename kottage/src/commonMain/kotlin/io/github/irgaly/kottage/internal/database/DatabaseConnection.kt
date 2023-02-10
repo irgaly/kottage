@@ -2,6 +2,11 @@ package io.github.irgaly.kottage.internal.database
 
 internal interface DatabaseConnection {
     /**
+     * Database connection is already closed
+     */
+    val closed: Boolean
+
+    /**
      * Exclusive Transaction
      */
     suspend fun <R> transactionWithResult(bodyWithReturn: suspend Transaction.() -> R): R
@@ -25,5 +30,6 @@ internal interface DatabaseConnection {
     suspend fun compact()
     suspend fun backupTo(file: String, directoryPath: String)
     suspend fun getDatabaseStatus(): String
+    suspend fun close()
 }
 

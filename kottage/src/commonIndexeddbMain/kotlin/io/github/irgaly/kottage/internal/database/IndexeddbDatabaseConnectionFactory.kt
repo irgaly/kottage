@@ -7,16 +7,19 @@ import io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_event
 import io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_stats
 import io.github.irgaly.kottage.data.indexeddb.schema.entity.Stats
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 
 internal class IndexeddbDatabaseConnectionFactory: DatabaseConnectionFactory {
     override fun createDatabaseConnection(
         fileName: String,
         directoryPath: String,
         environment: KottageEnvironment,
+        scope: CoroutineScope,
         dispatcher: CoroutineDispatcher
     ): IndexeddbDatabaseConnection {
         return IndexeddbDatabaseConnection(
             databaseName = "$directoryPath/$fileName",
+            scope = scope,
             dispatcher = dispatcher
         )
     }
@@ -26,13 +29,15 @@ internal class IndexeddbDatabaseConnectionFactory: DatabaseConnectionFactory {
         directoryPath: String,
         environment: KottageEnvironment,
         version: Int,
+        scope: CoroutineScope,
         dispatcher: CoroutineDispatcher
     ) {
         if (3 <= version) {
-            throw error("version 3 以降の indexeddb 初期化処理の実装が必要")
+            error("version 3 以降の indexeddb 初期化処理の実装が必要")
         }
         IndexeddbDatabaseConnection(
             databaseName = "$directoryPath/$fileName",
+            scope = scope,
             dispatcher = dispatcher
         ).transaction {
             with((this as IndexeddbTransaction).transaction) {

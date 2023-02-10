@@ -8,6 +8,7 @@ import io.github.irgaly.kottage.data.sqlite.KottageDatabase
 import io.github.irgaly.kottage.data.sqlite.createDriver
 import io.github.irgaly.kottage.platform.Files
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.withContext
 
 internal class SqliteDatabaseConnectionFactory: DatabaseConnectionFactory {
@@ -15,6 +16,7 @@ internal class SqliteDatabaseConnectionFactory: DatabaseConnectionFactory {
         fileName: String,
         directoryPath: String,
         environment: KottageEnvironment,
+        scope: CoroutineScope,
         dispatcher: CoroutineDispatcher
     ): DatabaseConnection {
         require(!fileName.contains(Files.separator)) { "fileName contains separator: $fileName" }
@@ -28,7 +30,7 @@ internal class SqliteDatabaseConnectionFactory: DatabaseConnectionFactory {
             ).createDriver(fileName, directoryPath)
         }, { sqlDriver ->
             KottageDatabase(sqlDriver, Item_event.Adapter(EnumColumnAdapter()))
-        }, dispatcher)
+        }, scope, dispatcher)
     }
 
     override suspend fun createOldDatabase(
@@ -36,6 +38,7 @@ internal class SqliteDatabaseConnectionFactory: DatabaseConnectionFactory {
         directoryPath: String,
         environment: KottageEnvironment,
         version: Int,
+        scope: CoroutineScope,
         dispatcher: CoroutineDispatcher
     ) {
         withContext(dispatcher) {

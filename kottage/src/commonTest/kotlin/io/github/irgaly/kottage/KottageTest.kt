@@ -8,15 +8,20 @@ import io.github.irgaly.kottage.platform.KottageContext
 import io.github.irgaly.kottage.platform.TestCalendar
 import io.github.irgaly.kottage.property.KottageStore
 import io.github.irgaly.kottage.test.KottageSpec
+import io.kotest.assertions.retry
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldNotBeEmpty
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlin.experimental.xor
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 class KottageTest : KottageSpec("kottage", body = {
     describe("Kottage") {
@@ -69,7 +74,8 @@ class KottageTest : KottageSpec("kottage", body = {
                         KottageEnvironment(
                             KottageContext(),
                             TestCalendar(DateTime(2022, 1, 1).utc)
-                        )
+                        ),
+                        specScope
                     ).storage("test").put("test", "test")
                 }
             }
@@ -81,7 +87,8 @@ class KottageTest : KottageSpec("kottage", body = {
                         KottageEnvironment(
                             KottageContext(),
                             TestCalendar(DateTime(2022, 1, 1).utc)
-                        )
+                        ),
+                        specScope
                     ).storage("test").put("test", "test")
                 }
             }
@@ -93,18 +100,45 @@ class KottageTest : KottageSpec("kottage", body = {
                         KottageEnvironment(
                             KottageContext(),
                             TestCalendar(DateTime(2022, 1, 1).utc)
-                        )
+                        ),
+                        specScope
                     )
                 }
             }
         }
         context("Connection") {
-            val directory = "$tempDirectory/subdirectory"
-            val subdirectoryKottage = buildKottage("test", directory).first
-            val storage = subdirectoryKottage.storage("storage1")
             it("ディレクトリが存在しなくてもファイルを作成できる") {
+                val directory = "$tempDirectory/subdirectory"
+                val subdirectoryKottage = buildKottage("test", directory, specScope).first
+                val storage = subdirectoryKottage.storage("storage1")
                 shouldNotThrowAny {
                     storage.put("key", "test")
+                }
+            }
+            it("close() 後は IllegalStateException") {
+                val kottage = kottage("connection_close").first
+                val storage = kottage.storage("test")
+                storage.put("test", "test")
+                kottage.closed shouldBe false
+                kottage.close()
+                kottage.closed shouldBe true
+                shouldThrow<IllegalStateException> {
+                    storage.get<String>("test")
+                }
+            }
+            it("scope 終了で close される") {
+                val scope = CoroutineScope(Dispatchers.Default)
+                val kottage = kottage("scope_close", scope).first
+                val storage = kottage.storage("test")
+                storage.put("test", "test")
+                kottage.closed shouldBe false
+                scope.cancel()
+                retry(10, 10.seconds, delay = 100.milliseconds) {
+                    // GlobalScope で Kottage.close() が処理されるため、処理完了まで非同期で待つ
+                    kottage.closed shouldBe true
+                    shouldThrow<IllegalStateException> {
+                        storage.get<String>("test")
+                    }
                 }
             }
         }

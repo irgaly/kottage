@@ -19,7 +19,7 @@ fun main() {
                 }
             }
             val environment = KottageEnvironment(KottageContext(), calendar)
-            val kottage = Kottage("name", "directory", environment) {
+            val kottage = Kottage("name", "directory", environment, this) {
 
             }
             val storage = kottage.storage("storage")
