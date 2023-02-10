@@ -44,13 +44,13 @@ actual class DriverFactory actual constructor(
             object : AndroidSqliteDriver.Callback(schema) {
                 override fun onOpen(db: SupportSQLiteDatabase) {
                     super.onOpen(db)
-                    db.query("PRAGMA journal_size_limit = 524288")
-                    db.query("PRAGMA wal_autocheckpoint = 1000")
-                    db.query("PRAGMA auto_vacuum = NONE")
-                    db.query("PRAGMA secure_delete = 0")
-                    db.query("PRAGMA cache_size = -2000")
-                    db.query("PRAGMA synchronous = NORMAL")
-                    db.query("PRAGMA busy_timeout = 3000")
+                    db.query("PRAGMA journal_size_limit = 524288").close()
+                    db.query("PRAGMA wal_autocheckpoint = 1000").close()
+                    db.query("PRAGMA auto_vacuum = NONE").close()
+                    db.query("PRAGMA secure_delete = 0").close()
+                    db.query("PRAGMA cache_size = -2000").close()
+                    db.query("PRAGMA synchronous = NORMAL").close()
+                    db.query("PRAGMA busy_timeout = 3000").close()
                 }
             }
         )
