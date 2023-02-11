@@ -186,11 +186,28 @@ interface KottageList {
         metaData: KottageListMetaData? = null
     )
 
-    suspend fun remove(positionId: String)
+    suspend fun remove(positionId: String, removeItemFromStorage: Boolean = false)
+
+    /**
+     * Delete all items from this list
+     */
+    suspend fun removeAll(removeItemFromStorage: Boolean = false)
 
     suspend fun compact()
 
-    suspend fun clear()
+    /**
+     * Delete this list and all metadata of this list.
+     * This is a clean up operation, so it does not trigger any DELETE events.
+     *
+     * Deletes:
+     * * This List
+     * * This List's metadata
+     * * This List's events
+     *
+     * Remains:
+     * * Items in this List
+     */
+    suspend fun dropList()
 
     /**
      * Get List events after fromUnitTimeMillisAt

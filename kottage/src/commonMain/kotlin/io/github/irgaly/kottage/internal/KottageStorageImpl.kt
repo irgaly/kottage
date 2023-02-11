@@ -148,7 +148,7 @@ internal class KottageStorageImpl(
         exists
     }
 
-    override suspend fun removeAll(key: String): Unit = withContext(dispatcher) {
+    override suspend fun removeAll(): Unit = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         var eventCreated = false
         transactionWithAutoCompaction { _, now ->
@@ -174,7 +174,7 @@ internal class KottageStorageImpl(
         }
     }
 
-    override suspend fun clear() = withContext(dispatcher) {
+    override suspend fun dropStorage() = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val now = calendar.nowUnixTimeMillis()
         databaseManager.transaction {

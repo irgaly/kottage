@@ -153,7 +153,8 @@ internal class KottageListOperator(
     suspend fun removeListItem(
         transaction: Transaction,
         positionId: String,
-        now: Long
+        now: Long,
+        onEntryRemoved: suspend (entry: ItemListEntry) -> Unit
     ): Boolean {
         val entry = itemListRepository.get(transaction, positionId)
         return if ((entry != null) &&
@@ -179,6 +180,7 @@ internal class KottageListOperator(
                 itemListType = entry.type,
                 maxEventEntryCount = storageOptions.maxEventEntryCount
             )
+            onEntryRemoved(entry)
             true
         } else false
     }
