@@ -192,6 +192,16 @@ interface KottageList {
 
     suspend fun clear()
 
+    /**
+     * Get List events after fromUnitTimeMillisAt
+     */
+    suspend fun getEvents(afterUnixTimeMillisAt: Long, limit: Long? = null): List<KottageEvent>
+
+    /**
+     * get KottageEventFlow for List events
+     */
+    fun eventFlow(afterUnixTimeMillisAt: Long? = null): KottageEventFlow
+
     suspend fun getDebugStatus(): String
 
     suspend fun getDebugListRawData(): String

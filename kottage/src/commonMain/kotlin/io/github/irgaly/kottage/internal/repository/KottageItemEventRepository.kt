@@ -8,7 +8,20 @@ internal interface KottageItemEventRepository {
     suspend fun selectAfter(
         transaction: Transaction,
         createdAt: Long,
-        itemType: String? = null,
+        limit: Long? = null
+    ): List<ItemEvent>
+
+    suspend fun selectItemEventAfter(
+        transaction: Transaction,
+        itemType: String,
+        createdAt: Long,
+        limit: Long? = null
+    ): List<ItemEvent>
+
+    suspend fun selectListEventAfter(
+        transaction: Transaction,
+        listType: String,
+        createdAt: Long,
         limit: Long? = null
     ): List<ItemEvent>
 

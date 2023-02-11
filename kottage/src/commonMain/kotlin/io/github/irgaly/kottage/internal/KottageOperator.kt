@@ -64,13 +64,47 @@ internal class KottageOperator(
     suspend fun getEvents(
         transaction: Transaction,
         afterUnixTimeMillisAt: Long,
-        itemType: String? = null,
         limit: Long? = null
     ): List<ItemEvent> {
         return itemEventRepository.selectAfter(
             transaction,
             createdAt = afterUnixTimeMillisAt,
+            limit = limit
+        )
+    }
+
+    /**
+     * Get Item events
+     * This should be called in transaction
+     */
+    suspend fun getItemEvents(
+        transaction: Transaction,
+        itemType: String,
+        afterUnixTimeMillisAt: Long,
+        limit: Long? = null
+    ): List<ItemEvent> {
+        return itemEventRepository.selectItemEventAfter(
+            transaction,
             itemType = itemType,
+            createdAt = afterUnixTimeMillisAt,
+            limit = limit
+        )
+    }
+
+    /**
+     * Get List events
+     * This should be called in transaction
+     */
+    suspend fun getListEvents(
+        transaction: Transaction,
+        listType: String,
+        afterUnixTimeMillisAt: Long,
+        limit: Long? = null
+    ): List<ItemEvent> {
+        return itemEventRepository.selectListEventAfter(
+            transaction,
+            listType = listType,
+            createdAt = afterUnixTimeMillisAt,
             limit = limit
         )
     }

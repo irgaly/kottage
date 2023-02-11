@@ -8,7 +8,6 @@ import io.github.irgaly.kottage.sample.model.Animal
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -24,10 +23,7 @@ class AnimalSource(
             @OptIn(FlowPreview::class)
             return kottage.cache(
                 "animal"
-            ).eventFlow().filter { event ->
-                // TODO: KottageList.eventFlow() が実装されたら置き換える
-                (event.itemType == "animal" || event.listType == "animal_list")
-            }
+            ).list("animal_list").eventFlow()
                 // wait consecutive events, ex: KottageList.addAll()
                 .debounce(100.milliseconds)
                 .map {}

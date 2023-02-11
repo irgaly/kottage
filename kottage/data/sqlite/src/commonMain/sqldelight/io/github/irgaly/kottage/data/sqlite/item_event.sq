@@ -15,6 +15,7 @@ CREATE INDEX item_event_item_type_created_at ON item_event(item_type, created_at
 CREATE INDEX item_event_item_type_expire_at ON item_event(item_type, expire_at);
 CREATE INDEX item_event_item_list_type_created_at ON item_event(item_list_type, created_at);
 CREATE INDEX item_event_item_list_type_expire_at ON item_event(item_list_type, expire_at);
+CREATE INDEX item_event_item_list_type_item_type_created_at ON item_event(item_list_type, item_type, created_at);
 
 insert:
 INSERT INTO item_event(id, created_at, expire_at, item_type, item_key, item_list_id, item_list_type, event_type) VALUES ?;
@@ -25,11 +26,18 @@ SELECT id, created_at, expire_at, item_type, item_key, item_list_id, item_list_t
 selectAfterCreatedAtLimit:
 SELECT id, created_at, expire_at, item_type, item_key, item_list_id, item_list_type, event_type FROM item_event WHERE ? < created_at ORDER BY created_at ASC LIMIT :limit;
 
-selectItemTypeAfterCreatedAt:
-SELECT id, created_at, expire_at, item_type, item_key, item_list_id, item_list_type, event_type FROM item_event WHERE item_type = ? AND ? < created_at ORDER BY created_at ASC;
+selectItemEventAfterCreatedAt:
+SELECT id, created_at, expire_at, item_type, item_key, item_list_id, item_list_type, event_type FROM item_event WHERE item_list_type IS NULL AND item_type = ? AND ? < created_at ORDER BY created_at ASC;
 
-selectItemTypeAfterCreatedAtLimit:
-SELECT id, created_at, expire_at, item_type, item_key, item_list_id, item_list_type, event_type FROM item_event WHERE item_type = ? AND ? < created_at ORDER BY created_at ASC LIMIT :limit;
+selectItemEventAfterCreatedAtLimit:
+SELECT id, created_at, expire_at, item_type, item_key, item_list_id, item_list_type, event_type FROM item_event WHERE item_list_type IS NULL AND item_type = ? AND ? < created_at ORDER BY created_at ASC LIMIT :limit;
+
+selectListEventAfterCreatedAt:
+SELECT id, created_at, expire_at, item_type, item_key, item_list_id, item_list_type, event_type FROM item_event WHERE item_list_type = ? AND ? < created_at ORDER BY created_at ASC;
+
+selectListEventAfterCreatedAtLimit:
+SELECT id, created_at, expire_at, item_type, item_key, item_list_id, item_list_type, event_type FROM item_event WHERE item_list_type = ? AND ? < created_at ORDER BY created_at ASC LIMIT :limit;
+
 
 selectLatestCreatedAt:
 SELECT created_at FROM item_event ORDER BY created_at DESC LIMIT 1;

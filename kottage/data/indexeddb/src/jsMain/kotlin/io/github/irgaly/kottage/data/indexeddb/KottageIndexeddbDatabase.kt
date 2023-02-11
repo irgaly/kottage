@@ -13,8 +13,14 @@ class KottageIndexeddbDatabase(
     val database: Database
 ) {
     companion object {
+        /**
+         * Indexeddb Schema Version 定義
+         */
+        private const val schemaVersion = 4
+
         suspend fun open(name: String): KottageIndexeddbDatabase {
-            val database = openDatabase(name, 3) { database, oldVersion, newVersion ->
+            val database = openDatabase(name, schemaVersion) { database, oldVersion, newVersion ->
+                // oldVersion 0 ~ 2 はデータベースが存在しない
                 with(ItemStoreSchema()) { migrate(database, oldVersion, newVersion) }
                 with(ItemEventStoreSchema()) { migrate(database, oldVersion, newVersion) }
                 with(ItemListStoreSchema()) { migrate(database, oldVersion, newVersion) }

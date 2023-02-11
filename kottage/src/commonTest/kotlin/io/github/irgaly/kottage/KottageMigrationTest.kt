@@ -27,6 +27,14 @@ class KottageMigrationTest : KottageSpec("migration", body = {
                 cache.get<String>("key1") shouldBe "value1"
                 cache.get<String>("key2") shouldBe "value2"
             }
+            it("from 3") {
+                Kottage.createOldDatabase("v3", tempDirectory, environment, 3)
+                val kottage = Kottage("v2", tempDirectory, environment, specScope)
+                val cache = kottage.cache("cache1")
+                cache.put("key2", "value2")
+                cache.get<String>("key1") shouldBe "value1"
+                cache.get<String>("key2") shouldBe "value2"
+            }
         }
     }
 })

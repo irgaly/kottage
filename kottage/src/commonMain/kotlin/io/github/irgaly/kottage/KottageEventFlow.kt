@@ -28,7 +28,7 @@ import kotlin.coroutines.coroutineContext
  */
 class KottageEventFlow internal constructor(
     initialTime: Long?,
-    itemType: String?,
+    eventFlowType: EventFlowType,
     private val eventFlow: ItemEventFlow,
     private val databaseConnection: DatabaseConnection,
     private val operator: Deferred<KottageOperator>,
@@ -54,12 +54,33 @@ class KottageEventFlow internal constructor(
                     var remains = true
                     while (remains) {
                         val events = databaseConnection.transactionWithResult {
-                            operator.getEvents(
-                                this@transactionWithResult,
-                                afterUnixTimeMillisAt = lastEventTime,
-                                itemType = itemType,
-                                limit = limit
-                            )
+                            when (eventFlowType) {
+                                EventFlowType.All -> {
+                                    operator.getEvents(
+                                        this@transactionWithResult,
+                                        afterUnixTimeMillisAt = lastEventTime,
+                                        limit = limit
+                                    )
+                                }
+
+                                is EventFlowType.Item -> {
+                                    operator.getItemEvents(
+                                        this@transactionWithResult,
+                                        itemType = eventFlowType.itemType,
+                                        afterUnixTimeMillisAt = lastEventTime,
+                                        limit = limit
+                                    )
+                                }
+
+                                is EventFlowType.List -> {
+                                    operator.getListEvents(
+                                        this@transactionWithResult,
+                                        listType = eventFlowType.listType,
+                                        afterUnixTimeMillisAt = lastEventTime,
+                                        limit = limit
+                                    )
+                                }
+                            }
                         }
                         remains = (limit <= events.size)
                         events.lastOrNull()?.let {
@@ -74,9 +95,23 @@ class KottageEventFlow internal constructor(
                 CoroutineScope(coroutineContext).launch(start = CoroutineStart.UNDISPATCHED) {
                     // collect を開始した状態で eventFlow.withLock を抜ける
                     eventFlow.flow.let { flow ->
-                        if (itemType != null) {
-                            flow.filter { it.itemType == itemType }
-                        } else flow
+                        when (eventFlowType) {
+                            EventFlowType.All -> {
+                                flow
+                            }
+
+                            is EventFlowType.Item -> {
+                                flow.filter {
+                                    (it.itemListType == null) && (it.itemType == eventFlowType.itemType)
+                                }
+                            }
+
+                            is EventFlowType.List -> {
+                                flow.filter {
+                                    (it.itemListType == eventFlowType.listType)
+                                }
+                            }
+                        }
                     }.collect {
                         bridgeFlow.emit(KottageEvent.from(it))
                     }
@@ -90,5 +125,16 @@ class KottageEventFlow internal constructor(
 
     override suspend fun collect(collector: FlowCollector<KottageEvent>) {
         flow.collect(collector)
+    }
+
+    internal sealed interface EventFlowType {
+        object All : EventFlowType
+        data class Item(
+            val itemType: String
+        ) : EventFlowType
+
+        data class List(
+            val listType: String
+        ) : EventFlowType
     }
 }
