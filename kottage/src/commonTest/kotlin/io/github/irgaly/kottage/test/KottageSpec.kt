@@ -3,6 +3,7 @@ package io.github.irgaly.kottage.test
 import io.github.irgaly.kottage.Kottage
 import io.github.irgaly.kottage.KottageOptions
 import io.github.irgaly.kottage.extension.buildKottage
+import io.github.irgaly.kottage.platform.Platform
 import io.github.irgaly.kottage.platform.TestCalendar
 import io.github.irgaly.test.extension.tempdir
 import io.kotest.core.spec.style.FunSpec
@@ -10,6 +11,7 @@ import io.kotest.core.test.TestScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.withContext
 
 /**
  * kotest JS ではネストしたテストや DescribeSpec は使えない
@@ -48,6 +50,19 @@ open class KottageSpec(
         scope: CoroutineScope = specScope,
         builder: (KottageOptions.Builder.() -> Unit)? = null
     ): Pair<Kottage, TestCalendar> = buildKottage(name, tempDirectory, scope, builder)
+
+    override fun test(name: String, test: suspend TestScope.() -> Unit) {
+        if (Platform.isJs) {
+            super.test(name) {
+                withContext(Dispatchers.Main) {
+                    // nodejs + turbine で Coroutine をテストするとき、
+                    // Flow の subscription のタイミングが遅れる問題を発生させないために
+                    // Dispatchers.Main を使う
+                    test()
+                }
+            }
+        } else super.test(name, test)
+    }
 
     fun it(name: String, test: suspend TestScope.() -> Unit) {
         test(name, test)
