@@ -74,7 +74,7 @@ class AnimalSource(
      * clear local kottage data
      */
     suspend fun clear() {
-        list.clear()
+        list.dropList()
         // TODO: list.clear() / list.dropList() に分ければ invalidate は不要
         invalidate()
     }

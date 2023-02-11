@@ -894,7 +894,7 @@ internal class KottageListImpl(
         storage.compact()
     }
 
-    override suspend fun clear() = withContext(dispatcher) {
+    override suspend fun dropList() = withContext(dispatcher) {
         val listOperator = listOperator.await()
         databaseManager.transaction {
             listOperator.clear(this)
