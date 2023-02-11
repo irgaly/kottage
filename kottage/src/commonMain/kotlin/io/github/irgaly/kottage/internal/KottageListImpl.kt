@@ -1,5 +1,7 @@
 package io.github.irgaly.kottage.internal
 
+import io.github.irgaly.kottage.KottageEvent
+import io.github.irgaly.kottage.KottageEventFlow
 import io.github.irgaly.kottage.KottageList
 import io.github.irgaly.kottage.KottageListDirection
 import io.github.irgaly.kottage.KottageListEntry
@@ -897,6 +899,26 @@ internal class KottageListImpl(
         databaseManager.transaction {
             listOperator.clear(this)
         }
+    }
+
+    override suspend fun getEvents(
+        afterUnixTimeMillisAt: Long, limit: Long?
+    ): List<KottageEvent> = withContext(dispatcher) {
+        val operator = operator()
+        databaseManager.transactionWithResult {
+            operator.getListEvents(
+                this,
+                listType = listType,
+                afterUnixTimeMillisAt = afterUnixTimeMillisAt,
+                limit = limit
+            ).map {
+                KottageEvent.from(it)
+            }
+        }
+    }
+
+    override fun eventFlow(afterUnixTimeMillisAt: Long?): KottageEventFlow {
+        return databaseManager.listEventFlow(listType, afterUnixTimeMillisAt)
     }
 
     override suspend fun getDebugStatus(): String = withContext(dispatcher) {
