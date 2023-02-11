@@ -57,13 +57,10 @@ class KottageEventTest : KottageSpec("kottage_event", body = {
                 val storage = kottage.cache("event")
                 val storage2 = kottage.cache("event2")
                 kottage.simpleEventFlow.test {
-                    calendar.now += 1.seconds
                     storage.put("key1", "value")
                     awaitItem().eventType shouldBe KottageEventType.Create
-                    calendar.now += 1.seconds
                     storage.remove("key1")
                     awaitItem().eventType shouldBe KottageEventType.Delete
-                    calendar.now += 1.seconds
                     storage.put("key2", "value2")
                     storage2.put("storage2_key", "value")
                     awaitItem().itemType shouldBe storage.name
@@ -81,7 +78,6 @@ class KottageEventTest : KottageSpec("kottage_event", body = {
                         it.listType shouldBe null
                         it.eventType shouldBe KottageEventType.Create
                     }
-                    calendar.now += 1.seconds
                     cache.put("key2", "value2")
                     awaitItem() should {
                         it.itemKey shouldBe "key2"
@@ -90,21 +86,18 @@ class KottageEventTest : KottageSpec("kottage_event", body = {
                     }
                 }
                 list.eventFlow().test {
-                    calendar.now += 1.seconds
                     val entry3 = list.add("key3", "value3")
                     awaitItem().let {
                         it.listPositionId shouldNotBe null
                         it.listType shouldBe "list_event_list"
                         it.eventType shouldBe KottageEventType.Create
                     }
-                    calendar.now += 1.seconds
                     cache.put("key3", "value3-2")
                     awaitItem().let {
                         it.listPositionId shouldNotBe null
                         it.listType shouldBe "list_event_list"
                         it.eventType shouldBe KottageEventType.Update
                     }
-                    calendar.now += 1.seconds
                     list.update(entry3.positionId, "key4", "value4")
                     awaitItem().let {
                         it.listPositionId shouldNotBe null
@@ -118,7 +111,6 @@ class KottageEventTest : KottageSpec("kottage_event", body = {
                         it.itemKey shouldBe "key4"
                         it.eventType shouldBe KottageEventType.Create
                     }
-                    calendar.now += 1.seconds
                     cache.put("key5", "value5")
                     list.updateKey(entry3.positionId, "key5")
                     awaitItem().let {
@@ -133,7 +125,6 @@ class KottageEventTest : KottageSpec("kottage_event", body = {
                         it.itemKey shouldBe "key5"
                         it.eventType shouldBe KottageEventType.Create
                     }
-                    calendar.now += 1.seconds
                     list.remove(entry3.positionId)
                     awaitItem().let {
                         it.listPositionId shouldNotBe null
