@@ -186,7 +186,7 @@ interface KottageList {
         metaData: KottageListMetaData? = null
     )
 
-    suspend fun remove(positionId: String)
+    suspend fun remove(positionId: String, removeItemFromStorage: Boolean = false)
 
     /**
      * Delete all items from this list

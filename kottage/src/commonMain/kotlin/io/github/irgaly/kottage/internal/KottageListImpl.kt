@@ -875,16 +875,30 @@ internal class KottageListImpl(
         }
     }
 
-    override suspend fun remove(positionId: String) = withContext(dispatcher) {
-        val listOperator = listOperator.await()
-        val removed = transactionWithAutoCompaction { _, now ->
-            listOperator.invalidateExpiredListEntries(this, now)
-            listOperator.removeListItem(this, positionId = positionId, now = now)
+    override suspend fun remove(positionId: String, removeItemFromStorage: Boolean) =
+        withContext(dispatcher) {
+            val storageOperator = storageOperator.await()
+            val listOperator = listOperator.await()
+            val removed = transactionWithAutoCompaction { _, now ->
+                listOperator.invalidateExpiredListEntries(this, now)
+                listOperator.removeListItem(
+                    this,
+                    positionId = positionId,
+                    now = now
+                ) { entry ->
+                    if (removeItemFromStorage) {
+                        storageOperator.deleteItem(
+                            this,
+                            checkNotNull(entry.itemKey),
+                            now
+                        ) {}
+                    }
+                }
+            }
+            if (removed) {
+                databaseManager.onEventCreated()
+            }
         }
-        if (removed) {
-            databaseManager.onEventCreated()
-        }
-    }
 
     override suspend fun removeAll(removeItemFromStorage: Boolean) = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
@@ -913,7 +927,7 @@ internal class KottageListImpl(
                                 this,
                                 positionId = entry.id,
                                 now = now
-                            )
+                            ) {}
                         }
                         removed = true
                     }
