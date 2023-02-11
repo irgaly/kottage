@@ -21,6 +21,7 @@ class ItemEventStoreSchema: StoreSchema {
             )
             store.createIndex(
                 "item_event_item_type_expire_at",
+                // expire_at = null は index されない
                 KeyPath("item_type", "expire_at"),
                 false
             )
@@ -31,6 +32,7 @@ class ItemEventStoreSchema: StoreSchema {
             )
             store.createIndex(
                 "item_event_item_list_type_expire_at",
+                // expire_at = null は index されない
                 KeyPath("item_list_type", "expire_at"),
                 false
             )

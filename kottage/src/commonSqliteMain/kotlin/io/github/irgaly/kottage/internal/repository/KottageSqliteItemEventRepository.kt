@@ -16,37 +16,67 @@ internal class KottageSqliteItemEventRepository(
     override suspend fun selectAfter(
         transaction: Transaction,
         createdAt: Long,
-        itemType: String?,
         limit: Long?
     ): List<ItemEvent> {
-        return if (itemType != null) {
-            if (limit != null) {
-                database.item_eventQueries
-                    .selectItemTypeAfterCreatedAtLimit(
-                        item_type = itemType,
-                        created_at = createdAt,
-                        limit = limit
-                    ).executeAsList()
-            } else {
-                database.item_eventQueries
-                    .selectItemTypeAfterCreatedAt(
-                        item_type = itemType,
-                        created_at = createdAt
-                    ).executeAsList()
-            }
+        return if (limit != null) {
+            database.item_eventQueries
+                .selectAfterCreatedAtLimit(
+                    created_at = createdAt,
+                    limit = limit
+                ).executeAsList()
         } else {
-            if (limit != null) {
-                database.item_eventQueries
-                    .selectAfterCreatedAtLimit(
-                        created_at = createdAt,
-                        limit = limit
-                    ).executeAsList()
-            } else {
-                database.item_eventQueries
-                    .selectAfterCreatedAt(
-                        created_at = createdAt
-                    ).executeAsList()
-            }
+            database.item_eventQueries
+                .selectAfterCreatedAt(
+                    created_at = createdAt
+                ).executeAsList()
+        }.map {
+            it.toDomain()
+        }
+    }
+
+    override suspend fun selectItemEventAfter(
+        transaction: Transaction,
+        itemType: String,
+        createdAt: Long,
+        limit: Long?
+    ): List<ItemEvent> {
+        return if (limit != null) {
+            database.item_eventQueries
+                .selectItemEventAfterCreatedAtLimit(
+                    item_type = itemType,
+                    created_at = createdAt,
+                    limit = limit
+                ).executeAsList()
+        } else {
+            database.item_eventQueries
+                .selectItemEventAfterCreatedAt(
+                    item_type = itemType,
+                    created_at = createdAt
+                ).executeAsList()
+        }.map {
+            it.toDomain()
+        }
+    }
+
+    override suspend fun selectListEventAfter(
+        transaction: Transaction,
+        listType: String,
+        createdAt: Long,
+        limit: Long?
+    ): List<ItemEvent> {
+        return if (limit != null) {
+            database.item_eventQueries
+                .selectListEventAfterCreatedAtLimit(
+                    item_list_type = listType,
+                    created_at = createdAt,
+                    limit = limit
+                ).executeAsList()
+        } else {
+            database.item_eventQueries
+                .selectListEventAfterCreatedAt(
+                    item_list_type = listType,
+                    created_at = createdAt
+                ).executeAsList()
         }.map {
             it.toDomain()
         }

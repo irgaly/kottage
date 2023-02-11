@@ -36,7 +36,8 @@ suspend fun DriverFactory.createDriver(
         schema = when (version) {
             1 -> KottageDatabase1.Schema
             2 -> KottageDatabase2.Schema
-            3, null -> KottageDatabase.Schema
+            3 -> KottageDatabase3.Schema
+            4, null -> KottageDatabase.Schema
             else -> throw IllegalArgumentException("unknown schema version: $version")
         }
     )

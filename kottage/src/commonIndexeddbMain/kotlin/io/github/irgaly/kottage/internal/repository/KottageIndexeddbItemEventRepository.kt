@@ -15,6 +15,7 @@ import io.github.irgaly.kottage.internal.database.Transaction
 import io.github.irgaly.kottage.internal.extension.deleteWithChunk
 import io.github.irgaly.kottage.internal.extension.take
 import io.github.irgaly.kottage.internal.model.ItemEvent
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -29,31 +30,71 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
     override suspend fun selectAfter(
         transaction: Transaction,
         createdAt: Long,
-        itemType: String?,
         limit: Long?
     ): List<ItemEvent> {
         return transaction.store { store ->
-            (if (itemType != null) {
-                store.index("item_event_item_type_created_at")
-                    .openCursor(
-                        // item_type = itemType && createdAt < created_at
-                        bound(
-                            arrayOf(itemType, createdAt.toDouble()),
-                            arrayOf(itemType, emptyArray<Any>()),
-                            lowerOpen = true
-                        )
-                    )
-            } else {
-                store.index("item_event_created_at")
-                    .openCursor(
-                        // createdAt < created_at
-                        lowerBound(createdAt.toDouble(), true)
-                    )
-            }).let {
-                if (limit != null) it.take(limit) else it
-            }.map { cursor ->
-                cursor.value.unsafeCast<Item_event>().toDomain()
-            }.toList()
+            store.index("item_event_created_at")
+                .openCursor(
+                    // createdAt < created_at
+                    lowerBound(createdAt.toDouble(), true),
+                    autoContinue = true
+                ).let {
+                    if (limit != null) it.take(limit) else it
+                }.map { cursor ->
+                    cursor.value.unsafeCast<Item_event>().toDomain()
+                }.toList()
+        }
+    }
+
+    override suspend fun selectItemEventAfter(
+        transaction: Transaction,
+        itemType: String,
+        createdAt: Long,
+        limit: Long?
+    ): List<ItemEvent> {
+        return transaction.store { store ->
+            store.index("item_event_item_type_created_at")
+                .openCursor(
+                    // item_type = itemType && createdAt < created_at
+                    bound(
+                        arrayOf(itemType, createdAt.toDouble()),
+                        arrayOf(itemType, emptyArray<Any>()),
+                        lowerOpen = true
+                    ),
+                    autoContinue = true
+                ).map { cursor ->
+                    cursor.value.unsafeCast<Item_event>().toDomain()
+                }.filter {
+                    // indexeddb は index 項目に null を含められないため
+                    // index ではなく filter で除外
+                    (it.itemListType == null)
+                }.let {
+                    if (limit != null) it.take(limit) else it
+                }.toList()
+        }
+    }
+
+    override suspend fun selectListEventAfter(
+        transaction: Transaction,
+        listType: String,
+        createdAt: Long,
+        limit: Long?
+    ): List<ItemEvent> {
+        return transaction.store { store ->
+            store.index("item_event_item_list_type_created_at")
+                .openCursor(
+                    // item_list_type = listType && createdAt < created_at
+                    bound(
+                        arrayOf(listType, createdAt.toDouble()),
+                        arrayOf(listType, emptyArray<Any>()),
+                        lowerOpen = true
+                    ),
+                    autoContinue = true
+                ).let {
+                    if (limit != null) it.take(limit) else it
+                }.map { cursor ->
+                    cursor.value.unsafeCast<Item_event>().toDomain()
+                }.toList()
         }
     }
 

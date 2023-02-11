@@ -187,10 +187,10 @@ internal class KottageStorageImpl(
     ): List<KottageEvent> = withContext(dispatcher) {
         val operator = operator()
         databaseManager.transactionWithResult {
-            operator.getEvents(
+            operator.getItemEvents(
                 this,
-                afterUnixTimeMillisAt = afterUnixTimeMillisAt,
                 itemType = itemType,
+                afterUnixTimeMillisAt = afterUnixTimeMillisAt,
                 limit = limit
             ).map {
                 KottageEvent.from(it)
@@ -199,7 +199,7 @@ internal class KottageStorageImpl(
     }
 
     override fun eventFlow(afterUnixTimeMillisAt: Long?): KottageEventFlow {
-        return databaseManager.eventFlow(afterUnixTimeMillisAt, itemType)
+        return databaseManager.itemEventFlow(itemType, afterUnixTimeMillisAt)
     }
 
     override fun list(

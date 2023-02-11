@@ -173,10 +173,32 @@ internal class KottageDatabaseManager(
         }
     }
 
-    fun eventFlow(afterUnixTimeMillisAt: Long? = null, itemType: String? = null): KottageEventFlow {
+    fun eventFlow(afterUnixTimeMillisAt: Long? = null): KottageEventFlow {
         return KottageEventFlow(
             afterUnixTimeMillisAt,
-            itemType,
+            KottageEventFlow.EventFlowType.All,
+            _eventFlow,
+            databaseConnection,
+            operator,
+            dispatcher
+        )
+    }
+
+    fun itemEventFlow(itemType: String, afterUnixTimeMillisAt: Long? = null): KottageEventFlow {
+        return KottageEventFlow(
+            afterUnixTimeMillisAt,
+            KottageEventFlow.EventFlowType.Item(itemType = itemType),
+            _eventFlow,
+            databaseConnection,
+            operator,
+            dispatcher
+        )
+    }
+
+    fun listEventFlow(listType: String, afterUnixTimeMillisAt: Long? = null): KottageEventFlow {
+        return KottageEventFlow(
+            afterUnixTimeMillisAt,
+            KottageEventFlow.EventFlowType.List(listType = listType),
             _eventFlow,
             databaseConnection,
             operator,
