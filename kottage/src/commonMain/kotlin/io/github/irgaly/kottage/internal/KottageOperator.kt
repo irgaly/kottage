@@ -85,8 +85,8 @@ internal class KottageOperator(
     ): List<ItemEvent> {
         return itemEventRepository.selectItemEventAfter(
             transaction,
-            createdAt = afterUnixTimeMillisAt,
             itemType = itemType,
+            createdAt = afterUnixTimeMillisAt,
             limit = limit
         )
     }
@@ -103,8 +103,8 @@ internal class KottageOperator(
     ): List<ItemEvent> {
         return itemEventRepository.selectListEventAfter(
             transaction,
-            createdAt = afterUnixTimeMillisAt,
             listType = listType,
+            createdAt = afterUnixTimeMillisAt,
             limit = limit
         )
     }
