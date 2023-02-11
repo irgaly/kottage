@@ -31,7 +31,7 @@ class AnimalRemoteRepository(
     }
 
     suspend fun regenerate() {
-        list.dropList()
+        list.removeAll(true)
         val animals = generate()
         list.addAll(
             animals.map {

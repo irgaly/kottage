@@ -33,7 +33,10 @@ interface KottageList {
     suspend fun getFirst(): KottageListEntry?
     suspend fun getLast(): KottageListEntry?
 
-    suspend fun get(positionId: String): KottageListEntry?
+    suspend fun get(
+        positionId: String,
+        direction: KottageListDirection = KottageListDirection.Forward
+    ): KottageListEntry?
 
     /**
      * Get item with iteration.

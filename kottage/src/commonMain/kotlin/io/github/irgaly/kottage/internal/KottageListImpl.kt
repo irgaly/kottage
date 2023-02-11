@@ -128,8 +128,8 @@ internal class KottageListImpl(
         }
         KottageListPage(
             items = items,
-            previousPositionId = items.firstOrNull()?.previousPositionId,
-            nextPositionId = items.lastOrNull()?.nextPositionId,
+            previousPositionId = if (hasPrevious) items.firstOrNull()?.previousPositionId else null,
+            nextPositionId = if (hasNext) items.lastOrNull()?.nextPositionId else null,
             hasPrevious = hasPrevious,
             hasNext = hasNext
         )
@@ -215,7 +215,10 @@ internal class KottageListImpl(
         }
     }
 
-    override suspend fun get(positionId: String): KottageListEntry? = withContext(dispatcher) {
+    override suspend fun get(
+        positionId: String,
+        direction: KottageListDirection
+    ): KottageListEntry? = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val listOperator = listOperator.await()
         transactionWithAutoCompaction { operator, now ->
@@ -223,7 +226,7 @@ internal class KottageListImpl(
             listOperator.getAvailableListEntry(
                 this,
                 positionId = positionId,
-                direction = KottageListDirection.Forward
+                direction = direction
             )?.let { entry ->
                 val itemKey = checkNotNull(entry.itemKey)
                 val item = checkNotNull(storageOperator.getOrNull(this, key = itemKey, now = null))
