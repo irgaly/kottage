@@ -75,9 +75,14 @@ interface KottageStorage {
     suspend fun compact()
 
     /**
-     * Delete all entries and events
+     * Delete all items and metadata of this storage.
+     * This is a clean up operation, so it does not trigger any DELETE events.
+     *
+     * Deletes:
+     * * This storage's items
+     * * This storage's metadata
      */
-    suspend fun clear()
+    suspend fun dropStorage()
 
     /**
      * Get events after fromUnitTimeMillisAt

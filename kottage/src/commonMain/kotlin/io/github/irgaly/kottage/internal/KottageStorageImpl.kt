@@ -174,7 +174,7 @@ internal class KottageStorageImpl(
         }
     }
 
-    override suspend fun clear() = withContext(dispatcher) {
+    override suspend fun dropStorage() = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         val now = calendar.nowUnixTimeMillis()
         databaseManager.transaction {
