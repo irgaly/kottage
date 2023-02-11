@@ -222,7 +222,7 @@ fun PagingScreen(
                         animalSource?.clear()
                     }
                 }) {
-                    Text("KottageList.clear()")
+                    Text("KottageList.removeAll()")
                 }
                 Button(onClick = {
                     scope.launch {

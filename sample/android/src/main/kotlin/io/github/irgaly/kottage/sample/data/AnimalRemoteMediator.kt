@@ -72,7 +72,7 @@ class AnimalRemoteMediator(
             }
             if (loadType == LoadType.REFRESH) {
                 // clear local data when refresh is succeeded
-                list.dropList()
+                list.removeAll(true)
             }
             // store data to kottage
             page?.items?.map { animal ->
