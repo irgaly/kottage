@@ -67,7 +67,7 @@ interface KottageStorage {
     /**
      * Delete all entries
      */
-    suspend fun removeAll(key: String)
+    suspend fun removeAll()
 
     /**
      * Clean Expired entries

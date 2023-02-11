@@ -878,7 +878,47 @@ internal class KottageListImpl(
     override suspend fun remove(positionId: String) = withContext(dispatcher) {
         val listOperator = listOperator.await()
         val removed = transactionWithAutoCompaction { _, now ->
+            listOperator.invalidateExpiredListEntries(this, now)
             listOperator.removeListItem(this, positionId = positionId, now = now)
+        }
+        if (removed) {
+            databaseManager.onEventCreated()
+        }
+    }
+
+    override suspend fun removeAll(removeItemFromStorage: Boolean) = withContext(dispatcher) {
+        val storageOperator = storageOperator.await()
+        val listOperator = listOperator.await()
+        var removed = false
+        transactionWithAutoCompaction { operator, now ->
+            operator.getListStats(this, listType)?.let { stats ->
+                listOperator.invalidateExpiredListEntries(this, now)
+                var nextPositionId: String? = stats.firstItemPositionId
+                while (nextPositionId != null) {
+                    val entry = listOperator.getAvailableListEntry(
+                        this,
+                        positionId = nextPositionId,
+                        direction = KottageListDirection.Forward
+                    )
+                    nextPositionId = entry?.nextId
+                    if (entry != null) {
+                        if (removeItemFromStorage) {
+                            storageOperator.deleteItem(
+                                this,
+                                checkNotNull(entry.itemKey),
+                                now
+                            ) {}
+                        } else {
+                            listOperator.removeListItem(
+                                this,
+                                positionId = entry.id,
+                                now = now
+                            )
+                        }
+                        removed = true
+                    }
+                }
+            }
         }
         if (removed) {
             databaseManager.onEventCreated()

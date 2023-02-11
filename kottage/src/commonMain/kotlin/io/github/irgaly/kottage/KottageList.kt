@@ -188,6 +188,11 @@ interface KottageList {
 
     suspend fun remove(positionId: String)
 
+    /**
+     * Delete all items from this list
+     */
+    suspend fun removeAll(removeItemFromStorage: Boolean = false)
+
     suspend fun compact()
 
     /**

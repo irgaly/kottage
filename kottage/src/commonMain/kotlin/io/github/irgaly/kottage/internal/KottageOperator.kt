@@ -226,7 +226,6 @@ internal class KottageOperator(
      * This should be called in transaction
      *
      * 前後のアイテムと item_list_stats の先頭末尾情報を更新しながらアイテムを取り除く
-     * 有効なアイテムを削除した場合は Delete Event を追加する
      */
     suspend fun removeListEntries(transaction: Transaction, listType: String, positionIds: List<String>) {
         val entries = positionIds.map {
