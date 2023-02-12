@@ -43,7 +43,7 @@ plugins {
 kotlin {
     sourceSets {
         commonMain {
-            implementation("io.github.irgaly.kottage:kottage:1.4.2")
+            implementation("io.github.irgaly.kottage:kottage:1.5.0")
         }
     }
     // ...
@@ -64,7 +64,7 @@ plugins {
 
 dependencies {
     // You can use as JVM library directly
-    implementation("io.github.irgaly.kottage:kottage:1.4.2")
+    implementation("io.github.irgaly.kottage:kottage:1.5.0")
     // ...
 }
 ```
@@ -105,6 +105,7 @@ val kottage: Kottage = Kottage(
     name = "kottage-store-name", // This will be database file name
     directoryPath = databaseDirectory,
     environment = kottageEnvironment,
+    scope = scope, // This kottage instance will be automatically close on this CoroutineScope completion
     json = Json.Default // kotlinx.serialization's json object
 )
 ```
@@ -293,10 +294,12 @@ Kottage supports observing events of item updates for implementing Single Source
 ```kotlin
 val cache: KottageStorage = kottage.cache("my_item_cache")
 val now: Long = ... // Unix Time (UTC) in millis
-cache.eventFlow(now).collect { event ->
-    // receive events from flow
-    val eventType: KottageEventType = event.eventType // eventType => KottageEventType.Create
-    val updatedValue: String = cache.get<String>(event.itemKey) // updatedValue => "value"
+launch {
+    cache.eventFlow(now).collect { event ->
+        // receive events from flow
+        val eventType: KottageEventType = event.eventType // eventType => KottageEventType.Create
+        val updatedValue: String = cache.get<String>(event.itemKey) // updatedValue => "value"
+    }
 }
 cache.put("key", "value")
 // get events after time
