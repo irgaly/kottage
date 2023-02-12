@@ -1,3 +1,40 @@
+# v1.5.0 - 2023/02/12 JST
+
+#### Changes
+
+* Kottage constructor requires CoroutineScope now.
+
+```kotlin
+val kottage: Kottage = Kottage(
+  name = "kottage-name",
+  directoryPath = databaseDirectory,
+  environment = kottageEnvironment,
+  scope = scope // This kottage instance's living CoroutineScope
+)
+```
+
+* change: Database schema to v4
+  * add index
+    item_event_item_list_type_item_type_created_at [#120](https://github.com/irgaly/kottage/pull/120)
+
+#### Improve
+
+* Support Kottage.close() [#114](https://github.com/irgaly/kottage/pull/114)
+* add KottageListPage.isNotEmpty() [#112](https://github.com/irgaly/kottage/pull/112)
+* Add list event on item update [#117](https://github.com/irgaly/kottage/pull/117)
+* Add KottageList.eventFlow(), exclude List Event from
+  KottageStorage.eventFlow() [#120](https://github.com/irgaly/kottage/pull/120)
+* Add KottageStorage.dropStorage(), KottageList.dropList(),
+  KottageList.removeAll() [#122](https://github.com/irgaly/kottage/pull/122)
+
+#### Fix
+
+* KottageList.getPageFrom hangups with invalid
+  positionId [#110](https://github.com/irgaly/kottage/pull/110)
+* fix PRAGMA query leak on Android [#115](https://github.com/irgaly/kottage/pull/115)
+* fix: getPageFrom previousPositionId, nextPositionId
+  nullability [#123](https://github.com/irgaly/kottage/pull/123)
+
 # v1.4.2 - 2022/11/22 JST
 
 #### Maintenance
