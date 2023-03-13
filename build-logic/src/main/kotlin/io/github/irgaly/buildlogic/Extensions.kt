@@ -190,6 +190,7 @@ fun Project.configureMultiplatformLibrary() {
                 dependsOn(nativeMain)
             }
             val mingwX64Test by getting {
+                dependsOn(mingwX64Main)
                 dependsOn(nativeTest)
             }
         }
