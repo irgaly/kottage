@@ -5,67 +5,87 @@ on: push
 
 jobs:
   build-test:
-    runs-on: macos-11
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ macos-11, windows-latest ]
+    runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v3
-      - id: get-month
-        run: echo "month=$(TZ=Asia/Tokyo date +%m)" >> $GITHUB_OUTPUT
       - uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: 17
-      - uses: actions/cache@v3
-        with:
-          path: ~/.gradle/wrapper
-          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-      - uses: actions/cache@v3
-        with:
-          path: |
-            ~/.gradle/caches/jars-*
-            ~/.gradle/caches/transforms-*
-            ~/.gradle/caches/modules-*
-          key: gradle-dependencies-${{ steps.get-month.outputs.month }}-${{ hashFiles('gradle/libs.versions.toml', '**/*.gradle.kts', 'build-logic/**/*.{kt,kts}') }}
-          restore-keys: gradle-dependencies-${{ steps.get-month.outputs.month }}-
-      - uses: actions/cache@v3
-        with:
-          path: |
-            ~/.konan
-            ~/.gradle/native
-          key: ${{ runner.os }}-kotlin-native-${{ steps.get-month.outputs.month }}-${{ hashFiles('gradle/libs.versions.toml', '**/*.gradle.kts') }}
-          restore-keys: ${{ runner.os }}-kotlin-native-${{ steps.get-month.outputs.month }}-
-      - uses: actions/cache@v3
-        with:
-          path: |
-            ~/.gradle/caches/build-cache-*
-            ~/.gradle/caches/[0-9]*.*
-            .gradle
-          key: ${{ runner.os }}-gradle-build-${{ github.workflow }}-${{ steps.get-month.outputs.month }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-gradle-build-${{ github.workflow }}-${{ steps.get-month.outputs.month }}-
-      - name: JVM Test Build
+      - uses: ./.github/actions/gradle-cache
+      - name: JVM Build
         run: |
           ./gradlew jvmTestClasses
+      - name: JS Browser / Nodejs Build
+        run: |
+          ./gradlew jsTestClasses
+      - name: Android Build
+        if: matrix.platform == 'macos-11'
+        run: |
+          ./gradlew packageDebugAndroidTest
+      - name: Windows Build
+        if: matrix.platform == 'windows-latest'
+        run: |
+          ./gradlew linkDebugTestMingwX64
+      - name: iOS Build
+        if: matrix.platform == 'macos-11'
+        run: |
+          ./gradlew linkDebugTestIosX64
+      - name: macOS Build
+        if: matrix.platform == 'macos-11'
+        run: |
+          ./gradlew linkDebugTestMacosX64
       - name: JVM Test
         run: |
           ./gradlew jvmTest
-      - name: Native macOS X64 Test Build
-        run: |
-          ./gradlew linkDebugTestMacosX64
-      - name: Native macOS X64 Test
-        run: |
-          ./gradlew macosX64Test
-      - name: JS Browser / nodejs Test Build
-        run: |
-          ./gradlew jsTestClasses
-      - name: JS Browser / nodejs Test
+      - name: JS Browser / Nodejs Test
         run: |
           ./gradlew jsTest
-      - uses: EnricoMi/publish-unit-test-result-action/composite@v2
-        if: always()
+      - name: Android Test
+        uses: reactivecircus/android-emulator-runner@v2
+        if: matrix.platform == 'macos-11'
         with:
-          junit_files: "**/build/test-results/*/*.xml"
-          comment_mode: off
+          api-level: 29
+          target: google_apis
+          arch: x86_64
+          script: |
+            ./gradlew connectedDebugAndroidTest
+      - name: Windows Test
+        if: matrix.platform == 'windows-latest'
+        run: |
+          ./gradlew mingwX64Test
+      - name: iOS Test
+        if: matrix.platform == 'macos-11'
+        run: |
+          ./gradlew iosX64Test
+      - name: macOS Test
+        if: matrix.platform == 'macos-11'
+        run: |
+          ./gradlew macosX64Test
+      - name: Stop Gradle on Windows
+        if: matrix.platform == 'windows-latest'
+        run: |
+          # Windows で gradle cache を保存するために
+          # .gradle/caches/8.0/kotlin-dsl/kotlin-dsl.lock の使用中ロックを解除する
+          ./gradlew --stop
       - uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: test-results
-          path: "**/build/reports/tests/*"
+          name: test-results-${{ matrix.platform }}
+          path: |
+            **/build/test-results/*/*.xml
+            **/build/reports/tests/*
+  publish-test-results:
+    needs: build-test
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - uses: actions/download-artifact@v3
+      - uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          junit_files: "**/test-results/*/*.xml"
+          comment_mode: off
