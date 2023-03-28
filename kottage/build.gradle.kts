@@ -71,6 +71,12 @@ kotlin {
         }
         nodejs()
     }
+    mingwX64 {
+        binaries.configureEach {
+            // rpcrt4: UuidCreate, RpcStringFreeW, UuidToStringW に必要
+            linkerOpts("-lrpcrt4", "-LC:/msys64/mingw64/lib", "-lsqlite3")
+        }
+    }
     sourceSets {
         commonMain {
             dependencies {

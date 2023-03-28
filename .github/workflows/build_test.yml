@@ -30,6 +30,7 @@ jobs:
       - name: Windows Build
         if: matrix.platform == 'windows-latest'
         run: |
+          C:/msys64/usr/bin/pacman -S --noconfirm mingw-w64-x86_64-sqlite3
           ./gradlew linkDebugTestMingwX64
       - name: iOS Build
         if: matrix.platform == 'macos-11'
