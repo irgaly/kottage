@@ -7,7 +7,7 @@ kotest = "5.5.1"
 gradle-android = "7.4.0-alpha10"
 gradle-android-compile-sdk = "33"
 gradle-android-target-sdk = "33"
-gradle-android-min-sdk = "16"
+gradle-android-min-sdk = "21"
 sqldelight = "1.5.3"
 
 [libraries]
