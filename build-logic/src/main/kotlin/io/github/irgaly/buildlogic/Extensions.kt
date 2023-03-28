@@ -1,5 +1,7 @@
 package io.github.irgaly.buildlogic
 
+import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.dsl.CommonExtension
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.LibraryExtension
 import org.gradle.api.Project
@@ -14,10 +16,16 @@ import java.io.ByteArrayOutputStream
  */
 fun Project.configureAndroid() {
     extensions.configure<BaseExtension> {
-        compileSdkVersion(libs.version("gradle-android-compile-sdk").toInt())
-        defaultConfig {
-            minSdk = libs.version("gradle-android-min-sdk").toInt()
-            targetSdk = libs.version("gradle-android-target-sdk").toInt()
+        (this as CommonExtension<*, *, *, *>).apply {
+            compileSdk = libs.version("gradle-android-compile-sdk").toInt()
+            defaultConfig {
+                minSdk = libs.version("gradle-android-min-sdk").toInt()
+            }
+            if (this is ApplicationExtension) {
+                defaultConfig {
+                    targetSdk = libs.version("gradle-android-target-sdk").toInt()
+                }
+            }
         }
     }
 }
@@ -30,9 +38,17 @@ fun Project.configureAndroidLibrary() {
         buildFeatures {
             buildConfig = false
         }
+        packagingOptions {
+            resources {
+                excludes.add("META-INF/AL2.0")
+                excludes.add("META-INF/LGPL2.1")
+                excludes.add("META-INF/licenses/ASM")
+                pickFirsts.add("win32-x86-64/attach_hotspot_windows.dll")
+                pickFirsts.add("win32-x86/attach_hotspot_windows.dll")
+            }
+        }
         sourceSets.configureEach {
-            setRoot("src/android/$name")
-            java.srcDirs("src/android/$name/kotlin")
+            java.srcDirs("src/$name/kotlin")
         }
     }
 }
@@ -108,6 +124,13 @@ fun Project.configureMultiplatformLibrary() {
         linuxX64() // Linux on x86_64 platforms
         // Windows
         mingwX64() // 64-bit Microsoft Windows
+        /*
+        // JS
+        js(IR) {
+            browser()
+            nodejs()
+        }
+         */
         sourceSets {
             val commonMain by getting
             val commonTest by getting
@@ -142,6 +165,7 @@ fun Project.configureMultiplatformLibrary() {
                 dependsOn(darwinMain)
             }
             val iosTest by getting {
+                dependsOn(iosMain)
                 dependsOn(darwinTest)
             }
             val watchosMain by getting {
@@ -168,28 +192,44 @@ fun Project.configureMultiplatformLibrary() {
             val watchosSimulatorArm64Test by getting {
                 dependsOn(iosTest)
             }
+            /*
+            val watchosDeviceArm64Main by getting {
+                dependsOn(iosMain)
+            }
+            val watchosDeviceArm64Test by getting {
+                dependsOn(iosTest)
+            }
+             */
             val tvosSimulatorArm64Main by getting {
                 dependsOn(iosMain)
             }
             val tvosSimulatorArm64Test by getting {
                 dependsOn(iosTest)
             }
-            val macosX64Main by getting {
+            val macosMain by creating {
                 dependsOn(darwinMain)
+            }
+            val macosTest by creating {
+                dependsOn(macosMain)
+                dependsOn(darwinTest)
+            }
+            val macosX64Main by getting {
+                dependsOn(macosMain)
             }
             val macosX64Test by getting {
-                dependsOn(darwinTest)
+                dependsOn(macosTest)
             }
             val macosArm64Main by getting {
-                dependsOn(darwinMain)
+                dependsOn(macosMain)
             }
             val macosArm64Test by getting {
-                dependsOn(darwinTest)
+                dependsOn(macosTest)
             }
             val mingwX64Main by getting {
                 dependsOn(nativeMain)
             }
             val mingwX64Test by getting {
+                dependsOn(mingwX64Main)
                 dependsOn(nativeTest)
             }
         }
