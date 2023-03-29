@@ -21,6 +21,7 @@ subprojects {
     }
     tasks.withType<Test> {
         useJUnitPlatform()
+        testLogging.showStandardStreams = true
     }
     pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {
         extensions.configure<KotlinMultiplatformExtension> {
