@@ -103,6 +103,9 @@ subprojects {
             )
             sign(extensions.getByType<PublishingExtension>().publications)
         }
+        tasks.withType<PublishToMavenRepository>().configureEach {
+            mustRunAfter(tasks.withType<Sign>())
+        }
     }
 }
 
