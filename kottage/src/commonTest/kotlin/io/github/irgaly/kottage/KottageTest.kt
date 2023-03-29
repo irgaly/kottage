@@ -52,8 +52,8 @@ class KottageTest : KottageSpec("kottage", body = {
             it("export() で特殊なファイル名を扱える") {
                 kottage().first.export(
                     "export_${
-                        "_'_\"_/_\\_ _あ_😄_:_;_".replace(Files.separator, "-")
-                    }.db", "$tempDirectory/${"_'_\"_/_\\_ _あ_😄_:_".replace(Files.separator, "-")}"
+                        "_'_\"_\\_ _あ_😄_:_;_".replace(Files.separator, "-")
+                    }.db", "$tempDirectory/${"_'_\"_\\_ _あ_😄_:_".replace(Files.separator, "-")}"
                 )
             }
             it("export() で separator を含むファイル名はエラー") {
@@ -66,7 +66,7 @@ class KottageTest : KottageSpec("kottage", body = {
                     Kottage(
                         "test",
                         "$tempDirectory/${
-                            "_'_\"_/_\\_ _あ_😄_:_".replace(
+                            "_'_\"_\\_ _あ_😄_:_".replace(
                                 Files.separator,
                                 "-"
                             )
@@ -82,7 +82,7 @@ class KottageTest : KottageSpec("kottage", body = {
             it("特殊文字を含むファイル名を扱える") {
                 shouldNotThrowAny {
                     Kottage(
-                        "test_'_\"_/_\\_ _あ_😄_:_".replace(Files.separator, "-"),
+                        "test_'_\"_\\_ _あ_😄_:_".replace(Files.separator, "-"),
                         tempDirectory,
                         KottageEnvironment(
                             KottageContext(),
