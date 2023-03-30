@@ -24,6 +24,12 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 class KottageTest : KottageSpec("kottage", body = {
+    fun String.sanitizePath(): String {
+        // Windows で path に使えない文字を - へ置き換える
+        return if (Files.separator == "\\") {
+            replace("[\\\\/:*?\"<>|]".toRegex(), "-")
+        } else this
+    }
     describe("Kottage") {
         context("debug 機能") {
             it("getDatabaseStatus() で情報を取得できる") {
@@ -51,9 +57,8 @@ class KottageTest : KottageSpec("kottage", body = {
             }
             it("export() で特殊なファイル名を扱える") {
                 kottage().first.export(
-                    "export_${
-                        "_'_\"_\\_ _あ_😄_:_;_".replace(Files.separator, "-")
-                    }.db", "$tempDirectory/${"_'_\"_\\_ _あ_😄_:_".replace(Files.separator, "-")}"
+                    "export_'_\"_\\_ _あ_😄_:_;_.db".sanitizePath(),
+                    "$tempDirectory/${"_'_\"_\\_ _あ_😄_:_".sanitizePath()}"
                 )
             }
             it("export() で separator を含むファイル名はエラー") {
@@ -66,10 +71,7 @@ class KottageTest : KottageSpec("kottage", body = {
                     Kottage(
                         "test",
                         "$tempDirectory/${
-                            "_'_\"_\\_ _あ_😄_:_".replace(
-                                Files.separator,
-                                "-"
-                            )
+                            "_'_\"_\\_ _あ_😄_:_".sanitizePath()
                         }",
                         KottageEnvironment(
                             KottageContext(),
@@ -82,7 +84,7 @@ class KottageTest : KottageSpec("kottage", body = {
             it("特殊文字を含むファイル名を扱える") {
                 shouldNotThrowAny {
                     Kottage(
-                        "test_'_\"_\\_ _あ_😄_:_".replace(Files.separator, "-"),
+                        "test_'_\"_\\_ _あ_😄_:_".sanitizePath(),
                         tempDirectory,
                         KottageEnvironment(
                             KottageContext(),
