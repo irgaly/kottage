@@ -24,6 +24,7 @@ jobs:
         run: |
           ./gradlew jvmTestClasses
       - name: JS Browser / Nodejs Build
+        if: matrix.platform == 'macos-11'
         run: |
           ./gradlew jsTestClasses
       - name: Android Build
@@ -47,6 +48,7 @@ jobs:
         run: |
           ./gradlew jvmTest
       - name: JS Browser / Nodejs Test
+        if: matrix.platform == 'macos-11'
         run: |
           ./gradlew jsTest
       - name: Android Test
