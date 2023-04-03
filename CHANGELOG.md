@@ -1,3 +1,9 @@
+# v1.5.0 - 2023/04/03 JST
+
+#### Fix
+
+* fix: KottageContext constructor modifier [#138](https://github.com/irgaly/kottage/pull/138)
+
 # v1.5.0 - 2023/02/12 JST
 
 #### Changes

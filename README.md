@@ -43,7 +43,7 @@ plugins {
 kotlin {
     sourceSets {
         commonMain {
-            implementation("io.github.irgaly.kottage:kottage:1.5.0")
+            implementation("io.github.irgaly.kottage:kottage:1.5.1")
         }
     }
     // ...
@@ -64,7 +64,7 @@ plugins {
 
 dependencies {
     // You can use as JVM library directly
-    implementation("io.github.irgaly.kottage:kottage:1.5.0")
+    implementation("io.github.irgaly.kottage:kottage:1.5.1")
     // ...
 }
 ```
