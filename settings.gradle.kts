@@ -10,10 +10,10 @@ pluginManagement {
         id("com.android.application") version "7.4.0"
         id("com.android.library") version "7.4.0"
         id("io.kotest.multiplatform") version "5.5.1"
-        kotlin("android") version "1.7.10"
-        kotlin("multiplatform") version "1.7.10"
-        kotlin("jvm") version "1.7.10"
-        kotlin("plugin.serialization") version "1.7.10"
+        kotlin("android") version "1.8.20"
+        kotlin("multiplatform") version "1.8.20"
+        kotlin("jvm") version "1.8.20"
+        kotlin("plugin.serialization") version "1.8.20"
     }
 }
 dependencyResolutionManagement {
