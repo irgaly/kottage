@@ -30,6 +30,7 @@ include(
     ":kottage:core",
     ":kottage:core:test",
     ":sample:android",
+    ":sample:multiplatform",
     ":sample:js-browser",
     ":sample:js-nodejs"
 )
