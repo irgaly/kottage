@@ -1,15 +1,26 @@
 package io.github.irgaly.kottage
 
+import androidx.test.platform.app.InstrumentationRegistry
+import io.github.irgaly.kottage.platform.contextOf
+import io.github.irgaly.kottage.test.KottageSpec
 import io.kotest.core.spec.Spec
 import io.kotest.core.test.TestResult
 import io.kotest.engine.TestEngineLauncher
 import io.kotest.engine.listener.CollectingTestEngineListener
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import kotlin.reflect.KClass
 
 class AndroidTest {
+    companion object {
+        @BeforeAll
+        fun setup() {
+            KottageSpec.context = contextOf(InstrumentationRegistry.getInstrumentation().context)
+        }
+    }
+
     @Test
     fun kottageCacheTest() {
         executeTest(KottageCacheTest::class)

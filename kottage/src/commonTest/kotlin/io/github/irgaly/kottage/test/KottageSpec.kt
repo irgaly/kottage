@@ -2,7 +2,7 @@ package io.github.irgaly.kottage.test
 
 import io.github.irgaly.kottage.Kottage
 import io.github.irgaly.kottage.KottageOptions
-import io.github.irgaly.kottage.extension.buildKottage
+import io.github.irgaly.kottage.platform.KottageContext
 import io.github.irgaly.kottage.platform.Platform
 import io.github.irgaly.kottage.platform.TestCalendar
 import io.github.irgaly.test.extension.tempdir
@@ -28,6 +28,10 @@ open class KottageSpec(
     // dummy constructor
     constructor() : this("KottageSpec::dummy")
 
+    companion object {
+        var context: KottageContext = KottageContext()
+    }
+
     val tempDirectory: String
     val specScope: CoroutineScope
 
@@ -48,8 +52,25 @@ open class KottageSpec(
     fun kottage(
         name: String = this.name,
         scope: CoroutineScope = specScope,
+        context: KottageContext = Companion.context,
         builder: (KottageOptions.Builder.() -> Unit)? = null
-    ): Pair<Kottage, TestCalendar> = buildKottage(name, tempDirectory, scope, builder)
+    ): Pair<Kottage, TestCalendar> = buildKottage(name, tempDirectory, scope, context, builder)
+
+    fun buildKottage(
+        name: String,
+        directory: String,
+        scope: CoroutineScope,
+        context: KottageContext = Companion.context,
+        builder: (KottageOptions.Builder.() -> Unit)? = null
+    ): Pair<Kottage, TestCalendar> {
+        return io.github.irgaly.kottage.extension.buildKottage(
+            name,
+            directory,
+            scope,
+            context,
+            builder
+        )
+    }
 
     override fun test(name: String, test: suspend TestScope.() -> Unit) {
         if (Platform.isJs) {
