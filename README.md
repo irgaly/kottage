@@ -23,6 +23,11 @@ Kotlin Multiplatform Key-Value Store Local Cache Storage for Single Source of Tr
 
 * [New memory manager](https://github.com/JetBrains/kotlin/blob/master/kotlin-native/NEW_MM.md)
   enabled with Kotlin/Native platform.
+* SQLite3 dynamic link library on runtime environment
+    * Windows needs sqlite3.dll on library path or bundled with your application.
+        * Download from https://www.sqlite.org/download.html > sqlite-dll-win64-x64-3410200.zip
+    * macOS, iOS and Android platform has sqlite3 library, so you don't have to bundle it.
+    * Linux needs sqlite3 package on system.
 
 # Usage
 
@@ -380,17 +385,17 @@ val stringValue: String = storage.get("long_value") // => "value"
 Kottage is a Kotlin Multiplatform library. Please feel free to report a issue if it doesn't
 work correctly on these platforms.
 
-| Platform              | Target                                                         | Status                                                                                           |
-|-----------------------|----------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
-| Kotlin/JVM            | jvm                                                            | :white_check_mark: Supported, :white_check_mark: Tested                                          |
-| Kotlin/JS             | browser, nodejs                                                | :white_check_mark: Supported, :white_check_mark: Tested on macOS Chrome, macOS Safari and nodejs |
-| Kotlin/Android        | android                                                        | :white_check_mark: Supported, :tired_face: currently no automated unit tests.                    |
-| Kotlin/Native iOS     | iosArm64<br>iosX64(simulator)<br>iosSimulatorArm64             | :white_check_mark: Supported, :+1: Tested as Darwin on macOS                                     |
-| Kotlin/Native watchOS | watchosArm64<br>watchosX64(simulator)<br>watchosSimulatorArm64 | :white_check_mark: Supported, :+1: Tested as Darwin on macOS                                     |
-| Kotlin/Native tvOS    | tvosArm64<br>tvosX64(simulator)<br>tvosSimulatorArm64          | :white_check_mark: Supported, :+1: Tested as Darwin on macOS                                     |
-| Kotlin/Native macOS   | macosArm64<br>macosX64                                         | :white_check_mark: Supported, :white_check_mark: Tested                                          |
-| Kotlin/Native Linux   | linuxX64                                                       | :white_check_mark: Supported, :white_check_mark: Tested                                          |
-| Kotlin/Native Windows | mingwX64                                                       | :white_check_mark: Supported, :tired_face: currently no automated unit tests.                    |
+| Platform                          | Target                                                         | Status                                                        |
+|-----------------------------------|----------------------------------------------------------------|---------------------------------------------------------------|
+| Kotlin/JVM on Linux/macOS/Windows | jvm                                                            | :white_check_mark: Tested                                     |
+| Kotlin/JS on Linux/macOS/Windows  | browser, nodejs                                                | :white_check_mark: Tested<br/>browser on macOS Chrome, Safari |
+| Kotlin/Android                    | android                                                        | :white_check_mark: Tested                                     |
+| Kotlin/Native iOS                 | iosArm64<br>iosX64(simulator)<br>iosSimulatorArm64             | :white_check_mark: Tested                                     |
+| Kotlin/Native watchOS             | watchosArm64<br>watchosX64(simulator)<br>watchosSimulatorArm64 | :white_check_mark: (Tested as iosX64)                         |
+| Kotlin/Native tvOS                | tvosArm64<br>tvosX64(simulator)<br>tvosSimulatorArm64          | :white_check_mark: (Tested as iosX64)                         |
+| Kotlin/Native macOS               | macosArm64<br>macosX64                                         | :white_check_mark: Tested                                     |
+| Kotlin/Native Linux               | linuxX64                                                       | :white_check_mark: Tested                                     |
+| Kotlin/Native Windows             | mingwX64                                                       | :white_check_mark: Tested                                     |
 
 There is also [Kottage for SwiftPM](https://github.com/irgaly/kottage-package) that is **just for
 experimental** build.

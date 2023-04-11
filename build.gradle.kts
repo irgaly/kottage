@@ -21,6 +21,7 @@ subprojects {
     }
     tasks.withType<Test> {
         useJUnitPlatform()
+        testLogging.showStandardStreams = true
     }
     pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {
         extensions.configure<KotlinMultiplatformExtension> {
@@ -102,6 +103,9 @@ subprojects {
                 System.getenv("SIGNING_PGP_PASSWORD")
             )
             sign(extensions.getByType<PublishingExtension>().publications)
+        }
+        tasks.withType<PublishToMavenRepository>().configureEach {
+            mustRunAfter(tasks.withType<Sign>())
         }
     }
 }

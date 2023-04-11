@@ -14,11 +14,12 @@ fun buildKottage(
     name: String,
     directory: String,
     scope: CoroutineScope,
+    context: KottageContext,
     builder: (KottageOptions.Builder.() -> Unit)? = null
 ): Pair<Kottage, TestCalendar> {
     val calendar = TestCalendar(DateTime(2022, 1, 1).utc - 1.milliseconds)
     val environment = KottageEnvironment(
-        KottageContext(),
+        context,
         calendar,
         object : KottageLogger {
             override suspend fun debug(message: String) {

@@ -22,6 +22,11 @@ kotlin {
     js(IR) {
         nodejs()
     }
+    mingwX64 {
+        binaries.configureEach {
+            linkerOpts("-LC:/msys64/mingw64/lib", "-lsqlite3")
+        }
+    }
     sourceSets {
         commonMain {
             dependencies {

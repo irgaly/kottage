@@ -7,7 +7,7 @@ kotest = "5.5.1"
 gradle-android = "7.4.0-alpha10"
 gradle-android-compile-sdk = "33"
 gradle-android-target-sdk = "33"
-gradle-android-min-sdk = "16"
+gradle-android-min-sdk = "21"
 sqldelight = "1.5.3"
 
 [libraries]
@@ -31,6 +31,10 @@ compose-navigation = { module = "androidx.navigation:navigation-compose", versio
 test-kotest-runner = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 test-kotest-assertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 test-kotest-engine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
+test-android-junit5 = { module = "org.junit.jupiter:junit-jupiter-api", version = "5.9.2" }
+test-android-junit5-core = { module = "de.mannodermaus.junit5:android-test-core", version = "1.3.0" }
+test-android-junit5-runner = { module = "de.mannodermaus.junit5:android-test-runner", version = "1.3.0" }
+test-android-runner = { module = "androidx.test:runner", version = "1.5.2" }
 test-mockk = { module = "io.mockk:mockk", version = "1.13.2" }
 test-turbine = { module = "app.cash.turbine:turbine", version = "0.12.1" }
 sqldelight-driver-android = { module = "com.squareup.sqldelight:android-driver", version.ref = "sqldelight" }
@@ -46,6 +50,10 @@ faker = { module = "io.github.serpro69:kotlin-faker", version = "1.12.0" }
 test-common = [
     "kotlin-reflect", "kotlinx-coroutines-test", "test-kotest-engine",
     "test-kotest-assertions", "test-turbine"]
+test-android-instrumented = [
+    "test-kotest-assertions", "test-android-junit5", "test-android-junit5-core", "test-android-runner",
+    "kotlinx-coroutines-test", "test-turbine"
+]
 compose = ["compose-material", "compose-material3", "compose-uiTooling", "compose-paging", "compose-navigation"]
 
 [plugins]
@@ -57,3 +65,4 @@ buildlogic-android-library = { id = "build-logic.android.library" }
 buildlogic-multiplatform-library = { id = "build-logic.multiplatform.library" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "kotlin" }
 nexus-publish = { id = "io.github.gradle-nexus.publish-plugin", version = "1.1.0" }
+android-junit5 = { id = "de.mannodermaus.android-junit5", version = "1.8.2.1" }
