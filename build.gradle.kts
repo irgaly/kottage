@@ -11,6 +11,9 @@ plugins {
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.kotlinx.serialization) apply false
     alias(libs.plugins.kotest.multiplatform) apply false
+    alias(libs.plugins.buildlogic.multiplatform.library) apply false
+    alias(libs.plugins.buildlogic.android.application) apply false
+    alias(libs.plugins.buildlogic.android.library) apply false
     alias(libs.plugins.buildlogic.dependencygraph)
     alias(libs.plugins.nexus.publish)
 }

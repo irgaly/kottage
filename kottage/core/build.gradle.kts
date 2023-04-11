@@ -1,7 +1,7 @@
 plugins {
-    id(libs.plugins.buildlogic.multiplatform.library.get().pluginId)
-    id(libs.plugins.buildlogic.android.library.get().pluginId)
-    kotlin("plugin.serialization")
+    alias(libs.plugins.buildlogic.multiplatform.library)
+    alias(libs.plugins.buildlogic.android.library)
+    alias(libs.plugins.kotlinx.serialization)
 }
 
 android {
