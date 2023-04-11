@@ -61,7 +61,7 @@ kotlin {
             }
         }
     }
-    if (System.getenv().containsKey("GITHUB_ACTIONS")
+    if (providers.environmentVariable("GITHUB_ACTIONS").isPresent
         && OperatingSystem.current().isLinux
     ) {
         targets.withType<KotlinNativeTarget> {
