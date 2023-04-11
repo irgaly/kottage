@@ -63,6 +63,7 @@ jobs:
       - name: Windows Test
         if: matrix.platform == 'windows-latest'
         run: |
+          cp -f C:/msys64/mingw64/bin/libsqlite3-0.dll kottage/build/bin/mingwX64/debugTest/
           ./gradlew mingwX64Test
       - name: iOS Test
         if: matrix.platform == 'macos-11'
