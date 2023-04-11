@@ -58,7 +58,7 @@ kotlin {
     // JS
     js(IR) {
         browser {
-            if (System.getenv().containsKey("GITHUB_ACTIONS")
+            if (providers.environmentVariable("GITHUB_ACTIONS").isPresent
                 && OperatingSystem.current().isMacOsX
             ) {
                 testTask {
@@ -141,7 +141,7 @@ kotlin {
                 // https://github.com/cashapp/sqldelight/issues/3296
                 // https://github.com/cashapp/sqldelight/blob/ee8eb4390dedaaf735937896aef9f0ed56f3281e/drivers/native-driver/build.gradle
                 linkerOpts.add("-lsqlite3")
-                if (System.getenv().containsKey("GITHUB_ACTIONS")
+                if (providers.environmentVariable("GITHUB_ACTIONS").isPresent
                     && OperatingSystem.current().isLinux
                 ) {
                     linkerOpts.add("-L/usr/lib/x86_64-linux-gnu")
