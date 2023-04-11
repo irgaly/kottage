@@ -109,8 +109,7 @@ kotlin {
         val androidMain by getting {
             dependsOn(sqliteMain)
         }
-        //val androidInstrumentedTest by getting {
-        val androidAndroidTest by getting {
+        val androidInstrumentedTest by getting {
             dependsOn(commonTest.get())
             dependencies {
                 implementation(libs.bundles.test.android.instrumented)
