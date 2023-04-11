@@ -22,7 +22,7 @@ kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-
 androidx-core = { module = "androidx.core:core-ktx", version = "1.10.0" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.6.1" }
 androidx-lifecycle = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version = "2.6.1" }
-compose-bom = { group = "androidx.compose", name = "compose-bom", version = "2022.12.00" }
+compose-bom = { group = "androidx.compose", name = "compose-bom", version = "2023.04.00" }
 compose-material = { module = "androidx.compose.material:material" }
 compose-material3 = { module = "androidx.compose.material3:material3" }
 compose-uiTooling = { module = "androidx.compose.ui:ui-tooling" }
