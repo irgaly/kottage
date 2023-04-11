@@ -10,7 +10,7 @@ dependencies {
 gradlePlugin {
     plugins {
         register("android.application") {
-            id = "build-logic.android.application"
+            id = libs.plugins.buildlogic.android.application.get().pluginId
             implementationClass = "io.github.irgaly.buildlogic.AndroidApplicationPlugin"
         }
         register("android.library") {
@@ -22,7 +22,7 @@ gradlePlugin {
             implementationClass = "io.github.irgaly.buildlogic.MultiplatformLibraryPlugin"
         }
         register("dependency-graph") {
-            id = "build-logic.dependency-graph"
+            id = libs.plugins.buildlogic.dependencygraph.get().pluginId
             implementationClass = "io.github.irgaly.buildlogic.ProjectDependencyGraphPlugin"
         }
     }
