@@ -5,11 +5,16 @@ import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    `kotlin-dsl` apply false
-    kotlin("multiplatform") apply false
-    id("com.android.application") apply false
-    id(libs.plugins.kotest.multiplatform.get().pluginId) apply false
-    id("build-logic.dependency-graph")
+    alias(libs.plugins.kotlin.multiplatform) apply false
+    alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.kotlinx.serialization) apply false
+    alias(libs.plugins.kotest.multiplatform) apply false
+    alias(libs.plugins.buildlogic.multiplatform.library) apply false
+    alias(libs.plugins.buildlogic.android.application) apply false
+    alias(libs.plugins.buildlogic.android.library) apply false
+    alias(libs.plugins.buildlogic.dependencygraph)
     alias(libs.plugins.nexus.publish)
 }
 
@@ -23,20 +28,23 @@ subprojects {
         useJUnitPlatform()
         testLogging.showStandardStreams = true
     }
-    pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {
-        extensions.configure<KotlinMultiplatformExtension> {
-            sourceSets {
-                val commonTest by getting {
-                    dependencies {
-                        implementation(libs.bundles.test.common)
+    afterEvaluate {
+        // libs アクセスのための afterEvaluate
+        pluginManager.withPlugin(libs.plugins.kotlin.multiplatform.get().pluginId) {
+            extensions.configure<KotlinMultiplatformExtension> {
+                sourceSets {
+                    val commonTest by getting {
+                        dependencies {
+                            implementation(libs.bundles.test.common)
+                        }
                     }
                 }
-            }
-            afterEvaluate {
-                sourceSets {
-                    findByName("jvmTest")?.apply {
-                        dependencies {
-                            implementation(libs.test.kotest.runner)
+                afterEvaluate {
+                    sourceSets {
+                        findByName("jvmTest")?.apply {
+                            dependencies {
+                                implementation(libs.test.kotest.runner)
+                            }
                         }
                     }
                 }

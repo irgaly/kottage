@@ -74,18 +74,6 @@ dependencies {
 }
 ```
 
-## Enable Kotlin/Native New Memory Manager
-
-Enable Kotlin/Native New Memory Manger in gradle.properties if your project using before Kotlin
-1.7.20.
-
-`gradle.properties`
-
-```properties
-# memoryModel experimental is enabled by default from Kotlin 1.7.20
-kotlin.native.binary.memoryModel=experimental
-```
-
 ## Use Kottage
 
 Use Kottage as KVS cache or KVS storage.

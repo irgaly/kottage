@@ -1,14 +1,14 @@
 [versions]
 kottage = "1.5.1"
-kotlin = "1.7.10"
+kotlin = "1.8.10"
 kotlinx-coroutines = "1.6.4"
-compose-compiler = "1.3.1"
-kotest = "5.5.1"
-gradle-android = "7.4.0-alpha10"
+compose-compiler = "1.4.3"
+kotest = "5.5.4"
+gradle-android = "7.4.2"
 gradle-android-compile-sdk = "33"
 gradle-android-target-sdk = "33"
 gradle-android-min-sdk = "21"
-sqldelight = "1.5.3"
+sqldelight = "1.5.5"
 
 [libraries]
 gradle-android = { module = "com.android.tools.build:gradle", version.ref = "gradle-android" }
@@ -57,12 +57,18 @@ test-android-instrumented = [
 compose = ["compose-material", "compose-material3", "compose-uiTooling", "compose-paging", "compose-navigation"]
 
 [plugins]
-kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization" }
-kotest-multiplatform = { id = "io.kotest.multiplatform" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+android-application = { id = "com.android.application", version.ref = "gradle-android" }
+android-library = { id = "com.android.library", version.ref = "gradle-android" }
+kotest-multiplatform = { id = "io.kotest.multiplatform", version.ref = "kotest" }
 compose = { id = "org.jetbrains.compose", version = "1.2.1" }
 sqldelight = { id = "com.squareup.sqldelight", version.ref = "sqldelight" }
-buildlogic-android-library = { id = "build-logic.android.library" }
-buildlogic-multiplatform-library = { id = "build-logic.multiplatform.library" }
-dokka = { id = "org.jetbrains.dokka", version.ref = "kotlin" }
+buildlogic-android-application = { id = "build-logic.android.application", version = "unspecified" }
+buildlogic-android-library = { id = "build-logic.android.library", version = "unspecified" }
+buildlogic-multiplatform-library = { id = "build-logic.multiplatform.library", version = "unspecified" }
+buildlogic-dependencygraph = { id = "build-logic.dependency-graph", version = "unspecified" }
+dokka = { id = "org.jetbrains.dokka", version = "1.8.10" }
 nexus-publish = { id = "io.github.gradle-nexus.publish-plugin", version = "1.2.0" }
 android-junit5 = { id = "de.mannodermaus.android-junit5", version = "1.8.2.1" }

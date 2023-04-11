@@ -1,5 +1,5 @@
 plugins {
-    id(libs.plugins.buildlogic.multiplatform.library.get().pluginId)
+    alias(libs.plugins.buildlogic.multiplatform.library)
 }
 
 kotlin {

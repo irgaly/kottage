@@ -1,6 +1,6 @@
 plugins {
-    id("build-logic.android.application")
-    kotlin("plugin.serialization")
+    alias(libs.plugins.buildlogic.android.application)
+    alias(libs.plugins.kotlinx.serialization)
 }
 
 android {

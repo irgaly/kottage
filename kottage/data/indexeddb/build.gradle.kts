@@ -1,6 +1,6 @@
 plugins {
-    kotlin("multiplatform")
-    id(libs.plugins.kotest.multiplatform.get().pluginId)
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotest.multiplatform)
 }
 
 kotlin {

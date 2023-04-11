@@ -2,8 +2,8 @@ import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
-    id(libs.plugins.buildlogic.multiplatform.library.get().pluginId)
-    id(libs.plugins.buildlogic.android.library.get().pluginId)
+    alias(libs.plugins.buildlogic.multiplatform.library)
+    alias(libs.plugins.buildlogic.android.library)
     alias(libs.plugins.sqldelight)
 }
 

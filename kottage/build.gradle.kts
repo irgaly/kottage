@@ -5,9 +5,9 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 import org.jetbrains.kotlin.gradle.targets.js.testing.KotlinJsTest
 
 plugins {
-    id(libs.plugins.buildlogic.multiplatform.library.get().pluginId)
-    id(libs.plugins.buildlogic.android.library.get().pluginId)
-    kotlin("plugin.serialization")
+    alias(libs.plugins.buildlogic.multiplatform.library)
+    alias(libs.plugins.buildlogic.android.library)
+    alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.dokka)
     alias(libs.plugins.android.junit5)
 }
@@ -109,8 +109,7 @@ kotlin {
         val androidMain by getting {
             dependsOn(sqliteMain)
         }
-        //val androidInstrumentedTest by getting {
-        val androidAndroidTest by getting {
+        val androidInstrumentedTest by getting {
             dependsOn(commonTest.get())
             dependencies {
                 implementation(libs.bundles.test.android.instrumented)
