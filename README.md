@@ -26,8 +26,11 @@ Kotlin Multiplatform Key-Value Store Local Cache Storage for Single Source of Tr
 * SQLite3 dynamic link library on runtime environment
     * Windows needs sqlite3.dll on library path or bundled with your application.
         * Download from https://www.sqlite.org/download.html > sqlite-dll-win64-x64-3410200.zip
-    * macOS, iOS and Android platform has sqlite3 library, so you don't have to bundle it.
     * Linux needs sqlite3 package on system.
+    * macOS and iOS platform has sqlite3 library, so you don't have to bundle it.
+    * Android has SQLiteHelper class, no dynamic libraries are needed.
+    * JVM has JDBC SQLite driver, no dynamic libraries are needed.
+    * Nodejs bundles SQLite3 binary, no dynamic libraries are needed.
 
 # Usage
 
