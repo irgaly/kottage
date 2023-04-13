@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ macos-11, windows-latest ]
+        platform: [ ubuntu-latest, macos-11, windows-latest ]
     runs-on: ${{ matrix.platform }}
     defaults:
       run:
@@ -24,7 +24,6 @@ jobs:
         run: |
           ./gradlew jvmTestClasses
       - name: JS Browser / Nodejs Build
-        if: matrix.platform == 'macos-11'
         run: |
           ./gradlew jsTestClasses
       - name: Android Build
@@ -47,10 +46,13 @@ jobs:
       - name: JVM Test
         run: |
           ./gradlew jvmTest
-      - name: JS Browser / Nodejs Test
+      - name: JS Nodejs Test
+        run: |
+          ./gradlew jsNodeTest
+      - name: JS Browser
         if: matrix.platform == 'macos-11'
         run: |
-          ./gradlew jsTest
+          ./gradlew jsBrowserTest
       - name: Android Test
         uses: reactivecircus/android-emulator-runner@v2
         if: matrix.platform == 'macos-11'
