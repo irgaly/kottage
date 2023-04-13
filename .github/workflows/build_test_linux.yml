@@ -11,6 +11,10 @@ jobs:
     steps:
       - name: Setup Container
         run: |
+          # Kotlin/Native では古い glibc (2.19) を使用している
+          # 新しすぎる glibc ではビルドができない
+          # /usr/lib/x86_64-linux-gnu/libsqlite3.so: error: undefined reference to 'fcntl64', version 'GLIBC_2.28'
+          # /usr/lib/x86_64-linux-gnu/libsqlite3.so: error: undefined reference to 'log', version 'GLIBC_2.29'
           # glibc 2.27 以下を使うために gcc:7.3 イメージを利用
           echo "deb [trusted=yes] http://deb.debian.org/debian stretch-backports main" >> /etc/apt/sources.list
           apt update
