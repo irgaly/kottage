@@ -151,8 +151,8 @@ internal class KottageDatabaseManager(
     suspend fun onEventCreated() {
         val operator = operator.await()
         val limit = 100L
-        _eventFlow.updateWithLock { lastEvent, emit ->
-            var lastEventTime = lastEvent.time
+        _eventFlow.updateWithLock { latestEventTime, emit ->
+            var lastEventTime = latestEventTime
             var remains = true
             while (remains) {
                 val events = databaseConnection.transactionWithResult {
@@ -170,6 +170,7 @@ internal class KottageDatabaseManager(
                     emit(it)
                 }
             }
+            lastEventTime
         }
     }
 

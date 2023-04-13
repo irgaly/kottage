@@ -2,7 +2,9 @@ package io.github.irgaly.kottage.internal.model
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -14,28 +16,21 @@ internal class ItemEventFlow(initialTime: Long, scope: CoroutineScope) {
         // イベント送信漏れが発生しないように SUSPEND
         onBufferOverflow = BufferOverflow.SUSPEND
     )
-    private val lastEvent = source.map {
-        Event(it.createdAt, it)
-    }.stateIn(scope, SharingStarted.Eagerly, Event(initialTime, null))
+    private var lastEventTime: Long = initialTime
 
     init {
         flow = source.asSharedFlow()
     }
 
-    suspend fun updateWithLock(block: suspend (latestEvent: Event, emit: suspend (event: ItemEvent) -> Unit) -> Unit) {
+    suspend fun updateWithLock(block: suspend (latestEventTime: Long, emit: suspend (event: ItemEvent) -> Unit) -> Long) {
         mutex.withLock {
-            block(lastEvent.value, source::emit)
+            lastEventTime = block(lastEventTime, source::emit)
         }
     }
 
-    suspend fun withLock(block: suspend (latestEvent: Event) -> Unit) {
+    suspend fun withLock(block: suspend (latestEventTime: Long) -> Unit) {
         mutex.withLock {
-            block(lastEvent.value)
+            block(lastEventTime)
         }
     }
-
-    data class Event(
-        val time: Long,
-        val event: ItemEvent?
-    )
 }

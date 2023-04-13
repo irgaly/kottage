@@ -36,6 +36,7 @@ class KottageEventFlow internal constructor(
 ): Flow<KottageEvent> {
     private var lastEventTime: Long? = initialTime
     private val subscribing = Mutex()
+    private val initializing = Mutex(locked = true)
 
     @OptIn(FlowPreview::class)
     private val flow: Flow<KottageEvent> = flow {
@@ -116,6 +117,7 @@ class KottageEventFlow internal constructor(
                         bridgeFlow.emit(KottageEvent.from(it))
                     }
                 }
+                initializing.unlock()
             }
         })
     }.flattenConcat()
@@ -125,6 +127,18 @@ class KottageEventFlow internal constructor(
 
     override suspend fun collect(collector: FlowCollector<KottageEvent>) {
         flow.collect(collector)
+    }
+
+    /**
+     * ensure and wait until subscription starts.
+     *
+     * This method is mainly for debug purpose.
+     */
+    suspend fun ensureSubscribed() {
+        if (initializing.isLocked) {
+            initializing.lock()
+            initializing.unlock()
+        }
     }
 
     internal sealed interface EventFlowType {
