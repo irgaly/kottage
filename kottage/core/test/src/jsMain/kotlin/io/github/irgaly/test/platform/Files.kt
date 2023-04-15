@@ -10,7 +10,7 @@ actual class Files {
             return if (isBrowser()) {
                 "js-browser-dummy-temporary-directory"
             } else {
-                fs.mkdtempSync(path.join(os.tmpdir(), "")).unsafeCast<String>()
+                fs.mkdtempSync(path.join(os.tmpdir(), "tmpdir.")).unsafeCast<String>()
             }
         }
 

@@ -2,9 +2,8 @@ package io.github.irgaly.kottage
 
 import com.soywiz.klock.DateTime
 import io.github.irgaly.kottage.encoder.KottageEncoder
-import io.github.irgaly.kottage.extension.buildKottage
-import io.github.irgaly.kottage.platform.Files
 import io.github.irgaly.kottage.platform.KottageContext
+import io.github.irgaly.kottage.platform.Platform
 import io.github.irgaly.kottage.platform.TestCalendar
 import io.github.irgaly.kottage.property.KottageStore
 import io.github.irgaly.kottage.test.KottageSpec
@@ -26,7 +25,7 @@ import kotlin.time.Duration.Companion.seconds
 class KottageTest : KottageSpec("kottage", body = {
     fun String.sanitizePath(): String {
         // Windows で path に使えない文字を - へ置き換える
-        return if (Files.separator == "\\") {
+        return if (Platform.isJvmWindows || Platform.isNodejsWindows || Platform.isWindows) {
             replace("[\\\\/:*?\"<>|]".toRegex(), "-")
         } else this
     }
