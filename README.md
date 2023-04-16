@@ -665,8 +665,15 @@ plugins.withType<NodeJsRootPlugin> {
         val installBetterSqlite3 by tasks.registering(Exec::class) {
             val nodeExtension = this@configure
             val nodeEnv = nodeExtension.requireConfigured()
-            val node = nodeEnv.nodeExecutable
-            val npm = "\"$node\" \"${nodeEnv.nodeDir}/lib/node_modules/npm/bin/npm-cli.js\""
+            val node = nodeEnv.nodeExecutable.replace(File.separator, "/")
+            val nodeDir = nodeEnv.nodeDir.path.replace(File.separator, "/")
+            val nodeBinDir = nodeEnv.nodeBinDir.path.replace(File.separator, "/")
+            val npmCli = if (OperatingSystem.current().isWindows) {
+                "$nodeDir/node_modules/npm/bin/npm-cli.js"
+            } else {
+                "$nodeDir/lib/node_modules/npm/bin/npm-cli.js"
+            }
+            val npm = "\"$node\" \"$npmCli\""
             val betterSqlite3 = buildDir.resolve("js/node_modules/better-sqlite3")
             dependsOn(tasks.withType<KotlinNpmInstallTask>())
             inputs.files(betterSqlite3.resolve("package.json"))
@@ -674,12 +681,20 @@ plugins.withType<NodeJsRootPlugin> {
             outputs.files(betterSqlite3.resolve("build/Release/better_sqlite3.node"))
             outputs.cacheIf { true }
             workingDir = betterSqlite3
-            commandLine =
+            commandLine = if (OperatingSystem.current().isWindows) {
                 listOf(
                     "sh",
                     "-c",
-                    "PATH=\"${nodeEnv.nodeDir}/bin:\$PATH\" $npm run install --verbose"
+                    // use pwd command to convert C:/... -> /c/...
+                    "PATH=\$(cd $nodeBinDir;pwd):\$PATH $npm run install --verbose"
                 )
+            } else {
+                listOf(
+                    "sh",
+                    "-c",
+                    "PATH=\"$nodeBinDir:\$PATH\" $npm run install --verbose"
+                )
+            }
         }
     }
 }
