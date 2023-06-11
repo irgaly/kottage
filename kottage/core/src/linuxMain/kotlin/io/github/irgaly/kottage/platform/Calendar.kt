@@ -12,6 +12,7 @@ import platform.posix.timespec
 @OptIn(ExperimentalForeignApi::class)
 actual class Calendar {
     actual companion object {
+        @OptIn(ExperimentalForeignApi::class)
         actual fun getUnixTimeMillis(): Long {
             return memScoped {
                 val spec = alloc<timespec>()

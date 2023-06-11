@@ -22,7 +22,7 @@ actual class Files {
                     }
                 }
                 if (parentExists) {
-                    (mkdir(directoryPath, 755U) == 0)
+                    (mkdir(directoryPath, 755u) == 0)
                 } else false
             }
         }
