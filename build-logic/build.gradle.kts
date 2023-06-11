@@ -1,12 +1,10 @@
 plugins {
     `kotlin-dsl`
 }
-
 dependencies {
     implementation(libs.gradle.kotlin)
     implementation(libs.gradle.android)
 }
-
 gradlePlugin {
     plugins {
         register("android.application") {
@@ -26,4 +24,7 @@ gradlePlugin {
             implementationClass = "io.github.irgaly.buildlogic.ProjectDependencyGraphPlugin"
         }
     }
+}
+kotlin {
+    //jvmToolchain(11)
 }

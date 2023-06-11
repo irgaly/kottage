@@ -1,5 +1,6 @@
 import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
 import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask
@@ -32,6 +33,9 @@ subprojects {
     afterEvaluate {
         // libs アクセスのための afterEvaluate
         pluginManager.withPlugin(libs.plugins.kotlin.multiplatform.get().pluginId) {
+            extensions.configure<KotlinProjectExtension> {
+                jvmToolchain(11)
+            }
             extensions.configure<KotlinMultiplatformExtension> {
                 sourceSets {
                     val commonTest by getting {
