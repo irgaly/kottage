@@ -16,7 +16,8 @@ jobs:
           # /usr/lib/x86_64-linux-gnu/libsqlite3.so: error: undefined reference to 'fcntl64', version 'GLIBC_2.28'
           # /usr/lib/x86_64-linux-gnu/libsqlite3.so: error: undefined reference to 'log', version 'GLIBC_2.29'
           # glibc 2.27 以下を使うために gcc:7.3 イメージを利用
-          echo "deb [trusted=yes] http://deb.debian.org/debian stretch-backports main" >> /etc/apt/sources.list
+          echo "deb [trusted=yes] http://archive.debian.org/debian stretch-backports main" >> /etc/apt/sources.list
+          sed -i -e 's/deb.debian.org/archive.debian.org/g' -e 's|security.debian.org|archive.debian.org/|g' -e '/stretch-updates/d' /etc/apt/sources.list
           apt update
           # VACUUM INTO のために sqlite 3.27 以上にアップデート
           apt-get -yt stretch-backports install libsqlite3-dev
