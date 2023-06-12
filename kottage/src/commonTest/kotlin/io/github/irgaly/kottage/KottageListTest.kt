@@ -1,11 +1,11 @@
 package io.github.irgaly.kottage
 
-import com.soywiz.klock.days
-import com.soywiz.klock.hours
 import io.github.irgaly.kottage.test.KottageSpec
 import io.github.irgaly.test.extension.duration
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import korlibs.time.days
+import korlibs.time.hours
 
 class KottageListTest : KottageSpec("kottage_list", body = {
     val printListStatus = false

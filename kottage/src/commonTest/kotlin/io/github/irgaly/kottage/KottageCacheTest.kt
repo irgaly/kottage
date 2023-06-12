@@ -1,14 +1,14 @@
 package io.github.irgaly.kottage
 
-import com.soywiz.klock.DateTime
-import com.soywiz.klock.days
-import com.soywiz.klock.milliseconds
 import io.github.irgaly.kottage.strategy.KottageFifoStrategy
 import io.github.irgaly.kottage.strategy.KottageLruStrategy
 import io.github.irgaly.kottage.test.KottageSpec
 import io.github.irgaly.test.extension.duration
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
+import korlibs.time.DateTime
+import korlibs.time.days
+import korlibs.time.milliseconds
 
 class KottageCacheTest : KottageSpec("kottage_cache", body = {
     describe("Kottage Cache Test") {
