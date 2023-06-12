@@ -1,13 +1,13 @@
 package io.github.irgaly.kottage.extension
 
-import com.soywiz.klock.DateTime
-import com.soywiz.klock.milliseconds
 import io.github.irgaly.kottage.Kottage
 import io.github.irgaly.kottage.KottageEnvironment
 import io.github.irgaly.kottage.KottageOptions
 import io.github.irgaly.kottage.platform.KottageContext
 import io.github.irgaly.kottage.platform.KottageLogger
 import io.github.irgaly.kottage.platform.TestCalendar
+import korlibs.time.DateTime
+import korlibs.time.milliseconds
 import kotlinx.coroutines.CoroutineScope
 
 fun buildKottage(

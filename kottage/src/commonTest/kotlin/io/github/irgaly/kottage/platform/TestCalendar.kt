@@ -1,7 +1,7 @@
 package io.github.irgaly.kottage.platform
 
-import com.soywiz.klock.DateTime
-import com.soywiz.klock.DateTimeTz
+import korlibs.time.DateTime
+import korlibs.time.DateTimeTz
 
 data class TestCalendar(
     var now: DateTimeTz

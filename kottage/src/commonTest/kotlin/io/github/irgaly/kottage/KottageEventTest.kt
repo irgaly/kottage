@@ -1,12 +1,12 @@
 package io.github.irgaly.kottage
 
 import app.cash.turbine.test
-import com.soywiz.klock.DateTime
-import com.soywiz.klock.seconds
 import io.github.irgaly.kottage.test.KottageSpec
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import korlibs.time.DateTime
+import korlibs.time.seconds
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch

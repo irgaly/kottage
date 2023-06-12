@@ -1,10 +1,10 @@
 package io.github.irgaly.kottage
 
-import com.soywiz.klock.DateTime
 import io.github.irgaly.kottage.platform.KottageContext
 import io.github.irgaly.kottage.platform.TestCalendar
 import io.github.irgaly.kottage.test.KottageSpec
 import io.kotest.matchers.shouldBe
+import korlibs.time.DateTime
 
 class KottageMigrationTest : KottageSpec("migration", body = {
     describe("Database Migration") {

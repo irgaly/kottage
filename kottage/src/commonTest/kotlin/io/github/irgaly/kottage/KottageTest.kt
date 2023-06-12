@@ -1,6 +1,5 @@
 package io.github.irgaly.kottage
 
-import com.soywiz.klock.DateTime
 import io.github.irgaly.kottage.encoder.KottageEncoder
 import io.github.irgaly.kottage.platform.KottageContext
 import io.github.irgaly.kottage.platform.Platform
@@ -12,6 +11,7 @@ import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldNotBeEmpty
+import korlibs.time.DateTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel

@@ -1,6 +1,6 @@
 package io.github.irgaly.test.extension
 
-import com.soywiz.klock.TimeSpan
+import korlibs.time.TimeSpan
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
