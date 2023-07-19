@@ -1,8 +1,25 @@
 package io.github.irgaly.test.platform
 
-import kotlinx.cinterop.*
-import platform.Foundation.*
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.ObjCObjectVar
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.pointed
+import kotlinx.cinterop.ptr
+import kotlinx.cinterop.value
+import platform.Foundation.NSError
+import platform.Foundation.NSFileManager
+import platform.Foundation.NSItemReplacementDirectory
+import platform.Foundation.NSURL
+import platform.Foundation.NSUserDomainMask
+import platform.Foundation.temporaryDirectory
+import kotlin.Boolean
+import kotlin.Exception
+import kotlin.OptIn
+import kotlin.String
+import kotlin.checkNotNull
 
+@OptIn(ExperimentalForeignApi::class)
 actual class Files {
     actual companion object {
         actual fun createTemporaryDirectory(): String {
