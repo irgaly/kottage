@@ -48,11 +48,14 @@ kotlin {
             export(libs.kotlinx.serialization)
         }
     }
-    ios(configure = configureXcf)
+    iosArm64(configure = configureXcf)
+    iosX64(configure = configureXcf)
     iosSimulatorArm64(configure = configureXcf)
-    watchos(configure = configureXcf)
+    watchosArm64(configure = configureXcf)
+    watchosX64(configure = configureXcf)
     watchosSimulatorArm64(configure = configureXcf)
-    tvos(configure = configureXcf)
+    tvosArm64(configure = configureXcf)
+    tvosX64(configure = configureXcf)
     tvosSimulatorArm64(configure = configureXcf)
     macosArm64(configure = configureXcf)
     // JS
