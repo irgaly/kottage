@@ -2,7 +2,7 @@
 kottage = "1.5.1"
 kotlin = "1.8.20"
 kotlinx-coroutines = "1.7.1"
-compose-compiler = "1.4.3"
+compose-compiler = "1.4.6"
 kotest = "5.7.0"
 gradle-android = "7.4.2"
 gradle-android-compile-sdk = "33"
