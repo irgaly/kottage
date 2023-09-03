@@ -13,6 +13,7 @@ import platform.posix.remove
 
 @OptIn(ExperimentalForeignApi::class)
 actual class Files {
+    @OptIn(ExperimentalForeignApi::class)
     actual companion object {
         actual fun createTemporaryDirectory(): String {
             val tempDirectory =
