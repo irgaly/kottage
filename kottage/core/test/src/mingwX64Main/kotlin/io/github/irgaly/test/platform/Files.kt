@@ -1,5 +1,6 @@
 package io.github.irgaly.test.platform
 
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.allocArray
 import kotlinx.cinterop.memScoped
@@ -23,6 +24,7 @@ import platform.windows.UUID
 import platform.windows.UuidCreate
 import platform.windows.UuidToStringW
 
+@OptIn(ExperimentalForeignApi::class)
 actual class Files {
     actual companion object {
         actual fun createTemporaryDirectory(): String {
@@ -30,7 +32,7 @@ actual class Files {
                 val tempPathBuffer = allocArray<TCHARVar>(MAX_PATH)
                 val uuid = alloc<UUID>()
                 val rpcString = alloc<RPC_WSTRVar>()
-                val result = GetTempPathW(MAX_PATH, tempPathBuffer)
+                val result = GetTempPathW(MAX_PATH.toUInt(), tempPathBuffer)
                 if (result == 0U || MAX_PATH.toUInt() < result) {
                     error("GetTempPathW error")
                 }

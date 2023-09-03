@@ -1,7 +1,17 @@
 package io.github.irgaly.kottage.platform
-import kotlinx.cinterop.*
-import platform.windows.*
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.ptr
+import kotlinx.cinterop.toKString
+import kotlinx.cinterop.value
+import platform.windows.RPC_WSTRVar
+import platform.windows.RpcStringFreeW
+import platform.windows.UUID
+import platform.windows.UuidCreateSequential
+import platform.windows.UuidToStringW
 
+@OptIn(ExperimentalForeignApi::class)
 actual class Id {
     actual companion object {
         actual fun generateUuidV4(): String {

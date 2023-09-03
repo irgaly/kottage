@@ -1,10 +1,12 @@
 package io.github.irgaly.kottage.platform
 
+import kotlinx.cinterop.ExperimentalForeignApi
 import platform.windows.ERROR_SUCCESS
 import platform.windows.GetFileAttributesW
 import platform.windows.INVALID_FILE_ATTRIBUTES
 import platform.windows.SHCreateDirectoryExW
 
+@OptIn(ExperimentalForeignApi::class)
 actual class Files {
     actual companion object {
         actual fun exists(path: String): Boolean {

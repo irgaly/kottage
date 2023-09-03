@@ -1,5 +1,6 @@
 package io.github.irgaly.test.platform
 
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.cstr
 import kotlinx.cinterop.staticCFunction
 import kotlinx.cinterop.toKString
@@ -10,6 +11,7 @@ import platform.posix.mkdtemp
 import platform.posix.nftw
 import platform.posix.remove
 
+@OptIn(ExperimentalForeignApi::class)
 actual class Files {
     actual companion object {
         actual fun createTemporaryDirectory(): String {
