@@ -1,6 +1,5 @@
 package io.github.irgaly.kottage.internal.repository
 
-import com.squareup.sqldelight.db.use
 import io.github.irgaly.kottage.data.sqlite.Item_list_stats
 import io.github.irgaly.kottage.data.sqlite.KottageDatabase
 import io.github.irgaly.kottage.internal.database.Transaction
@@ -134,11 +133,8 @@ internal class KottageSqliteItemListRepository(
     ) {
         database.item_list_statsQueries
             .selectAllItemListType()
-            .execute().use { cursor ->
-                while (cursor.next()) {
-                    val itemListType = checkNotNull(cursor.getString(0))
-                    receiver(itemListType)
-                }
+            .executeAsList().forEach { itemListType ->
+                receiver(itemListType)
             }
     }
 

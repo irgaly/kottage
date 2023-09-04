@@ -1,7 +1,8 @@
 package io.github.irgaly.kottage.data.sqlite
 
-import com.squareup.sqldelight.db.SqlDriver
-import com.squareup.sqldelight.db.use
+import app.cash.sqldelight.db.QueryResult
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.db.SqlSchema
 import io.github.irgaly.kottage.data.sqlite.external.DatabaseConstructor
 import io.github.irgaly.kottage.data.sqlite.external.Options
 import io.github.irgaly.kottage.platform.Context
@@ -15,7 +16,7 @@ actual class DriverFactory actual constructor(
     actual suspend fun createDriver(
         fileName: String,
         directoryPath: String,
-        schema: SqlDriver.Schema
+        schema: SqlSchema<QueryResult.Value<Unit>>
     ): SqlDriver {
         // better-sqlite3
         // * busy_timeout = 5000 (ms, default)
@@ -48,15 +49,20 @@ actual class DriverFactory actual constructor(
         return driver
     }
 
-    private suspend fun migrateIfNeeded(driver: SqlDriver, schema: SqlDriver.Schema) {
+    private suspend fun migrateIfNeeded(
+        driver: SqlDriver,
+        schema: SqlSchema<QueryResult.Value<Unit>>
+    ) {
         withContext(dispatcher) {
-            val oldVersion = driver.executeQuery(null, "PRAGMA user_version", 0).use { cursor ->
-                if (cursor.next()) {
-                    cursor.getLong(0)?.toInt()
-                } else null
-            } ?: 0
+            val oldVersion = driver.executeQuery(null, "PRAGMA user_version", { cursor ->
+                QueryResult.Value(
+                    if (cursor.next().value) {
+                        cursor.getLong(0) ?: 0L
+                    } else 0L
+                )
+            }, 0).value
             val newVersion = schema.version
-            if (oldVersion == 0) {
+            if (oldVersion == 0L) {
                 schema.create(driver)
                 driver.execute(null, "PRAGMA user_version = $newVersion", 0)
             } else if (oldVersion < newVersion) {
@@ -64,6 +70,7 @@ actual class DriverFactory actual constructor(
                 schema.migrate(driver, oldVersion, newVersion)
                 driver.execute(null, "PRAGMA user_version = $newVersion", 0)
             }
+            Unit
         }
     }
 }

@@ -8,8 +8,10 @@ plugins {
 }
 
 sqldelight {
-    database("KottageDatabase") {
-        packageName = "io.github.irgaly.kottage.data.sqlite"
+    databases {
+        create("KottageDatabase") {
+            packageName = "io.github.irgaly.kottage.data.sqlite"
+        }
     }
 }
 

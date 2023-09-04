@@ -1,6 +1,5 @@
 package io.github.irgaly.kottage.internal.repository
 
-import com.squareup.sqldelight.db.use
 import io.github.irgaly.kottage.data.sqlite.KottageDatabase
 import io.github.irgaly.kottage.data.sqlite.extension.executeAsExists
 import io.github.irgaly.kottage.internal.database.Transaction
@@ -64,11 +63,9 @@ internal class KottageSqliteItemRepository(
     ) {
         database.itemQueries
             .selectAllKeys(itemType)
-            .execute().use { cursor ->
-                while (cursor.next()) {
-                    val key = checkNotNull(cursor.getString(0))
-                    receiver(Item.keyFromEntityKey(key, itemType))
-                }
+            .executeAsList()
+            .forEach { key ->
+                receiver(Item.keyFromEntityKey(key, itemType))
             }
     }
 
@@ -81,21 +78,14 @@ internal class KottageSqliteItemRepository(
         if (itemType != null) {
             database.itemQueries
                 .selectExpiredKeys(itemType, now)
-                .execute().use { cursor ->
-                    while (cursor.next()) {
-                        val key = checkNotNull(cursor.getString(0))
-                        receiver(Item.keyFromEntityKey(key, itemType), itemType)
-                    }
+                .executeAsList().forEach { key ->
+                    receiver(Item.keyFromEntityKey(key, itemType), itemType)
                 }
         } else {
             database.itemQueries
                 .selectAllTypeExpiredKeys(now)
-                .execute().use { cursor ->
-                    while (cursor.next()) {
-                        val key = checkNotNull(cursor.getString(0))
-                        val type = checkNotNull(cursor.getString(1))
-                        receiver(Item.keyFromEntityKey(key, type), type)
-                    }
+                .executeAsList().forEach {
+                    receiver(Item.keyFromEntityKey(it.key, it.type), it.type)
                 }
         }
     }
@@ -107,25 +97,25 @@ internal class KottageSqliteItemRepository(
         receiver: suspend (key: String) -> Boolean
     ) {
         if (limit != null) {
-            database.itemQueries
+            val keys = database.itemQueries
                 .selectLeastRecentlyUsedKeysLimit(type = itemType, limit = limit)
-                .execute().use { cursor ->
-                    var canNext = true
-                    while (canNext && cursor.next()) {
-                        val key = checkNotNull(cursor.getString(0))
-                        canNext = receiver(Item.keyFromEntityKey(key, itemType))
-                    }
+                .executeAsList()
+            for (key in keys) {
+                val canNext = receiver(Item.keyFromEntityKey(key, itemType))
+                if (!canNext) {
+                    break
                 }
+            }
         } else {
-            database.itemQueries
+            val keys = database.itemQueries
                 .selectLeastRecentlyUsedKeys(type = itemType)
-                .execute().use { cursor ->
-                    var canNext = true
-                    while (canNext && cursor.next()) {
-                        val key = checkNotNull(cursor.getString(0))
-                        canNext = receiver(Item.keyFromEntityKey(key, itemType))
-                    }
+                .executeAsList()
+            for (key in keys) {
+                val canNext = receiver(Item.keyFromEntityKey(key, itemType))
+                if (!canNext) {
+                    break
                 }
+            }
         }
     }
 
@@ -136,25 +126,25 @@ internal class KottageSqliteItemRepository(
         receiver: suspend (key: String) -> Boolean
     ) {
         if (limit != null) {
-            database.itemQueries
+            val keys = database.itemQueries
                 .selectOlderCreatedKeysLimit(type = itemType, limit = limit)
-                .execute().use { cursor ->
-                    var canNext = true
-                    while (canNext && cursor.next()) {
-                        val key = checkNotNull(cursor.getString(0))
-                        canNext = receiver(Item.keyFromEntityKey(key, itemType))
-                    }
+                .executeAsList()
+            for (key in keys) {
+                val canNext = receiver(Item.keyFromEntityKey(key, itemType))
+                if (!canNext) {
+                    break
                 }
+            }
         } else {
-            database.itemQueries
+            val keys = database.itemQueries
                 .selectOlderCreatedKeys(type = itemType)
-                .execute().use { cursor ->
-                    var canNext = true
-                    while (canNext && cursor.next()) {
-                        val key = checkNotNull(cursor.getString(0))
-                        canNext = receiver(Item.keyFromEntityKey(key, itemType))
-                    }
+                .executeAsList()
+            for (key in keys) {
+                val canNext = receiver(Item.keyFromEntityKey(key, itemType))
+                if (!canNext) {
+                    break
                 }
+            }
         }
     }
 

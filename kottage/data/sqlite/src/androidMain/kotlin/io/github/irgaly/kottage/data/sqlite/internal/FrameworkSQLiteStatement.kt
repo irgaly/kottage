@@ -21,28 +21,32 @@ import androidx.sqlite.db.SupportSQLiteStatement
 /**
  * Delegates all calls to a [SQLiteStatement].
  *
- * @param mDelegate The SQLiteStatement to delegate calls to.
+ * @constructor Creates a wrapper around a framework [SQLiteStatement].
+ *
+ * @param delegate The SQLiteStatement to delegate calls to.
  */
-internal class FrameworkSQLiteStatement(private val mDelegate: SQLiteStatement) : FrameworkSQLiteProgram(
-    mDelegate
+internal class FrameworkSQLiteStatement(
+    private val delegate: SQLiteStatement
+) : FrameworkSQLiteProgram(
+    delegate
 ), SupportSQLiteStatement {
     override fun execute() {
-        mDelegate.execute()
+        delegate.execute()
     }
 
     override fun executeUpdateDelete(): Int {
-        return mDelegate.executeUpdateDelete()
+        return delegate.executeUpdateDelete()
     }
 
     override fun executeInsert(): Long {
-        return mDelegate.executeInsert()
+        return delegate.executeInsert()
     }
 
     override fun simpleQueryForLong(): Long {
-        return mDelegate.simpleQueryForLong()
+        return delegate.simpleQueryForLong()
     }
 
-    override fun simpleQueryForString(): String {
-        return mDelegate.simpleQueryForString()
+    override fun simpleQueryForString(): String? {
+        return delegate.simpleQueryForString()
     }
 }

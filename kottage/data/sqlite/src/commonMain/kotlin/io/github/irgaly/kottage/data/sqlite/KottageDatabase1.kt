@@ -1,14 +1,17 @@
 package io.github.irgaly.kottage.data.sqlite
 
-import com.squareup.sqldelight.TransacterImpl
-import com.squareup.sqldelight.db.SqlDriver
+import app.cash.sqldelight.TransacterImpl
+import app.cash.sqldelight.db.AfterVersion
+import app.cash.sqldelight.db.QueryResult
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.db.SqlSchema
 
 class KottageDatabase1(
     driver: SqlDriver
 ) : TransacterImpl(driver) {
-    object Schema : SqlDriver.Schema {
-        override val version: Int = 1
-        override fun create(driver: SqlDriver) {
+    object Schema : SqlSchema<QueryResult.Value<Unit>> {
+        override val version: Long get() = 1
+        override fun create(driver: SqlDriver): QueryResult.Value<Unit> {
             driver.execute(
                 null, """
           |CREATE TABLE item_stats (
@@ -53,8 +56,16 @@ class KottageDatabase1(
           |)
           """.trimMargin(), 0
             )
-            driver.execute(null, "CREATE INDEX item_event_created_at ON item_event(created_at)", 0)
-            driver.execute(null, "CREATE INDEX item_event_expire_at ON item_event(expire_at)", 0)
+            driver.execute(
+                null,
+                "CREATE INDEX item_event_created_at ON item_event(created_at)",
+                0
+            )
+            driver.execute(
+                null,
+                "CREATE INDEX item_event_expire_at ON item_event(expire_at)",
+                0
+            )
             driver.execute(
                 null,
                 "CREATE INDEX item_event_item_type_created_at ON item_event(item_type, created_at)",
@@ -64,7 +75,11 @@ class KottageDatabase1(
                 null,
                 "CREATE INDEX item_event_item_type_expire_at ON item_event(item_type, expire_at)", 0
             )
-            driver.execute(null, "CREATE INDEX item_type_created_at ON item(type, created_at)", 0)
+            driver.execute(
+                null,
+                "CREATE INDEX item_type_created_at ON item(type, created_at)",
+                0
+            )
             driver.execute(
                 null,
                 "CREATE INDEX item_type_last_read_at ON item(type, last_read_at)",
@@ -96,14 +111,16 @@ class KottageDatabase1(
                 "INSERT INTO item(key, type, string_value, long_value, double_value, bytes_value, created_at, last_read_at, expire_at) VALUES('cache1+key1', 'cache1', 'value1', NULL, NULL, NULL, 1640995200000, 1640995200000, 1643587200000)",
                 0
             )
+            return QueryResult.Unit
         }
 
         override fun migrate(
             driver: SqlDriver,
-            oldVersion: Int,
-            newVersion: Int
-        ) {
-            KottageDatabase.Schema.migrate(driver, oldVersion, newVersion)
+            oldVersion: Long,
+            newVersion: Long,
+            vararg callbacks: AfterVersion
+        ): QueryResult.Value<Unit> {
+            return KottageDatabase.Schema.migrate(driver, oldVersion, newVersion, *callbacks)
         }
     }
 }

@@ -32,7 +32,8 @@ internal class FrameworkSQLiteOpenHelperFactory(
             configuration.name,
             configuration.callback,
             directoryPath,
-            configuration.useNoBackupDirectory
+            configuration.useNoBackupDirectory,
+            configuration.allowDataLossOnRecovery
         ).apply {
             setWriteAheadLoggingEnabled(true)
         }

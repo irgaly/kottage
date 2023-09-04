@@ -1,6 +1,6 @@
 package io.github.irgaly.kottage.internal.database
 
-import com.squareup.sqldelight.EnumColumnAdapter
+import app.cash.sqldelight.EnumColumnAdapter
 import io.github.irgaly.kottage.KottageEnvironment
 import io.github.irgaly.kottage.data.sqlite.DriverFactory
 import io.github.irgaly.kottage.data.sqlite.Item_event

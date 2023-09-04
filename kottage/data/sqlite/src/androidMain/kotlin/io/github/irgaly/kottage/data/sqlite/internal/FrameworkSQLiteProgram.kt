@@ -21,33 +21,34 @@ import androidx.sqlite.db.SupportSQLiteProgram
 /**
  * An wrapper around [SQLiteProgram] to implement [SupportSQLiteProgram] API.
  */
-internal open class FrameworkSQLiteProgram(private val mDelegate: SQLiteProgram) :
-    SupportSQLiteProgram {
+internal open class FrameworkSQLiteProgram(
+    private val delegate: SQLiteProgram
+) : SupportSQLiteProgram {
     override fun bindNull(index: Int) {
-        mDelegate.bindNull(index)
+        delegate.bindNull(index)
     }
 
     override fun bindLong(index: Int, value: Long) {
-        mDelegate.bindLong(index, value)
+        delegate.bindLong(index, value)
     }
 
     override fun bindDouble(index: Int, value: Double) {
-        mDelegate.bindDouble(index, value)
+        delegate.bindDouble(index, value)
     }
 
     override fun bindString(index: Int, value: String) {
-        mDelegate.bindString(index, value)
+        delegate.bindString(index, value)
     }
 
     override fun bindBlob(index: Int, value: ByteArray) {
-        mDelegate.bindBlob(index, value)
+        delegate.bindBlob(index, value)
     }
 
     override fun clearBindings() {
-        mDelegate.clearBindings()
+        delegate.clearBindings()
     }
 
     override fun close() {
-        mDelegate.close()
+        delegate.close()
     }
 }
