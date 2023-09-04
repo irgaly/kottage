@@ -4,9 +4,9 @@ import co.touchlab.sqliter.DatabaseConfiguration
 import co.touchlab.sqliter.JournalMode
 import co.touchlab.sqliter.SynchronousFlag
 import co.touchlab.sqliter.longForQuery
-import com.squareup.sqldelight.db.SqlDriver
-import com.squareup.sqldelight.drivers.native.NativeSqliteDriver
-import com.squareup.sqldelight.drivers.native.wrapConnection
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.drivers.native.NativeSqliteDriver
+import app.cash.sqldelight.drivers.native.wrapConnection
 import io.github.irgaly.kottage.platform.Context
 import kotlinx.coroutines.CoroutineDispatcher
 

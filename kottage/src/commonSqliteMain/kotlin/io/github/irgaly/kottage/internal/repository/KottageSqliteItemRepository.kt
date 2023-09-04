@@ -1,6 +1,6 @@
 package io.github.irgaly.kottage.internal.repository
 
-import com.squareup.sqldelight.db.use
+import app.cash.sqldelight.db.use
 import io.github.irgaly.kottage.data.sqlite.KottageDatabase
 import io.github.irgaly.kottage.data.sqlite.extension.executeAsExists
 import io.github.irgaly.kottage.internal.database.Transaction

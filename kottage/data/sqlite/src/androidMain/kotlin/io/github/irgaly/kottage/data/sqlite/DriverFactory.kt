@@ -1,8 +1,8 @@
 package io.github.irgaly.kottage.data.sqlite
 
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.squareup.sqldelight.android.AndroidSqliteDriver
-import com.squareup.sqldelight.db.SqlDriver
+import app.cash.sqldelight.android.AndroidSqliteDriver
+import app.cash.sqldelight.db.SqlDriver
 import io.github.irgaly.kottage.data.sqlite.internal.FrameworkSQLiteOpenHelperFactory
 import io.github.irgaly.kottage.platform.Context
 import kotlinx.coroutines.CoroutineDispatcher

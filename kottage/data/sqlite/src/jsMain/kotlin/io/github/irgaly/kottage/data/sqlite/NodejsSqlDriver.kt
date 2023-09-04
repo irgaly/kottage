@@ -1,9 +1,9 @@
 package io.github.irgaly.kottage.data.sqlite
 
-import com.squareup.sqldelight.Transacter
-import com.squareup.sqldelight.db.SqlCursor
-import com.squareup.sqldelight.db.SqlDriver
-import com.squareup.sqldelight.db.SqlPreparedStatement
+import app.cash.sqldelight.Transacter
+import app.cash.sqldelight.db.SqlCursor
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.db.SqlPreparedStatement
 import io.github.irgaly.kottage.data.sqlite.external.Database
 import io.github.irgaly.kottage.data.sqlite.external.IteratorReturnResult
 import io.github.irgaly.kottage.data.sqlite.external.Statement

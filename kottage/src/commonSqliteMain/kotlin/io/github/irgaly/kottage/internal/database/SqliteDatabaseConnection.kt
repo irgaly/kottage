@@ -1,7 +1,7 @@
 package io.github.irgaly.kottage.internal.database
 
-import com.squareup.sqldelight.db.SqlDriver
-import com.squareup.sqldelight.db.use
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.db.use
 import io.github.irgaly.kottage.data.sqlite.KottageDatabase
 import io.github.irgaly.kottage.platform.Files
 import kotlinx.coroutines.CoroutineDispatcher

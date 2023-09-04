@@ -1,7 +1,7 @@
 package io.github.irgaly.kottage.data.sqlite
 
-import com.squareup.sqldelight.TransacterImpl
-import com.squareup.sqldelight.db.SqlDriver
+import app.cash.sqldelight.TransacterImpl
+import app.cash.sqldelight.db.SqlDriver
 
 class KottageDatabase2(
     driver: SqlDriver

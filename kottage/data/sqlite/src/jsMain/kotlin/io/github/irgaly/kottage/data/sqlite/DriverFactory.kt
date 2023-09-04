@@ -1,7 +1,7 @@
 package io.github.irgaly.kottage.data.sqlite
 
-import com.squareup.sqldelight.db.SqlDriver
-import com.squareup.sqldelight.db.use
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.db.use
 import io.github.irgaly.kottage.data.sqlite.external.DatabaseConstructor
 import io.github.irgaly.kottage.data.sqlite.external.Options
 import io.github.irgaly.kottage.platform.Context
