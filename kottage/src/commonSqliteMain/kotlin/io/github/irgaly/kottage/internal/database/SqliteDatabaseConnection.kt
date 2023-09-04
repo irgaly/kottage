@@ -142,7 +142,7 @@ internal class SqliteDatabaseConnection(
                     val destination = "$directoryPath/$file"
                     // .backup は sqlite3 コマンドのためSQL経由では使えない
                     sqlDriver.execute(null, "VACUUM INTO ?", 1) {
-                        bindString(1, destination)
+                        bindString(0, destination)
                     }
                 }
             }
