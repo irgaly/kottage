@@ -119,7 +119,7 @@ internal class SqliteDatabaseConnection(
             }
             withDatabase { sqlDriver, _ ->
                 // reduce WAL file size to zero / https://www.sqlite.org/pragma.html#pragma_wal_checkpoint
-                sqlDriver.executeQuery(null, "PRAGMA wal_checkpoint(TRUNCATE)", { cursor ->
+                sqlDriver.executeQuery(null, "PRAGMA wal_checkpoint(TRUNCATE)", { _ ->
                     QueryResult.Unit
                 }, 0)
                 // reduce database file size and optimize b-tree / https://www.sqlite.org/matrix/lang_vacuum.html
