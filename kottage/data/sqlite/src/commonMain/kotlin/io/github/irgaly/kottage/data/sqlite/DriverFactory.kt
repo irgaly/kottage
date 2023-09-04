@@ -1,6 +1,8 @@
 package io.github.irgaly.kottage.data.sqlite
 
+import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.db.SqlSchema
 import io.github.irgaly.kottage.platform.Context
 import kotlinx.coroutines.CoroutineDispatcher
 
@@ -21,7 +23,7 @@ expect class DriverFactory(
     suspend fun createDriver(
         fileName: String,
         directoryPath: String,
-        schema: SqlDriver.Schema
+        schema: SqlSchema<QueryResult.Value<Unit>>,
     ): SqlDriver
 }
 

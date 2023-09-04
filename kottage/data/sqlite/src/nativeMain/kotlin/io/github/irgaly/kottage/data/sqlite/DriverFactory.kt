@@ -1,12 +1,14 @@
 package io.github.irgaly.kottage.data.sqlite
 
+import app.cash.sqldelight.db.QueryResult
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.db.SqlSchema
+import app.cash.sqldelight.driver.native.NativeSqliteDriver
+import app.cash.sqldelight.driver.native.wrapConnection
 import co.touchlab.sqliter.DatabaseConfiguration
 import co.touchlab.sqliter.JournalMode
 import co.touchlab.sqliter.SynchronousFlag
 import co.touchlab.sqliter.longForQuery
-import app.cash.sqldelight.db.SqlDriver
-import app.cash.sqldelight.drivers.native.NativeSqliteDriver
-import app.cash.sqldelight.drivers.native.wrapConnection
 import io.github.irgaly.kottage.platform.Context
 import kotlinx.coroutines.CoroutineDispatcher
 
@@ -17,7 +19,7 @@ actual class DriverFactory actual constructor(
     actual suspend fun createDriver(
         fileName: String,
         directoryPath: String,
-        schema: SqlDriver.Schema
+        schema: SqlSchema<QueryResult.Value<Unit>>
     ): SqlDriver {
         // SQLiter:
         // * journal_size_limit = 32768 (default)
@@ -35,12 +37,14 @@ actual class DriverFactory actual constructor(
         return NativeSqliteDriver(
             DatabaseConfiguration(
                 name = "$fileName.db",
-                version = schema.version,
+                version = schema.version.toInt(),
                 create = { connection ->
                     wrapConnection(connection) { schema.create(it) }
                 },
                 upgrade = { connection, oldVersion, newVersion ->
-                    wrapConnection(connection) { schema.migrate(it, oldVersion, newVersion) }
+                    wrapConnection(connection) {
+                        schema.migrate(it, oldVersion.toLong(), newVersion.toLong())
+                    }
                 },
                 inMemory = false,
                 journalMode = JournalMode.WAL,

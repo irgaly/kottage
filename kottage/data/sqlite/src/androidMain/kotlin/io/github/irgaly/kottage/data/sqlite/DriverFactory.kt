@@ -1,8 +1,10 @@
 package io.github.irgaly.kottage.data.sqlite
 
 import androidx.sqlite.db.SupportSQLiteDatabase
-import app.cash.sqldelight.android.AndroidSqliteDriver
+import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.db.SqlSchema
+import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import io.github.irgaly.kottage.data.sqlite.internal.FrameworkSQLiteOpenHelperFactory
 import io.github.irgaly.kottage.platform.Context
 import kotlinx.coroutines.CoroutineDispatcher
@@ -14,7 +16,7 @@ actual class DriverFactory actual constructor(
     actual suspend fun createDriver(
         fileName: String,
         directoryPath: String,
-        schema: SqlDriver.Schema
+        schema: SqlSchema<QueryResult.Value<Unit>>
     ): SqlDriver {
         // SQLiteOpenHelper:
         // * journal_size_limit = ? (default)
