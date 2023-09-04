@@ -4,24 +4,27 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.tasks.TaskAction
-import java.util.*
+import java.util.Locale
 
 @Suppress("unused")
 open class ProjectDependencyGraphTask : DefaultTask() {
     @TaskAction
     fun run() {
-        val dot = project.rootProject.buildDir.resolve("reports/dependency-graph/project.dot")
-        dot.parentFile.mkdirs()
-        dot.delete()
+        val md = project.rootProject.buildDir.resolve("reports/dependency-graph/project.md")
+        md.parentFile.mkdirs()
+        md.delete()
 
-        dot.appendText(
+        md.appendText(
             """
-            |digraph {
-            |  graph [label="${project.rootProject.name}\n ",labelloc=t,fontsize=30,ranksep=1.4];
-            |  node [style=filled, fillcolor="#bbbbbb"];
-            |  rankdir=TB;
+            |```mermaid
+            |flowchart TD
+            |    classDef mpp fill:#ffd2b3,color:#000000
+            |    classDef mpp_android fill:#f7ffad,color:#000000
+            |    classDef android fill:#baffc9,color:#000000
+            |    classDef java fill:#ffb3ba,color:#000000
+            |    classDef other fill:#eeeeee,color:#000000
             |
-        """.trimMargin()
+            """.trimMargin(),
         )
 
         val rootProjects = mutableListOf<Project>()
@@ -35,7 +38,6 @@ open class ProjectDependencyGraphTask : DefaultTask() {
         val projects = LinkedHashSet<Project>()
         val dependencies = LinkedHashMap<Pair<Project, Project>, MutableList<String>>()
         val multiplatformProjects = mutableListOf<Project>()
-        val jsProjects = mutableListOf<Project>()
         val androidProjects = mutableListOf<Project>()
         val javaProjects = mutableListOf<Project>()
         val rankAndroid = mutableListOf<Project>()
@@ -51,10 +53,9 @@ open class ProjectDependencyGraphTask : DefaultTask() {
             if (project.plugins.hasPlugin("org.jetbrains.kotlin.multiplatform")) {
                 multiplatformProjects.add(project)
             }
-            if (project.plugins.hasPlugin("kotlin2js")) {
-                jsProjects.add(project)
-            }
-            if (project.plugins.hasPlugin("com.android.library") || project.plugins.hasPlugin("com.android.application")) {
+            if (project.plugins.hasPlugin("com.android.library")
+                || project.plugins.hasPlugin("com.android.application")
+            ) {
                 androidProjects.add(project)
             }
             if (project.plugins.hasPlugin("java-library") || project.plugins.hasPlugin("java")) {
@@ -74,6 +75,7 @@ open class ProjectDependencyGraphTask : DefaultTask() {
             project.configurations.all {
                 getDependencies()
                     .filterIsInstance<ProjectDependency>()
+                    .filter { project != it.dependencyProject }
                     .map { it.dependencyProject }
                     .forEach { dependency ->
                         projects.add(project)
@@ -84,7 +86,7 @@ open class ProjectDependencyGraphTask : DefaultTask() {
                         val traits = dependencies.computeIfAbsent(graphKey) { mutableListOf() }
 
                         if (name.toLowerCase(Locale.getDefault()).endsWith("implementation")) {
-                            traits.add("style=dotted")
+                            traits.add("dotted")
                         }
                     }
             }
@@ -95,64 +97,47 @@ open class ProjectDependencyGraphTask : DefaultTask() {
             projects.addAll(it)
         }
 
-        dot.appendText("\n  # Projects\n\n")
+        md.appendText("\n    %% Modules\n\n")
         for (project in projects) {
             val traits = mutableListOf<String>()
 
+            var brackets = Pair("[", "]")
             if (rootProjects.contains(project)) {
-                traits.add("shape=box")
+                brackets = Pair("([", "])")
             }
 
+            var styleClass = "other"
             if (multiplatformProjects.contains(project)) {
                 if (androidProjects.contains(project)) {
-                    traits.add("fillcolor=\"#f7ffad\"")
+                    styleClass = "mpp_android"
                 } else {
-                    traits.add("fillcolor=\"#ffd2b3\"")
+                    styleClass = "mpp"
                 }
-            } else if (jsProjects.contains(project)) {
-                traits.add("fillcolor=\"#ffffba\"")
             } else if (androidProjects.contains(project)) {
-                traits.add("fillcolor=\"#baffc9\"")
+                styleClass = "android"
             } else if (javaProjects.contains(project)) {
-                traits.add("fillcolor=\"#ffb3ba\"")
-            } else {
-                traits.add("fillcolor=\"#eeeeee\"")
+                styleClass = "java"
             }
 
-            dot.appendText("  \"${project.path}\" [${traits.joinToString(", ")}];\n")
+            md.appendText(
+                """
+                |    ${project.path}${brackets.first}${project.path}${brackets.second}; class ${project.path} $styleClass
+                |
+            """.trimMargin(),
+            )
         }
 
-        dot.appendText("\n  {rank = same;")
-        for (project in projects) {
-            if (rootProjects.contains(project)) {
-                dot.appendText(" \"${project.path}\";")
-            }
-        }
-        dot.appendText("}\n")
-
-        for (sameRank in listOf(rankAndroid, rankDomain, rankRepository)) {
-            dot.appendText("\n  {rank = same;")
-            for (project in sameRank) {
-                dot.appendText(" \"${project.path}\";")
-            }
-            dot.appendText("}\n")
-        }
-
-        dot.appendText("\n  # Dependencies\n\n")
+        md.appendText("\n    %% Dependencies\n\n")
         dependencies.forEach { (key, traits) ->
-            dot.appendText("  \"${key.first.path}\" -> \"${key.second.path}\"")
-            if (traits.isNotEmpty()) {
-                dot.appendText(" [${traits.joinToString(", ")}]")
+            var link = "-->"
+            if (traits.contains("dotted")) {
+                link = "-.->"
             }
-            dot.appendText("\n")
+            md.appendText("    ${key.first.path} $link ${key.second.path}\n")
         }
 
-        dot.appendText("}\n")
-
-        project.exec {
-            commandLine = listOf("sh", "-c", "cd \"${dot.parentFile}\"; dot -Tpng -O project.dot")
-        }
-        println("Project module dependency graph created at ${dot.absolutePath}.png")
+        md.appendText("```\n")
+        println("Project module dependency graph created at ${md.absolutePath}")
     }
 }
 

@@ -194,7 +194,7 @@ nexusPublishing {
 val projectDependencyGraph by tasks.getting {
     doLast {
         copy {
-            from(buildDir.resolve("reports/dependency-graph/project.dot.png"))
+            from(buildDir.resolve("reports/dependency-graph/project.md"))
             into(projectDir)
         }
     }
