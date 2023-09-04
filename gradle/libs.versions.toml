@@ -5,8 +5,8 @@ kotlinx-coroutines = "1.7.1"
 compose-compiler = "1.5.0"
 kotest = "5.7.0"
 gradle-android = "8.1.1"
-gradle-android-compile-sdk = "33"
-gradle-android-target-sdk = "33"
+gradle-android-compile-sdk = "34"
+gradle-android-target-sdk = "34"
 gradle-android-min-sdk = "21"
 sqldelight = "2.0.0"
 
@@ -22,12 +22,12 @@ kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-
 androidx-core = { module = "androidx.core:core-ktx", version = "1.10.0" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.6.1" }
 androidx-lifecycle = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version = "2.6.1" }
-compose-bom = { group = "androidx.compose", name = "compose-bom", version = "2023.06.00" }
+compose-bom = { group = "androidx.compose", name = "compose-bom", version = "2023.08.00" }
 compose-material = { module = "androidx.compose.material:material" }
 compose-material3 = { module = "androidx.compose.material3:material3" }
 compose-uiTooling = { module = "androidx.compose.ui:ui-tooling" }
 compose-paging = { module = "androidx.paging:paging-compose", version = "1.0.0-alpha17" }
-compose-navigation = { module = "androidx.navigation:navigation-compose", version = "2.6.0" }
+compose-navigation = { module = "androidx.navigation:navigation-compose", version = "2.7.1" }
 test-kotest-runner = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 test-kotest-assertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 test-kotest-engine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
