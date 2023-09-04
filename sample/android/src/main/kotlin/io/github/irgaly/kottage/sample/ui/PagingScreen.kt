@@ -19,7 +19,6 @@ import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -41,7 +40,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingSource
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.items
+import androidx.paging.compose.itemKey
 import io.github.irgaly.kottage.Kottage
 import io.github.irgaly.kottage.KottageEnvironment
 import io.github.irgaly.kottage.platform.contextOf
@@ -52,7 +51,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun PagingScreen(
     kottage: Kottage,
@@ -255,8 +254,11 @@ fun PagingScreen(
                         }
                     }
                 }
-                items(items, key = { item -> item.animal.id }) { item ->
-                    with(checkNotNull(item)) {
+                items(
+                    count = items.itemCount,
+                    key = items.itemKey { it.animal.id }
+                ) { index ->
+                    with(checkNotNull(items[index])) {
                         Row(
                             Modifier
                                 .fillMaxWidth()
