@@ -1,7 +1,7 @@
 package io.github.irgaly.kottage.internal.database
 
+import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlDriver
-import app.cash.sqldelight.db.use
 import io.github.irgaly.kottage.data.sqlite.KottageDatabase
 import io.github.irgaly.kottage.platform.Files
 import kotlinx.coroutines.CoroutineDispatcher
@@ -112,38 +112,41 @@ internal class SqliteDatabaseConnection(
         }
     }
 
-    override suspend fun compact() = withContext(dispatcher) {
+    override suspend fun compact(): Unit = withContext(dispatcher) {
         mutex.withLock {
             if (closed) {
                 error("Database connection is closed")
             }
             withDatabase { sqlDriver, _ ->
                 // reduce WAL file size to zero / https://www.sqlite.org/pragma.html#pragma_wal_checkpoint
-                sqlDriver.executeQuery(null, "PRAGMA wal_checkpoint(TRUNCATE)", 0).close()
+                sqlDriver.executeQuery(null, "PRAGMA wal_checkpoint(TRUNCATE)", { cursor ->
+                    QueryResult.Unit
+                }, 0)
                 // reduce database file size and optimize b-tree / https://www.sqlite.org/matrix/lang_vacuum.html
                 sqlDriver.execute(null, "VACUUM", 0)
             }
         }
     }
 
-    override suspend fun backupTo(file: String, directoryPath: String) = withContext(dispatcher) {
-        mutex.withLock {
-            if (closed) {
-                error("Database connection is closed")
-            }
-            withDatabase { sqlDriver, _ ->
-                require(!file.contains(Files.separator)) { "file contains separator: $file" }
-                if (!Files.exists(directoryPath)) {
-                    Files.mkdirs(directoryPath)
+    override suspend fun backupTo(file: String, directoryPath: String): Unit =
+        withContext(dispatcher) {
+            mutex.withLock {
+                if (closed) {
+                    error("Database connection is closed")
                 }
-                val destination = "$directoryPath/$file"
-                // .backup は sqlite3 コマンドのためSQL経由では使えない
-                sqlDriver.execute(null, "VACUUM INTO ?", 1) {
-                    bindString(1, destination)
+                withDatabase { sqlDriver, _ ->
+                    require(!file.contains(Files.separator)) { "file contains separator: $file" }
+                    if (!Files.exists(directoryPath)) {
+                        Files.mkdirs(directoryPath)
+                    }
+                    val destination = "$directoryPath/$file"
+                    // .backup は sqlite3 コマンドのためSQL経由では使えない
+                    sqlDriver.execute(null, "VACUUM INTO ?", 1) {
+                        bindString(1, destination)
+                    }
                 }
             }
         }
-    }
 
     override suspend fun getDatabaseStatus(): String = withContext(dispatcher) {
         mutex.withLock {
@@ -158,85 +161,115 @@ internal class SqliteDatabaseConnection(
                     //val autoVacuum = database.pragmaQueries.getAutoVacuum()
                     //val lockingMode = database.pragmaQueries.getLockingMode()
                     // Good: WAL + synchronous = NORMAL(1)
-                    val journalMode = sqlDriver.executeQuery(null, "PRAGMA journal_mode", 0).use {
-                        if (it.next()) {
-                            it.getString(0)
-                        } else null
-                    }
+                    val journalMode = sqlDriver.executeQuery(null, "PRAGMA journal_mode", {
+                        QueryResult.Value(
+                            if (it.next().value) {
+                                it.getString(0)
+                            } else null
+                        )
+                    }, 0).value
                     val journalSizeLimit =
-                        sqlDriver.executeQuery(null, "PRAGMA journal_size_limit", 0).use {
-                            if (it.next()) {
-                                it.getLong(0)
-                            } else null
-                        }
+                        sqlDriver.executeQuery(null, "PRAGMA journal_size_limit", {
+                            QueryResult.Value(
+                                if (it.next().value) {
+                                    it.getLong(0)
+                                } else null
+                            )
+                        }, 0).value
                     val walAutoCheckpoint =
-                        sqlDriver.executeQuery(null, "PRAGMA wal_autocheckpoint", 0).use {
-                            if (it.next()) {
+                        sqlDriver.executeQuery(null, "PRAGMA wal_autocheckpoint", {
+                            QueryResult.Value(
+                                if (it.next().value) {
+                                    it.getLong(0)
+                                } else null
+                            )
+                        }, 0).value
+                    val synchronous = sqlDriver.executeQuery(null, "PRAGMA synchronous", {
+                        QueryResult.Value(
+                            if (it.next().value) {
                                 it.getLong(0)
                             } else null
-                        }
-                    val synchronous = sqlDriver.executeQuery(null, "PRAGMA synchronous", 0).use {
-                        if (it.next()) {
-                            it.getLong(0)
-                        } else null
-                    }
-                    val tempStore = sqlDriver.executeQuery(null, "PRAGMA temp_store", 0).use {
-                        if (it.next()) {
-                            it.getLong(0)
-                        } else null
-                    }
-                    val memoryMapSize = sqlDriver.executeQuery(null, "PRAGMA mmap_size", 0).use {
-                        if (it.next()) {
-                            it.getLong(0)
-                        } else null
-                    }
-                    val autoVacuum = sqlDriver.executeQuery(null, "PRAGMA auto_vacuum", 0).use {
-                        if (it.next()) {
-                            it.getLong(0)
-                        } else null
-                    }
-                    val lockingMode = sqlDriver.executeQuery(null, "PRAGMA locking_mode", 0).use {
-                        if (it.next()) {
-                            it.getString(0)
-                        } else null
-                    }
+                        )
+                    }, 0).value
+                    val tempStore = sqlDriver.executeQuery(null, "PRAGMA temp_store", {
+                        QueryResult.Value(
+                            if (it.next().value) {
+                                it.getLong(0)
+                            } else null
+                        )
+                    }, 0).value
+                    val memoryMapSize = sqlDriver.executeQuery(null, "PRAGMA mmap_size", {
+                        QueryResult.Value(
+                            if (it.next().value) {
+                                it.getLong(0)
+                            } else null
+                        )
+                    }, 0).value
+                    val autoVacuum = sqlDriver.executeQuery(null, "PRAGMA auto_vacuum", {
+                        QueryResult.Value(
+                            if (it.next().value) {
+                                it.getLong(0)
+                            } else null
+                        )
+                    }, 0).value
+                    val lockingMode = sqlDriver.executeQuery(null, "PRAGMA locking_mode", {
+                        QueryResult.Value(
+                            if (it.next().value) {
+                                it.getString(0)
+                            } else null
+                        )
+                    }, 0).value
                     val maxPageCount =
-                        sqlDriver.executeQuery(null, "PRAGMA max_page_count", 0).use {
-                            if (it.next()) {
+                        sqlDriver.executeQuery(null, "PRAGMA max_page_count", {
+                            QueryResult.Value(
+                                if (it.next().value) {
+                                    it.getLong(0)
+                                } else null
+                            )
+                        }, 0).value
+                    val cacheSize = sqlDriver.executeQuery(null, "PRAGMA cache_size", {
+                        QueryResult.Value(
+                            if (it.next().value) {
                                 it.getLong(0)
                             } else null
-                        }
-                    val cacheSize = sqlDriver.executeQuery(null, "PRAGMA cache_size", 0).use {
-                        if (it.next()) {
-                            it.getLong(0)
-                        } else null
-                    }
-                    val pageSize = sqlDriver.executeQuery(null, "PRAGMA page_size", 0).use {
-                        if (it.next()) {
-                            it.getLong(0)
-                        } else null
-                    }
-                    val busyTimeout = sqlDriver.executeQuery(null, "PRAGMA busy_timeout", 0).use {
-                        if (it.next()) {
-                            it.getLong(0)
-                        } else null
-                    }
-                    val secureDelete = sqlDriver.executeQuery(null, "PRAGMA secure_delete", 0).use {
-                        if (it.next()) {
-                            it.getString(0)
-                        } else null
-                    }
-                    val userVersion = sqlDriver.executeQuery(null, "PRAGMA user_version", 0).use {
-                        if (it.next()) {
-                            it.getLong(0)
-                        } else null
-                    }
+                        )
+                    }, 0).value
+                    val pageSize = sqlDriver.executeQuery(null, "PRAGMA page_size", {
+                        QueryResult.Value(
+                            if (it.next().value) {
+                                it.getLong(0)
+                            } else null
+                        )
+                    }, 0).value
+                    val busyTimeout = sqlDriver.executeQuery(null, "PRAGMA busy_timeout", {
+                        QueryResult.Value(
+                            if (it.next().value) {
+                                it.getLong(0)
+                            } else null
+                        )
+                    }, 0).value
+                    val secureDelete = sqlDriver.executeQuery(null, "PRAGMA secure_delete", {
+                        QueryResult.Value(
+                            if (it.next().value) {
+                                it.getString(0)
+                            } else null
+                        )
+                    }, 0).value
+                    val userVersion = sqlDriver.executeQuery(null, "PRAGMA user_version", {
+                        QueryResult.Value(
+                            if (it.next().value) {
+                                it.getLong(0)
+                            } else null
+                        )
+                    }, 0).value
                     val freelistCount =
-                        sqlDriver.executeQuery(null, "PRAGMA freelist_count", 0).use {
-                            if (it.next()) {
-                                it.getLong(0)
-                            } else null
-                        }
+                        sqlDriver.executeQuery(null, "PRAGMA freelist_count", {
+                            QueryResult.Value(
+                                if (it.next().value) {
+                                    it.getLong(0)
+                                } else null
+                            )
+                        }, 0).value
                     """
                     --- configs:
                     journal_mode = $journalMode (DELETE | TRUNCATE | PERSIST | MEMORY | WAL | OFF)
