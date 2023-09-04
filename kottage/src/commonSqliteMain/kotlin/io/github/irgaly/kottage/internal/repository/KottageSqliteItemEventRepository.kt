@@ -1,6 +1,5 @@
 package io.github.irgaly.kottage.internal.repository
 
-import app.cash.sqldelight.db.use
 import io.github.irgaly.kottage.data.sqlite.KottageDatabase
 import io.github.irgaly.kottage.internal.database.Transaction
 import io.github.irgaly.kottage.internal.model.ItemEvent
@@ -109,27 +108,20 @@ internal class KottageSqliteItemEventRepository(
         if (itemType != null) {
             database.item_eventQueries
                 .selectExpiredIds(itemType, now)
-                .execute().use { cursor ->
-                    while (cursor.next()) {
-                        val id = checkNotNull(cursor.getString(0))
-                        database.item_eventQueries
-                            .delete(id)
-                        onDelete?.invoke(id, itemType)
-                        deleted++
-                    }
+                .executeAsList()
+                .forEach { id ->
+                    database.item_eventQueries.delete(id)
+                    onDelete?.invoke(id, itemType)
+                    deleted++
                 }
         } else {
             database.item_eventQueries
                 .selectAllTypeExpiredIds(now)
-                .execute().use { cursor ->
-                    while (cursor.next()) {
-                        val id = checkNotNull(cursor.getString(0))
-                        val type = checkNotNull(cursor.getString(1))
-                        database.item_eventQueries
-                            .delete(id)
-                        onDelete?.invoke(id, type)
-                        deleted++
-                    }
+                .executeAsList()
+                .forEach {
+                    database.item_eventQueries.delete(it.id)
+                    onDelete?.invoke(it.id, it.item_type)
+                    deleted++
                 }
         }
         return deleted
@@ -142,12 +134,9 @@ internal class KottageSqliteItemEventRepository(
     ) {
         database.item_eventQueries
             .selectOlderCreatedIds(itemType, limit)
-            .execute().use { cursor ->
-                while (cursor.next()) {
-                    val id = checkNotNull(cursor.getString(0))
-                    database.item_eventQueries
-                        .delete(id)
-                }
+            .executeAsList()
+            .forEach { id ->
+                database.item_eventQueries.delete(id)
             }
     }
 
