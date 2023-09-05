@@ -556,7 +556,8 @@ better-sqlite3 module that is not needed in browser application, and exclude pac
 ```javascript
 config.resolve.fallback = {
     ...config.resolve.fallback,
-    fs: false
+    fs: false,
+    os: false
 }
 config.externals = {
     ...config.externals,

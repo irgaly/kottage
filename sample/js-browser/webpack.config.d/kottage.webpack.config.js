@@ -1,6 +1,7 @@
 config.resolve.fallback = {
     ...config.resolve.fallback,
-    fs: false
+    fs: false,
+    os: false
 }
 config.externals = {
     ...config.externals,
