@@ -19,6 +19,14 @@
       "matchDatasources": [
         "docker"
       ]
+    },
+    {
+      "groupName": "Kotlin",
+      "matchPackagePrefixes": [
+        "org.jetbrains.kotlin:kotlin-",
+        "org.jetbrains.kotlin."
+      ],
+      "enabled": true
     }
   ]
 }
