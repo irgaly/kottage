@@ -1,4 +1,46 @@
-# v1.5.0 - 2023/04/03 JST
+# v1.6.0 - 2023/09/06 JST
+
+This is a release for updating libraries:
+
+* Kotlin 1.9.10
+* SQLDelight 2.0.0
+* Gradle 8.3
+* AGP 8.3
+
+#### Changes
+
+* Android minSdk = 21 (from minSdk = 16)
+  * [#127](https://github.com/irgaly/kottage/pull/127)
+* Migrate SQLDelight 2.0.0 [179](https://github.com/irgaly/kottage/pull/179)
+* Android Platform: SQLite lock file to
+  ${name}.db.lck [182](https://github.com/irgaly/kottage/pull/182)
+
+# Fix
+
+* fix Linux Event Test, fix KottageEventFlow [#148](https://github.com/irgaly/kottage/pull/148)
+
+#### Maintenance
+
+* Add CI Test:
+  * Android, iOS Test, Windows Test [#127](https://github.com/irgaly/kottage/pull/127)
+  * Add JS Test on Windows, Linux [#152](https://github.com/irgaly/kottage/pull/152)
+* Refactor Gradle Scripts
+  * publish-plugin 1.2.0, use
+    providers.environmentVariable [#140](https://github.com/irgaly/kottage/pull/140)
+  * refactor Gradle, Kotlin 1.8.10, SQLDelight
+    1.5.5 [#141](https://github.com/irgaly/kottage/pull/141)
+* Update Kotlin, use New hierarchy SourceSets
+  * Update Kotlin 1.8.20 + Use New Default
+    hierarchy [#169](https://github.com/irgaly/kottage/pull/169)
+  * Kotlin 1.9.0 + Compose Compiler 1.5.0 [#166](https://github.com/irgaly/kottage/pull/166)
+  * Kotlin v1.9.10, Compose Compiler 1.5.3 [#184](https://github.com/irgaly/kottage/pull/184)
+* Update Gradle 8.3
+  * Update Gradle 8 [#158](https://github.com/irgaly/kottage/pull/158)
+  * chore(deps): update dependency gradle to v8.3 [#171](https://github.com/irgaly/kottage/pull/171)
+* Update AGP 8.3
+  * chore(deps): update gradle.android to v8.1.1 [#156](https://github.com/irgaly/kottage/pull/156)
+
+# v1.5.1 - 2023/04/03 JST
 
 #### Fix
 
