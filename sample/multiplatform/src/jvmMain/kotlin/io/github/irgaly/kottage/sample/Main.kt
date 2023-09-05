@@ -4,11 +4,10 @@ import io.github.irgaly.kottage.Kottage
 import io.github.irgaly.kottage.KottageEnvironment
 import io.github.irgaly.kottage.platform.KottageContext
 import io.github.irgaly.kottage.put
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.coroutineScope
 
-fun main() {
-    MainScope().launch {
+suspend fun main() {
+    coroutineScope {
         val environment = KottageEnvironment(KottageContext())
         val kottage = Kottage("name", "directory", environment, this) {
 
