@@ -132,8 +132,8 @@ internal class FrameworkSQLiteOpenHelper @JvmOverloads constructor(
 
         // see b/193182592
         private val lock: ProcessLock = ProcessLock(
-            name = name ?: UUID.randomUUID().toString(),
-            lockDir = context.cacheDir,
+            name = name?.let { File(it).name } ?: UUID.randomUUID().toString(),
+            lockDir = name?.let { File(it).parentFile } ?: context.cacheDir,
             processLock = false
         )
         private var opened = false
