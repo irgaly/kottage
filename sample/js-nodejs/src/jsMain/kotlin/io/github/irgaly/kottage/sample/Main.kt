@@ -22,7 +22,7 @@ suspend fun main() {
             }
         }
         val environment = KottageEnvironment(KottageContext(), calendar)
-        val kottage = Kottage("name", "directory", environment, this) {
+        val kottage = Kottage("name", tempDir, environment, this) {
         }
         val storage = kottage.storage("storage")
         storage.put("key1", "value1")
