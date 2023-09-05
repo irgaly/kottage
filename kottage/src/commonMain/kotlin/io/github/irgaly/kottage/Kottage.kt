@@ -5,6 +5,7 @@ import io.github.irgaly.kottage.internal.KottageStorageImpl
 import io.github.irgaly.kottage.internal.platform.PlatformFactory
 import io.github.irgaly.kottage.platform.Files
 import io.github.irgaly.kottage.platform.KottageSystemCalendar
+import io.github.irgaly.kottage.platform.Platform
 import io.github.irgaly.kottage.strategy.KottageFifoStrategy
 import io.github.irgaly.kottage.strategy.KottageKvsStrategy
 import kotlinx.coroutines.CoroutineDispatcher
@@ -46,7 +47,8 @@ class Kottage(
             return DatabaseFiles(
                 databaseFile = databaseFile,
                 walFile = "$databaseFile-wal",
-                shmFile = "$databaseFile-shm"
+                shmFile = "$databaseFile-shm",
+                lockFile = if (Platform.isAndroid) "$databaseFile.lck" else null
             )
         }
 
@@ -233,12 +235,19 @@ class Kottage(
          */
         val databaseFile: String,
         /**
-         * SQLite DB WAL file: "${databaseFile}-wal"
+         * SQLite DB WAL file: "${name}.db-wal"
          */
         val walFile: String,
         /**
-         * SQLite DB SHM file: "${databaseFile}-shm"
+         * SQLite DB SHM file: "${name}.db-shm"
          */
-        val shmFile: String
+        val shmFile: String,
+        /**
+         * Lock file for opening and database migration: "${name}.db.lck"
+         *
+         * * for Android Platform only
+         * * 0 Bytes empty file
+         */
+        val lockFile: String?
     )
 }
