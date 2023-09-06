@@ -15,7 +15,7 @@ This is a release for updating libraries:
 * Android Platform: SQLite lock file to
   ${name}.db.lck [182](https://github.com/irgaly/kottage/pull/182)
 
-# Fix
+#### Fix
 
 * fix Linux Event Test, fix KottageEventFlow [#148](https://github.com/irgaly/kottage/pull/148)
 
