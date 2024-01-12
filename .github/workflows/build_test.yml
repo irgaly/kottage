@@ -46,6 +46,11 @@ jobs:
       - name: JVM Test
         run: |
           ./gradlew jvmTest
+      - name: install python3 setuptools
+        if: matrix.platform == 'macos-11'
+        run: |
+          # https://github.com/WiseLibs/better-sqlite3/pull/1100
+          python3 -m pip install setuptools
       - name: JS Nodejs Test
         run: |
           ./gradlew jsNodeTest
