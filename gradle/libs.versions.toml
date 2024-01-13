@@ -44,7 +44,7 @@ sqldelight-driver-js = { module = "app.cash.sqldelight:sqljs-driver", version.re
 indexeddb = { module = "com.juul.indexeddb:core", version = "0.6.0" }
 klock = { module = "com.soywiz.korlibs.klock:klock", version = "4.0.5" }
 kottage = { module = "io.github.irgaly.kottage:kottage", version.ref = "kottage" }
-faker = { module = "io.github.serpro69:kotlin-faker", version = "1.14.0" }
+faker = { module = "io.github.serpro69:kotlin-faker", version = "1.15.0" }
 
 [bundles]
 test-common = [
