@@ -11,6 +11,16 @@
       "enabled": false
     },
     {
+      "groupName": "Kotlin",
+      "matchPackagePrefixes": [
+        "org.jetbrains.kotlin:kotlin-",
+        "org.jetbrains.kotlin."
+      ],
+      "updateTypes": [
+        "patch"
+      ]
+    },
+    {
       "groupName": "docker gcc",
       "enabled": false,
       "matchPackageNames": [
