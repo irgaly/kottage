@@ -18,7 +18,8 @@
       ],
       "updateTypes": [
         "patch"
-      ]
+      ],
+      "enabled": true
     },
     {
       "groupName": "docker gcc",
