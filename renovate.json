@@ -11,7 +11,10 @@
       "enabled": false
     },
     {
-      "groupName": "Kotlin",
+      "groupName": "Kotlin, Compose Compiler",
+      "matchPackageNames": [
+        "androidx.compose.compiler:compiler"
+      ],
       "matchPackagePrefixes": [
         "org.jetbrains.kotlin:kotlin-",
         "org.jetbrains.kotlin."
