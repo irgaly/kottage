@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ ubuntu-latest, macos-11, windows-latest ]
+        platform: [ ubuntu-latest, macos-14, windows-latest ]
     runs-on: ${{ matrix.platform }}
     defaults:
       run:
@@ -27,7 +27,7 @@ jobs:
         run: |
           ./gradlew jsTestClasses
       - name: Android Build
-        if: matrix.platform == 'macos-11'
+        if: contains(matrix.platform, 'macos')
         run: |
           ./gradlew packageDebugAndroidTest
       - name: Windows Build
@@ -36,18 +36,18 @@ jobs:
           C:/msys64/usr/bin/pacman -S --noconfirm mingw-w64-x86_64-sqlite3
           ./gradlew linkDebugTestMingwX64
       - name: iOS Build
-        if: matrix.platform == 'macos-11'
+        if: contains(matrix.platform, 'macos')
         run: |
           ./gradlew linkDebugTestIosX64
       - name: macOS Build
-        if: matrix.platform == 'macos-11'
+        if: contains(matrix.platform, 'macos')
         run: |
           ./gradlew linkDebugTestMacosX64
       - name: JVM Test
         run: |
           ./gradlew jvmTest
       - name: install python3 setuptools
-        if: matrix.platform == 'macos-11'
+        if: contains(matrix.platform, 'macos')
         run: |
           # https://github.com/WiseLibs/better-sqlite3/pull/1100
           python3 -m pip install setuptools
@@ -55,12 +55,12 @@ jobs:
         run: |
           ./gradlew jsNodeTest
       - name: JS Browser
-        if: matrix.platform == 'macos-11'
+        if: contains(matrix.platform, 'macos')
         run: |
           ./gradlew jsBrowserTest
       - name: Android Test
         uses: reactivecircus/android-emulator-runner@v2
-        if: matrix.platform == 'macos-11'
+        if: contains(matrix.platform, 'macos')
         with:
           api-level: 29
           target: google_apis
@@ -73,11 +73,11 @@ jobs:
           cp -f C:/msys64/mingw64/bin/libsqlite3-0.dll kottage/build/bin/mingwX64/debugTest/
           ./gradlew mingwX64Test
       - name: iOS Test
-        if: matrix.platform == 'macos-11'
+        if: contains(matrix.platform, 'macos')
         run: |
           ./gradlew iosX64Test
       - name: macOS Test
-        if: matrix.platform == 'macos-11'
+        if: contains(matrix.platform, 'macos')
         run: |
           ./gradlew macosX64Test
       - name: Stop Gradle on Windows
