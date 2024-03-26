@@ -4,7 +4,7 @@ import com.juul.indexeddb.Key
 import com.juul.indexeddb.ObjectStore
 import com.juul.indexeddb.WriteTransaction
 import com.juul.indexeddb.bound
-import com.juul.indexeddb.external.IDBKeyRange.Companion.only
+import com.juul.indexeddb.only
 import com.juul.indexeddb.lowerBound
 import io.github.irgaly.kottage.data.indexeddb.extension.jso
 import io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_list
@@ -132,7 +132,7 @@ internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
         return transaction.store { store ->
             store.index("item_list_item_type_item_key").openKeyCursor(
                 // item_type = itemType && item_key = itemKey
-                Key(only(arrayOf(itemType, itemKey)))
+                only(arrayOf(itemType, itemKey))
             ).map { cursor ->
                 cursor.primaryKey.unsafeCast<String>()
             }.toList()
