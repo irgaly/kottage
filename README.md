@@ -376,17 +376,17 @@ val stringValue: String = storage.get("long_value") // => "value"
 Kottage is a Kotlin Multiplatform library. Please feel free to report a issue if it doesn't
 work correctly on these platforms.
 
-| Platform                          | Target                                                         | Status                                                        |
-|-----------------------------------|----------------------------------------------------------------|---------------------------------------------------------------|
-| Kotlin/JVM on Linux/macOS/Windows | jvm                                                            | :white_check_mark: Tested                                     |
-| Kotlin/JS on Linux/macOS/Windows  | browser, nodejs                                                | :white_check_mark: Tested<br/>browser on macOS Chrome, Safari |
-| Kotlin/Android                    | android                                                        | :white_check_mark: Tested                                     |
-| Kotlin/Native iOS                 | iosArm64<br>iosX64(simulator)<br>iosSimulatorArm64             | :white_check_mark: Tested                                     |
-| Kotlin/Native watchOS             | watchosArm64<br>watchosX64(simulator)<br>watchosSimulatorArm64 | :white_check_mark: (Tested as iosX64)                         |
-| Kotlin/Native tvOS                | tvosArm64<br>tvosX64(simulator)<br>tvosSimulatorArm64          | :white_check_mark: (Tested as iosX64)                         |
-| Kotlin/Native macOS               | macosArm64<br>macosX64                                         | :white_check_mark: Tested                                     |
-| Kotlin/Native Linux               | linuxX64                                                       | :white_check_mark: Tested                                     |
-| Kotlin/Native Windows             | mingwX64                                                       | :white_check_mark: Tested                                     |
+| Platform                          | Target                                                                               | Status                                                        |
+|-----------------------------------|--------------------------------------------------------------------------------------|---------------------------------------------------------------|
+| Kotlin/JVM on Linux/macOS/Windows | jvm                                                                                  | :white_check_mark: Tested                                     |
+| Kotlin/JS on Linux/macOS/Windows  | browser, nodejs                                                                      | :white_check_mark: Tested<br/>browser on macOS Chrome, Safari |
+| Kotlin/Android                    | android                                                                              | :white_check_mark: Tested                                     |
+| Kotlin/Native iOS                 | iosArm64<br>iosX64(simulator)<br>iosSimulatorArm64                                   | :white_check_mark: Tested                                     |
+| Kotlin/Native watchOS             | watchosArm64<br>watchosDeviceArm64<br>watchosX64(simulator)<br>watchosSimulatorArm64 | :white_check_mark: (Tested as iosX64)                         |
+| Kotlin/Native tvOS                | tvosArm64<br>tvosX64(simulator)<br>tvosSimulatorArm64                                | :white_check_mark: (Tested as iosX64)                         |
+| Kotlin/Native macOS               | macosArm64<br>macosX64                                                               | :white_check_mark: Tested                                     |
+| Kotlin/Native Linux               | linuxX64                                                                             | :white_check_mark: Tested                                     |
+| Kotlin/Native Windows             | mingwX64                                                                             | :white_check_mark: Tested                                     |
 
 There is also [Kottage for SwiftPM](https://github.com/irgaly/kottage-package) that is **just for
 experimental** build.
