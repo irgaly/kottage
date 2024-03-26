@@ -1,7 +1,6 @@
 package io.github.irgaly.kottage
 
 import io.github.irgaly.kottage.test.KottageSpec
-import io.github.irgaly.test.extension.duration
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import korlibs.time.days
@@ -181,7 +180,7 @@ class KottageListTest : KottageSpec("kottage_list", body = {
             val (kottage, calendar) = kottage()
             val cache = kottage.cache("list_expiration")
             val list = cache.list("list_list_expiration") {
-                itemExpireTime = 1.days.duration
+                itemExpireTime = 1.days
             }
             it("先頭・末尾の有効期限切れ Entry にアクセスできないこと") {
                 val entry1 = list.add("key1", "value1")
@@ -232,7 +231,7 @@ class KottageListTest : KottageSpec("kottage_list", body = {
             val (kottage, calendar) = kottage()
             val cache = kottage.cache("list_compaction")
             val list = cache.list("list_list_compaction") {
-                itemExpireTime = 1.days.duration
+                itemExpireTime = 1.days
             }
             it("expire した entry が削除される") {
                 list.add("key1", "value1")
