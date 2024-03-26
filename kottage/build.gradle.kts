@@ -91,7 +91,7 @@ kotlin {
         commonTest {
             dependencies {
                 implementation(projects.kottage.core.test)
-                implementation(libs.klock)
+                implementation(libs.korlibs.time)
             }
         }
         val commonSqliteMain by creating {

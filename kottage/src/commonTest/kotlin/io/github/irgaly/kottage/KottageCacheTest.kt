@@ -3,7 +3,6 @@ package io.github.irgaly.kottage
 import io.github.irgaly.kottage.strategy.KottageFifoStrategy
 import io.github.irgaly.kottage.strategy.KottageLruStrategy
 import io.github.irgaly.kottage.test.KottageSpec
-import io.github.irgaly.test.extension.duration
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import korlibs.time.DateTime
@@ -16,7 +15,7 @@ class KottageCacheTest : KottageSpec("kottage_cache", body = {
             val (kottage, calendar) = kottage()
             it("defaultExpireTime 経過で cache が消えること") {
                 val cache = kottage.cache("defaultExpireTime") {
-                    defaultExpireTime = 1.days.duration
+                    defaultExpireTime = 1.days
                 }
                 cache.put("expire1", "value")
                 calendar.now += 1.days
@@ -32,9 +31,9 @@ class KottageCacheTest : KottageSpec("kottage_cache", body = {
             }
             it("put expireTime 経過で cache が消えること") {
                 val cache = kottage.cache("put_expireTime") {
-                    defaultExpireTime = 2.days.duration
+                    defaultExpireTime = 2.days
                 }
-                cache.put("expire1", "value", 1.days.duration)
+                cache.put("expire1", "value", 1.days)
                 cache.put("expire2", "value")
                 calendar.now += 1.days
                 cache.exists("expire1") shouldBe false
@@ -51,10 +50,10 @@ class KottageCacheTest : KottageSpec("kottage_cache", body = {
         }
         context("Auto Compaction") {
             val (compactionKottage, calendar) = kottage("compaction") {
-                autoCompactionDuration = 1.days.duration
+                autoCompactionDuration = 1.days
             }
             val cache = compactionKottage.cache("cache") {
-                defaultExpireTime = 2.days.duration
+                defaultExpireTime = 2.days
             }
             it("autoCompactionDuration 経過で cache が自動削除される") {
                 calendar.setUtc(DateTime(2022, 1, 1))
@@ -127,11 +126,11 @@ class KottageCacheTest : KottageSpec("kottage_cache", body = {
             val (kottage, calendar) = kottage()
             val cache = kottage.cache("list_expire")
             val list = cache.list("list_list_expire") {
-                itemExpireTime = 30.days.duration
+                itemExpireTime = 30.days
             }
             it("List に追加されたアイテムは expire されない") {
-                cache.put("key1", "value1", 1.days.duration)
-                cache.put("key2", "value2", 1.days.duration)
+                cache.put("key1", "value1", 1.days)
+                cache.put("key2", "value2", 1.days)
                 list.addKey("key1")
                 calendar.now += 1.days
                 cache.get<String>("key1") shouldBe "value1"
