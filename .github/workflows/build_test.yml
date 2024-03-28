@@ -27,7 +27,7 @@ jobs:
         run: |
           ./gradlew jsTestClasses
       - name: Android Build
-        if: contains(matrix.platform, 'macos')
+        if: contains(matrix.platform, 'ubuntu')
         run: |
           ./gradlew packageDebugAndroidTest
       - name: Windows Build
@@ -58,15 +58,18 @@ jobs:
         if: contains(matrix.platform, 'macos')
         run: |
           ./gradlew jsBrowserTest
+      - name: Enable KVM group for Android Emulator
+        if: contains(matrix.platform, 'ubuntu')
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
       - name: Android Test
         uses: reactivecircus/android-emulator-runner@v2
-        if: contains(matrix.platform, 'macos')
+        if: contains(matrix.platform, 'ubuntu')
         with:
           api-level: 29
-          target: google_apis
-          arch: x86_64
-          script: |
-            ./gradlew connectedDebugAndroidTest
+          script: ./gradlew connectedDebugAndroidTest
       - name: Windows Test
         if: contains(matrix.platform, 'windows')
         run: |
