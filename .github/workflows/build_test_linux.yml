@@ -22,7 +22,7 @@ jobs:
           # VACUUM INTO のために sqlite 3.27 以上にアップデート
           apt-get -yt stretch-backports install libsqlite3-dev
       - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
