@@ -1,3 +1,15 @@
+# v1.7.0 - 2024/06/03 JST
+
+#### Maintenance
+
+* Kotlin 2.0.0
+    * Update Kotlin 2.0.0, Gradle 8.8, Kotest 5.9.0, jvmToolchain(17) [#230](https://github.com/irgaly/kottage/pull/230)
+* better-sqlite3 9.2.2
+    * Update better-sqlite 9.2.2, fix python3 3.12 ModuleNotFoundError [#204](https://github.com/irgaly/kottage/pull/204)
+* AGP 8.3.1
+* indexeddb 0.7.1
+    * fix(deps): update dependency com.juul.indexeddb:core to v0.7.1 [#218](https://github.com/irgaly/kottage/pull/218)
+
 # v1.6.0 - 2023/09/06 JST
 
 This is a release for updating libraries:
