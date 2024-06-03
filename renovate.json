@@ -11,12 +11,12 @@
       "enabled": false
     },
     {
-      "groupName": "Kotlin, Compose Compiler",
+      "groupName": "Kotlin, KSP",
       "matchPackageNames": [
-        "androidx.compose.compiler:compiler"
+        "com.google.devtools.ksp"
       ],
       "matchPackagePrefixes": [
-        "org.jetbrains.kotlin:kotlin-",
+        "org.jetbrains.kotlin:",
         "org.jetbrains.kotlin."
       ],
       "updateTypes": [

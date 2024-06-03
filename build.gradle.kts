@@ -22,21 +22,23 @@ plugins {
 }
 
 subprojects {
-    tasks.withType<KotlinCompile> {
-        kotlinOptions {
-            jvmTarget = "11"
-        }
-    }
     tasks.withType<Test> {
         useJUnitPlatform()
         testLogging.showStandardStreams = true
     }
+    listOf(
+        "org.jetbrains.kotlin.android",
+        "org.jetbrains.kotlin.multiplatform",
+    ).forEach {
+        pluginManager.withPlugin(it) {
+            extensions.configure<KotlinProjectExtension> {
+                jvmToolchain(17)
+            }
+        }
+    }
     afterEvaluate {
         // libs アクセスのための afterEvaluate
         pluginManager.withPlugin(libs.plugins.kotlin.multiplatform.get().pluginId) {
-            extensions.configure<KotlinProjectExtension> {
-                jvmToolchain(11)
-            }
             extensions.configure<KotlinMultiplatformExtension> {
                 sourceSets {
                     val commonTest by getting {
@@ -57,21 +59,6 @@ subprojects {
             }
         }
     }
-    listOf(
-        "com.android.application",
-        "com.android.library"
-    ).forEach {
-        pluginManager.withPlugin(it) {
-            extensions.configure<BaseExtension> {
-                compileOptions {
-                    // Android JVM toolchain workarounds
-                    // https://issuetracker.google.com/issues/260059413
-                    sourceCompatibility = JavaVersion.VERSION_11
-                    targetCompatibility = JavaVersion.VERSION_11
-                }
-            }
-        }
-    }
     if (!path.startsWith(":sample") && !path.endsWith(":test")) {
         apply(plugin = "maven-publish")
         apply(plugin = "signing")
@@ -81,8 +68,8 @@ subprojects {
             version = libs.versions.kottage.get()
         }
         val emptyJavadocJar = tasks.create<Jar>("emptyJavadocJar") {
-            archiveClassifier.set("javadoc")
-            destinationDirectory.set(File(buildDir, "libs_emptyJavadoc"))
+            archiveClassifier = "javadoc"
+            destinationDirectory = File(buildDir, "libs_emptyJavadoc")
         }
         extensions.configure<PublishingExtension> {
             afterEvaluate {
@@ -99,26 +86,26 @@ subprojects {
                         artifact(javadocJar)
                         artifactId = "${path.split(":").drop(1).joinToString("-")}$artifactSuffix"
                         pom {
-                            name.set(artifactId)
-                            description.set("Kotlin KVS Storage for Kotlin Multiplatform.")
-                            url.set("https://github.com/irgaly/kottage")
+                            name = artifactId
+                            description = "Kotlin KVS Storage for Kotlin Multiplatform."
+                            url = "https://github.com/irgaly/kottage"
                             developers {
                                 developer {
-                                    id.set("irgaly")
-                                    name.set("irgaly")
-                                    email.set("irgaly@gmail.com")
+                                    id = "irgaly"
+                                    name = "irgaly"
+                                    email = "irgaly@gmail.com"
                                 }
                             }
                             licenses {
                                 license {
-                                    name.set("The Apache License, Version 2.0")
-                                    url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                                    name = "The Apache License, Version 2.0"
+                                    url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
                                 }
                             }
                             scm {
-                                connection.set("git@github.com:irgaly/kottage.git")
-                                developerConnection.set("git@github.com:irgaly/kottage.git")
-                                url.set("https://github.com/irgaly/kottage")
+                                connection = "git@github.com:irgaly/kottage.git"
+                                developerConnection = "git@github.com:irgaly/kottage.git"
+                                url = "https://github.com/irgaly/kottage"
                             }
                         }
                     }
@@ -147,7 +134,7 @@ plugins.withType<NodeJsRootPlugin> {
             val nodeExtension = this@configure
             val nodeEnv = nodeExtension.requireConfigured()
             val node = nodeEnv.nodeExecutable.replace(File.separator, "/")
-            val nodeDir = nodeEnv.nodeDir.path.replace(File.separator, "/")
+            val nodeDir = nodeEnv.dir.path.replace(File.separator, "/")
             val nodeBinDir = nodeEnv.nodeBinDir.path.replace(File.separator, "/")
             val npmCli = if (OperatingSystem.current().isWindows) {
                 "$nodeDir/node_modules/npm/bin/npm-cli.js"
@@ -184,9 +171,9 @@ nexusPublishing {
     repositories {
         sonatype {
             // io.github.irgaly staging profile
-            stagingProfileId.set("6c098027ed608f")
-            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+            stagingProfileId = "6c098027ed608f"
+            nexusUrl = uri("https://s01.oss.sonatype.org/service/local/")
+            snapshotRepositoryUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
         }
     }
 }
