@@ -22,21 +22,23 @@ plugins {
 }
 
 subprojects {
-    tasks.withType<KotlinCompile> {
-        kotlinOptions {
-            jvmTarget = "11"
-        }
-    }
     tasks.withType<Test> {
         useJUnitPlatform()
         testLogging.showStandardStreams = true
     }
+    listOf(
+        "org.jetbrains.kotlin.android",
+        "org.jetbrains.kotlin.multiplatform",
+    ).forEach {
+        pluginManager.withPlugin(it) {
+            extensions.configure<KotlinProjectExtension> {
+                jvmToolchain(17)
+            }
+        }
+    }
     afterEvaluate {
         // libs アクセスのための afterEvaluate
         pluginManager.withPlugin(libs.plugins.kotlin.multiplatform.get().pluginId) {
-            extensions.configure<KotlinProjectExtension> {
-                jvmToolchain(11)
-            }
             extensions.configure<KotlinMultiplatformExtension> {
                 sourceSets {
                     val commonTest by getting {
@@ -53,21 +55,6 @@ subprojects {
                             }
                         }
                     }
-                }
-            }
-        }
-    }
-    listOf(
-        "com.android.application",
-        "com.android.library"
-    ).forEach {
-        pluginManager.withPlugin(it) {
-            extensions.configure<BaseExtension> {
-                compileOptions {
-                    // Android JVM toolchain workarounds
-                    // https://issuetracker.google.com/issues/260059413
-                    sourceCompatibility = JavaVersion.VERSION_11
-                    targetCompatibility = JavaVersion.VERSION_11
                 }
             }
         }
