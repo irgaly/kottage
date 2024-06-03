@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.buildlogic.android.application)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlinx.serialization)
 }
 
@@ -9,12 +10,6 @@ android {
         applicationId = "io.github.irgaly.kottage.sample"
         versionName = libs.versions.kottage.get()
         minSdk = 21
-    }
-    buildFeatures {
-        compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
     }
 }
 
