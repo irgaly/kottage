@@ -147,7 +147,7 @@ plugins.withType<NodeJsRootPlugin> {
             val nodeExtension = this@configure
             val nodeEnv = nodeExtension.requireConfigured()
             val node = nodeEnv.nodeExecutable.replace(File.separator, "/")
-            val nodeDir = nodeEnv.nodeDir.path.replace(File.separator, "/")
+            val nodeDir = nodeEnv.dir.path.replace(File.separator, "/")
             val nodeBinDir = nodeEnv.nodeBinDir.path.replace(File.separator, "/")
             val npmCli = if (OperatingSystem.current().isWindows) {
                 "$nodeDir/node_modules/npm/bin/npm-cli.js"

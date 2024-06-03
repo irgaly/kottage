@@ -1,6 +1,6 @@
 [versions]
 kottage = "1.6.0"
-kotlin = "1.9.23"
+kotlin = "2.0.0"
 kotlinx-coroutines = "1.8.0"
 compose-compiler = "1.5.11"
 kotest = "5.9.0"
