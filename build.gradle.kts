@@ -81,8 +81,8 @@ subprojects {
             version = libs.versions.kottage.get()
         }
         val emptyJavadocJar = tasks.create<Jar>("emptyJavadocJar") {
-            archiveClassifier.set("javadoc")
-            destinationDirectory.set(File(buildDir, "libs_emptyJavadoc"))
+            archiveClassifier = "javadoc"
+            destinationDirectory = File(buildDir, "libs_emptyJavadoc")
         }
         extensions.configure<PublishingExtension> {
             afterEvaluate {
@@ -99,26 +99,26 @@ subprojects {
                         artifact(javadocJar)
                         artifactId = "${path.split(":").drop(1).joinToString("-")}$artifactSuffix"
                         pom {
-                            name.set(artifactId)
-                            description.set("Kotlin KVS Storage for Kotlin Multiplatform.")
-                            url.set("https://github.com/irgaly/kottage")
+                            name = artifactId
+                            description = "Kotlin KVS Storage for Kotlin Multiplatform."
+                            url = "https://github.com/irgaly/kottage"
                             developers {
                                 developer {
-                                    id.set("irgaly")
-                                    name.set("irgaly")
-                                    email.set("irgaly@gmail.com")
+                                    id = "irgaly"
+                                    name = "irgaly"
+                                    email = "irgaly@gmail.com"
                                 }
                             }
                             licenses {
                                 license {
-                                    name.set("The Apache License, Version 2.0")
-                                    url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                                    name = "The Apache License, Version 2.0"
+                                    url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
                                 }
                             }
                             scm {
-                                connection.set("git@github.com:irgaly/kottage.git")
-                                developerConnection.set("git@github.com:irgaly/kottage.git")
-                                url.set("https://github.com/irgaly/kottage")
+                                connection = "git@github.com:irgaly/kottage.git"
+                                developerConnection = "git@github.com:irgaly/kottage.git"
+                                url = "https://github.com/irgaly/kottage"
                             }
                         }
                     }
@@ -184,9 +184,9 @@ nexusPublishing {
     repositories {
         sonatype {
             // io.github.irgaly staging profile
-            stagingProfileId.set("6c098027ed608f")
-            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+            stagingProfileId = "6c098027ed608f"
+            nexusUrl = uri("https://s01.oss.sonatype.org/service/local/")
+            snapshotRepositoryUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
         }
     }
 }
