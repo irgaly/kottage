@@ -4,13 +4,13 @@ import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.LibraryExtension
+import java.io.ByteArrayOutputStream
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.getByType
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-import java.io.ByteArrayOutputStream
 
 /**
  * android build 共通設定を適用する
@@ -111,6 +111,7 @@ fun Project.configureMultiplatformLibrary() {
         iosSimulatorArm64() // Apple iOS simulator on Apple Silicon platforms
         // watchOS
         watchosArm64() // Apple watchOS on ARM64_32 platforms (Apple Watch Series 4 and newer)
+        watchosDeviceArm64() // Apple watchOS on ARM64 platforms (Apple Watch Series 8 and newer)
         watchosX64() // Apple watchOS 64-bit simulator (watchOS 7.0 and newer) on x86_64 platforms
         watchosSimulatorArm64() // Apple watchOS simulator on Apple Silicon platforms
         // tvOS
