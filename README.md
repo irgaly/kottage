@@ -381,10 +381,10 @@ work correctly on these platforms.
 | Kotlin/JVM on Linux/macOS/Windows | jvm                                                                                  | :white_check_mark: Tested                                     |
 | Kotlin/JS on Linux/macOS/Windows  | browser, nodejs                                                                      | :white_check_mark: Tested<br/>browser on macOS Chrome, Safari |
 | Kotlin/Android                    | android                                                                              | :white_check_mark: Tested                                     |
-| Kotlin/Native iOS                 | iosArm64<br>iosX64(simulator)<br>iosSimulatorArm64                                   | :white_check_mark: Tested                                     |
-| Kotlin/Native watchOS             | watchosArm64<br>watchosDeviceArm64<br>watchosX64(simulator)<br>watchosSimulatorArm64 | :white_check_mark: (Tested as iosX64)                         |
-| Kotlin/Native tvOS                | tvosArm64<br>tvosX64(simulator)<br>tvosSimulatorArm64                                | :white_check_mark: (Tested as iosX64)                         |
-| Kotlin/Native macOS               | macosArm64<br>macosX64                                                               | :white_check_mark: Tested                                     |
+| Kotlin/Native iOS                 | iosArm64<br>iosX64(simulator)<br>iosSimulatorArm64                                   | :white_check_mark: Tested (by iosSimulatorArm64 only)         |
+| Kotlin/Native watchOS             | watchosArm64<br>watchosDeviceArm64<br>watchosX64(simulator)<br>watchosSimulatorArm64 | :white_check_mark: (Tested as iosSimulatorArm64)              |
+| Kotlin/Native tvOS                | tvosArm64<br>tvosX64(simulator)<br>tvosSimulatorArm64                                | :white_check_mark: (Tested as iosSimulatorArm64)              |
+| Kotlin/Native macOS               | macosArm64<br>macosX64                                                               | :white_check_mark: Tested (by macosArm64 only)                |
 | Kotlin/Native Linux               | linuxX64<br>linuxArm64                                                               | :white_check_mark: Tested (by linuxX64 only)                  |
 | Kotlin/Native Windows             | mingwX64                                                                             | :white_check_mark: Tested                                     |
 
