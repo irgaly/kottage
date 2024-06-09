@@ -4,13 +4,13 @@ import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.LibraryExtension
-import java.io.ByteArrayOutputStream
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.getByType
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import java.io.ByteArrayOutputStream
 
 /**
  * android build 共通設定を適用する
@@ -123,6 +123,7 @@ fun Project.configureMultiplatformLibrary() {
         macosArm64() // Apple macOS on Apple Silicon platforms
         // Linux
         linuxX64() // Linux on x86_64 platforms
+        linuxArm64() // Linux on ARM64 platforms
         // Windows
         mingwX64() // 64-bit Microsoft Windows
         /*

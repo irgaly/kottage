@@ -385,7 +385,7 @@ work correctly on these platforms.
 | Kotlin/Native watchOS             | watchosArm64<br>watchosDeviceArm64<br>watchosX64(simulator)<br>watchosSimulatorArm64 | :white_check_mark: (Tested as iosX64)                         |
 | Kotlin/Native tvOS                | tvosArm64<br>tvosX64(simulator)<br>tvosSimulatorArm64                                | :white_check_mark: (Tested as iosX64)                         |
 | Kotlin/Native macOS               | macosArm64<br>macosX64                                                               | :white_check_mark: Tested                                     |
-| Kotlin/Native Linux               | linuxX64                                                                             | :white_check_mark: Tested                                     |
+| Kotlin/Native Linux               | linuxX64<br>linuxArm64                                                               | :white_check_mark: Tested (by linuxX64 only)                  |
 | Kotlin/Native Windows             | mingwX64                                                                             | :white_check_mark: Tested                                     |
 
 There is also [Kottage for SwiftPM](https://github.com/irgaly/kottage-package) that is **just for
