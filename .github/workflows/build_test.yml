@@ -50,7 +50,7 @@ jobs:
         if: contains(matrix.platform, 'macos')
         run: |
           # https://github.com/WiseLibs/better-sqlite3/pull/1100
-          python3 -m pip install setuptools
+          brew install python-setuptools
       - name: JS Nodejs Test
         run: |
           ./gradlew jsNodeTest
