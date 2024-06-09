@@ -1,3 +1,14 @@
+# v1.8.0 - 2024/06/09 JST
+
+#### Improvement
+
+* Support watchosDeviceArm64, update SQLite 2.0.1 [#170](https://github.com/irgaly/kottage/pull/170)
+* Support linuxArm64 target [#233](https://github.com/irgaly/kottage/pull/233)
+
+#### Maintenance
+
+* CI: Run Arm64 Test on macOS [#234](https://github.com/irgaly/kottage/pull/234)
+
 # v1.7.0 - 2024/06/03 JST
 
 #### Maintenance
