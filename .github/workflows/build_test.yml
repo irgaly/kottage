@@ -38,11 +38,11 @@ jobs:
       - name: iOS Build
         if: contains(matrix.platform, 'macos')
         run: |
-          ./gradlew linkDebugTestIosX64
+          ./gradlew linkDebugTestIosSimulatorArm64
       - name: macOS Build
         if: contains(matrix.platform, 'macos')
         run: |
-          ./gradlew linkDebugTestMacosX64
+          ./gradlew linkDebugTestMacosArm64
       - name: JVM Test
         run: |
           ./gradlew jvmTest
@@ -78,11 +78,11 @@ jobs:
       - name: iOS Test
         if: contains(matrix.platform, 'macos')
         run: |
-          ./gradlew iosX64Test
+          ./gradlew iosSimulatorArm64Test
       - name: macOS Test
         if: contains(matrix.platform, 'macos')
         run: |
-          ./gradlew macosX64Test
+          ./gradlew macosArm64Test
       - name: Stop Gradle on Windows
         if: contains(matrix.platform, 'windows')
         run: |
