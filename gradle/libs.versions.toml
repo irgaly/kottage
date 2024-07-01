@@ -25,7 +25,7 @@ compose-bom = { group = "androidx.compose", name = "compose-bom", version = "202
 compose-material = { module = "androidx.compose.material:material" }
 compose-material3 = { module = "androidx.compose.material3:material3" }
 compose-uiTooling = { module = "androidx.compose.ui:ui-tooling" }
-compose-paging = { module = "androidx.paging:paging-compose", version = "3.2.0" }
+compose-paging = { module = "androidx.paging:paging-compose", version = "3.3.0" }
 compose-navigation = { module = "androidx.navigation:navigation-compose", version = "2.7.1" }
 test-kotest-runner = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 test-kotest-assertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
