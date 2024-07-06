@@ -4,6 +4,8 @@
 .idea/kotlinc.xml
 .idea/inspectionProfiles
 .idea/appInsightsSettings.xml
+.idea/deploymentTargetSelector.xml
+.idea/other.xml
 
 # Kotlin
 .kotlin
