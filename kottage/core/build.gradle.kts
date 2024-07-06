@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
+
 plugins {
     alias(libs.plugins.buildlogic.multiplatform.library)
     alias(libs.plugins.buildlogic.android.library)
@@ -13,6 +15,11 @@ kotlin {
     js(IR) {
         browser()
         nodejs()
+    }
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        browser()
+        binaries.executable()
     }
     sourceSets {
         commonMain {

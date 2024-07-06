@@ -2,6 +2,7 @@ import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
+import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.targets.js.testing.KotlinJsTest
 
 plugins {
@@ -75,6 +76,22 @@ kotlin {
         }
         nodejs()
     }
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        browser {
+            if (providers.environmentVariable("GITHUB_ACTIONS").isPresent
+                && OperatingSystem.current().isMacOsX
+            ) {
+                testTask {
+                    useKarma {
+                        useChromeHeadless()
+                        useConfigDirectory(rootProject.file(".github/karma.config.d"))
+                    }
+                }
+            }
+        }
+        binaries.executable()
+    }
     mingwX64 {
         binaries.configureEach {
             // rpcrt4: UuidCreate, RpcStringFreeW, UuidToStringW に必要
@@ -132,6 +149,10 @@ kotlin {
                 // https://github.com/karma-runner/karma-safari-launcher/issues/29#issuecomment-870387251
                 implementation(devNpm("karma-safarinative-launcher", "1.1.0"))
             }
+        }
+        val wasmJsMain by getting {
+            dependsOn(commonSqliteMain)
+            dependsOn(commonIndexeddbMain)
         }
         val nativeMain by getting {
             dependsOn(sqliteMain)
