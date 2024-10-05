@@ -30,6 +30,10 @@ jobs:
         if: contains(matrix.platform, 'ubuntu')
         run: |
           ./gradlew packageDebugAndroidTest
+      - name: Linux Test Build
+        if: contains(matrix.platform, 'ubuntu')
+        run: |
+          ./gradlew linkDebugTestLinuxX64
       - name: Windows Build
         if: contains(matrix.platform, 'windows')
         run: |
@@ -70,6 +74,10 @@ jobs:
         with:
           api-level: 29
           script: ./gradlew connectedDebugAndroidTest
+      - name: Linux Test
+        if: contains(matrix.platform, 'ubuntu')
+        run: |
+          ./gradlew linuxX64Test
       - name: Windows Test
         if: contains(matrix.platform, 'windows')
         run: |

@@ -63,12 +63,13 @@ kotlin {
             }
         }
     }
-    if (providers.environmentVariable("GITHUB_ACTIONS").isPresent
-        && OperatingSystem.current().isLinux
-    ) {
-        targets.withType<KotlinNativeTarget> {
-            if ("linux" in name) {
-                binaries.all {
+    targets.withType<KotlinNativeTarget> {
+        if ("linux" in name && OperatingSystem.current().isLinux) {
+            binaries.all {
+                // fix /usr/lib/x86_64-linux-gnu/libsqlite3.so: error: undefined reference to 'fcntl64', version 'GLIBC_2.28'
+                // https://youtrack.jetbrains.com/issue/KT-43501
+                linkerOpts.add("--allow-shlib-undefined")
+                if (providers.environmentVariable("GITHUB_ACTIONS").isPresent) {
                     linkerOpts.add("-L/usr/lib/x86_64-linux-gnu")
                 }
             }

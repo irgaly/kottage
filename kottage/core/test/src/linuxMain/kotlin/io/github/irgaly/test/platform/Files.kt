@@ -2,6 +2,7 @@ package io.github.irgaly.test.platform
 
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.cstr
+import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.staticCFunction
 import kotlinx.cinterop.toKString
 import platform.posix.FTW_DEPTH
@@ -20,7 +21,9 @@ actual class Files {
                 sequenceOf("TMPDIR", "TMP", "TEMP", "TEMPDIR").firstNotNullOfOrNull {
                     getenv(it)?.toKString()
                 } ?: "/tmp"
-            val directory = mkdtemp("$tempDirectory/tmpdir.XXXXXX".cstr)?.toKString()
+            val directory = memScoped {
+                mkdtemp("$tempDirectory/tmpdir.XXXXXX".cstr.ptr)?.toKString()
+            }
             return checkNotNull(directory)
         }
 
