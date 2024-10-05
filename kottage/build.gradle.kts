@@ -144,9 +144,14 @@ kotlin {
                 // https://github.com/cashapp/sqldelight/issues/3296
                 // https://github.com/cashapp/sqldelight/blob/ee8eb4390dedaaf735937896aef9f0ed56f3281e/drivers/native-driver/build.gradle
                 linkerOpts.add("-lsqlite3")
-                if (providers.environmentVariable("GITHUB_ACTIONS").isPresent
-                    && OperatingSystem.current().isLinux
-                ) {
+            }
+        }
+        if ("linux" in name && OperatingSystem.current().isLinux) {
+            binaries.all {
+                // fix /usr/lib/x86_64-linux-gnu/libsqlite3.so: error: undefined reference to 'fcntl64', version 'GLIBC_2.28'
+                // https://youtrack.jetbrains.com/issue/KT-43501
+                linkerOpts.add("--allow-shlib-undefined")
+                if (providers.environmentVariable("GITHUB_ACTIONS").isPresent) {
                     linkerOpts.add("-L/usr/lib/x86_64-linux-gnu")
                 }
             }
