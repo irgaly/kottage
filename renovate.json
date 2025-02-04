@@ -14,8 +14,8 @@
       "groupName": "Kotlin, KSP",
       "matchPackageNames": [
         "com.google.devtools.ksp",
-        "org.jetbrains.kotlin:{/,}**",
-        "org.jetbrains.kotlin.{/,}**"
+        "org.jetbrains.kotlin:*",
+        "org.jetbrains.kotlin.*"
       ],
       "matchUpdateTypes": [
         "patch"
