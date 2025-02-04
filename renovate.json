@@ -1,11 +1,11 @@
 {
   "extends": [
-    "config:base",
+    "config:recommended",
     "schedule:quarterly"
   ],
   "packageRules": [
     {
-      "updateTypes": [
+      "matchUpdateTypes": [
         "patch"
       ],
       "enabled": false
@@ -13,13 +13,11 @@
     {
       "groupName": "Kotlin, KSP",
       "matchPackageNames": [
-        "com.google.devtools.ksp"
+        "com.google.devtools.ksp",
+        "org.jetbrains.kotlin:*",
+        "org.jetbrains.kotlin.*"
       ],
-      "matchPackagePrefixes": [
-        "org.jetbrains.kotlin:",
-        "org.jetbrains.kotlin."
-      ],
-      "updateTypes": [
+      "matchUpdateTypes": [
         "patch"
       ],
       "enabled": true
