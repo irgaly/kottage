@@ -1,11 +1,7 @@
-
-.idea/runConfigurations
-.idea/deploymentTargetDropDown.xml
-.idea/kotlinc.xml
-.idea/inspectionProfiles
-.idea/appInsightsSettings.xml
-.idea/deploymentTargetSelector.xml
-.idea/other.xml
+.idea/*
+!.idea/codeStyles
+!.idea/dictionaries
+!.idea/externalDependencies.xml
 
 # Kotlin
 .kotlin
