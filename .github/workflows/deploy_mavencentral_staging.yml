@@ -16,6 +16,10 @@ jobs:
           distribution: temurin
           java-version: 17
       - uses: ./.github/actions/gradle-cache
+      - name: Set Staging version
+        run: |
+          sed -i "" -E "s/^kottage = \"(.*)\"$/kottage = \"\\1-pr${{ github.event.pull_request.number }}.${{ github.run_number }}.${{ github.run_attempt }}\"/g" gradle/libs.versions.toml
+          grep "^kottage" gradle/libs.versions.toml
       - name: Deploy to Maven Central
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME_TOKEN }}
@@ -23,4 +27,6 @@ jobs:
           SIGNING_PGP_KEY: ${{ secrets.SIGNING_PGP_KEY }}
           SIGNING_PGP_PASSWORD: ${{ secrets.SIGNING_PGP_PASSWORD }}
         run: |
-          ./gradlew publishToSonatype closeSonatypeStagingRepository
+          # kottageではstagingリポジトリのcloseがタイムアウトするためcloseしない
+          # ./gradlew publishToSonatype closeSonatypeStagingRepository
+          ./gradlew publishToSonatype
