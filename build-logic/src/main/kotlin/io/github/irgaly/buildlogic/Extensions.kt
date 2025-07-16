@@ -99,10 +99,9 @@ fun Project.configureMultiplatformLibrary() {
         pluginManager.withPlugin("com.android.library") {
             // Android AAR
             androidTarget {
-                publishAllLibraryVariants()
+                publishLibraryVariants("release", "debug")
             }
         }
-        targetHierarchy.default()
         // Java jar
         jvm()
         // iOS
