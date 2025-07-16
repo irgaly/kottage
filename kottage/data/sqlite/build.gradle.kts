@@ -31,6 +31,7 @@ kotlin {
             linkerOpts("-LC:/msys64/mingw64/lib", "-lsqlite3")
         }
     }
+    applyDefaultHierarchyTemplate()
     sourceSets {
         commonMain {
             dependencies {
@@ -53,7 +54,7 @@ kotlin {
                 implementation(libs.sqldelight.driver.jvm)
             }
         }
-        val nativeMain by getting {
+        nativeMain {
             dependencies {
                 implementation(libs.sqldelight.driver.native)
             }
