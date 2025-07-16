@@ -1,6 +1,6 @@
 [versions]
 kottage = "1.8.0"
-kotlin = "2.1.20"
+kotlin = "2.2.0"
 kotlinx-coroutines = "1.10.1"
 kotest = "6.0.0.M1"
 gradle-android = "8.11.1"
