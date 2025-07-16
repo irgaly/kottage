@@ -1,7 +1,7 @@
 import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
-import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsEnvSpec
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
 import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask
 
@@ -127,14 +127,17 @@ subprojects {
 }
 
 plugins.withType<NodeJsRootPlugin> {
-    extensions.configure<NodeJsRootExtension> {
-        nodeVersion = "20.18.2"
+    extensions.configure<NodeJsEnvSpec> {
+        version = "20.18.2"
         val installBetterSqlite3 by tasks.registering(Exec::class) {
-            val nodeExtension = this@configure
-            val nodeEnv = nodeExtension.requireConfigured()
-            val node = nodeEnv.nodeExecutable.replace(File.separator, "/")
-            val nodeDir = nodeEnv.dir.path.replace(File.separator, "/")
-            val nodeBinDir = nodeEnv.nodeBinDir.path.replace(File.separator, "/")
+            val envSpec = this@configure
+            val node = envSpec.executable.get().replace(File.separator, "/")
+            val nodeDir = if (OperatingSystem.current().isWindows) {
+                File(node).parent
+            } else {
+                File(node).parentFile.parent
+            }
+            val nodeBinDir = File(node).parent
             val npmCli = if (OperatingSystem.current().isWindows) {
                 "$nodeDir/node_modules/npm/bin/npm-cli.js"
             } else {
@@ -144,7 +147,7 @@ plugins.withType<NodeJsRootPlugin> {
             val betterSqlite3 = buildDir.resolve("js/node_modules/better-sqlite3")
             dependsOn(tasks.withType<KotlinNpmInstallTask>())
             inputs.files(betterSqlite3.resolve("package.json"))
-            inputs.property("node-version", nodeVersion)
+            inputs.property("node-version", envSpec.version)
             outputs.files(betterSqlite3.resolve("build/Release/better_sqlite3.node"))
             outputs.cacheIf { true }
             workingDir = betterSqlite3
