@@ -138,19 +138,19 @@ internal class FrameworkSQLiteDatabase(
     }
 
     override fun query(query: SupportSQLiteQuery): Cursor {
-        val cursorFactory = { _: SQLiteDatabase?,
-                              masterQuery: SQLiteCursorDriver?,
-                              editTable: String?,
-                              sqLiteQuery: SQLiteQuery? ->
+        val cursorFactory = { _: SQLiteDatabase,
+                              masterQuery: SQLiteCursorDriver,
+                              editTable: String,
+                              sqLiteQuery: SQLiteQuery ->
             query.bindTo(
                 FrameworkSQLiteProgram(
-                    sqLiteQuery!!
+                    sqLiteQuery
                 )
             )
             SQLiteCursor(masterQuery, editTable, sqLiteQuery)
         }
         return delegate.rawQueryWithFactory(
-            cursorFactory, query.sql, EMPTY_STRING_ARRAY, null
+            cursorFactory, query.sql, EMPTY_STRING_ARRAY, ""
         )
     }
 
@@ -158,20 +158,20 @@ internal class FrameworkSQLiteDatabase(
         query: SupportSQLiteQuery,
         cancellationSignal: CancellationSignal?
     ): Cursor {
-        val cursorFactory = { _: SQLiteDatabase?,
-                              masterQuery: SQLiteCursorDriver?,
-                              editTable: String?,
-                              sqLiteQuery: SQLiteQuery? ->
+        val cursorFactory = { _: SQLiteDatabase,
+                              masterQuery: SQLiteCursorDriver,
+                              editTable: String,
+                              sqLiteQuery: SQLiteQuery ->
             query.bindTo(
                 FrameworkSQLiteProgram(
-                    sqLiteQuery!!
+                    sqLiteQuery
                 )
             )
             SQLiteCursor(masterQuery, editTable, sqLiteQuery)
         }
         return delegate.rawQueryWithFactory(
             cursorFactory, query.sql,
-            EMPTY_STRING_ARRAY, null, cancellationSignal!!
+            EMPTY_STRING_ARRAY, "", cancellationSignal!!
         )
     }
 
