@@ -70,4 +70,4 @@ buildlogic-multiplatform-library = { id = "build-logic.multiplatform.library" }
 buildlogic-dependencygraph = { id = "build-logic.dependency-graph" }
 dokka = { id = "org.jetbrains.dokka", version = "2.0.0" }
 nexus-publish = { id = "io.github.gradle-nexus.publish-plugin", version = "2.0.0" }
-android-junit5 = { id = "de.mannodermaus.android-junit5", version = "1.12.0.0" }
+android-junit5 = { id = "de.mannodermaus.android-junit5", version = "1.13.1.0" }
