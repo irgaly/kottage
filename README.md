@@ -51,7 +51,10 @@ plugins {
 kotlin {
     sourceSets {
         commonMain {
-            implementation("io.github.irgaly.kottage:kottage:1.8.0")
+            dependencies {
+                implementation("io.github.irgaly.kottage:kottage:1.8.0")
+                // ...
+            }
         }
     }
     // ...
