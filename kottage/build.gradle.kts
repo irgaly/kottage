@@ -81,6 +81,7 @@ kotlin {
             linkerOpts("-lrpcrt4", "-LC:/msys64/mingw64/lib", "-lsqlite3")
         }
     }
+    applyDefaultHierarchyTemplate()
     sourceSets {
         commonMain {
             dependencies {
@@ -114,7 +115,6 @@ kotlin {
             dependsOn(sqliteMain)
         }
         val androidInstrumentedTest by getting {
-            dependsOn(commonTest.get())
             dependencies {
                 implementation(libs.bundles.test.android.instrumented)
             }
@@ -133,7 +133,7 @@ kotlin {
                 implementation(devNpm("karma-safarinative-launcher", "1.1.0"))
             }
         }
-        val nativeMain by getting {
+        nativeMain {
             dependsOn(sqliteMain)
         }
     }

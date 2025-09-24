@@ -657,21 +657,24 @@ To prevent this error, you should build FFI file with a custom Gradle Task.
 `{rootProject}/build.gradle.kts` ([sample build.gradle.kts is here](build.gradle.kts))
 
 ```kotlin
-import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsEnvSpec
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
 import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask
 
 ...
 plugins.withType<NodeJsRootPlugin> {
-    extensions.configure<NodeJsRootExtension> {
+    extensions.configure<NodeJsEnvSpec> {
         // Choose any version you want to use from https://nodejs.org/en/download/releases/
         nodeVersion = "20.18.2"
         val installBetterSqlite3 by tasks.registering(Exec::class) {
-            val nodeExtension = this@configure
-            val nodeEnv = nodeExtension.requireConfigured()
-            val node = nodeEnv.nodeExecutable.replace(File.separator, "/")
-            val nodeDir = nodeEnv.nodeDir.path.replace(File.separator, "/")
-            val nodeBinDir = nodeEnv.nodeBinDir.path.replace(File.separator, "/")
+            val envSpec = this@configure
+            val node = envSpec.executable.get().replace(File.separator, "/")
+            val nodeDir = if (OperatingSystem.current().isWindows) {
+                File(node).parent
+            } else {
+                File(node).parentFile.parent
+            }
+            val nodeBinDir = File(node).parent
             val npmCli = if (OperatingSystem.current().isWindows) {
                 "$nodeDir/node_modules/npm/bin/npm-cli.js"
             } else {
