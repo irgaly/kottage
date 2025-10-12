@@ -8,7 +8,7 @@ gradle-android-compile-sdk = "36"
 gradle-android-target-sdk = "36"
 gradle-android-min-sdk = "21"
 sqldelight = "2.1.0"
-junit5-android-test = "1.8.0"
+junit5-android-test = "1.9.0"
 
 [libraries]
 gradle-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
