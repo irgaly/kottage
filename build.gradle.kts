@@ -128,7 +128,7 @@ subprojects {
 
 plugins.withType<NodeJsRootPlugin> {
     extensions.configure<NodeJsEnvSpec> {
-        version = "20.18.2"
+        version = "22.0.0"
         val installBetterSqlite3 by tasks.registering(Exec::class) {
             val envSpec = this@configure
             val node = envSpec.executable.get().replace(File.separator, "/")

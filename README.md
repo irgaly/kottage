@@ -665,7 +665,7 @@ import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask
 plugins.withType<NodeJsRootPlugin> {
     extensions.configure<NodeJsEnvSpec> {
         // Choose any version you want to use from https://nodejs.org/en/download/releases/
-        nodeVersion = "20.18.2"
+        nodeVersion = "22.0.0"
         val installBetterSqlite3 by tasks.registering(Exec::class) {
             val envSpec = this@configure
             val node = envSpec.executable.get().replace(File.separator, "/")
