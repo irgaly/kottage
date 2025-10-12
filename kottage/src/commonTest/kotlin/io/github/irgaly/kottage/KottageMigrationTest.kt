@@ -5,6 +5,7 @@ import io.github.irgaly.kottage.platform.TestCalendar
 import io.github.irgaly.kottage.test.KottageSpec
 import io.kotest.matchers.shouldBe
 import korlibs.time.DateTime
+import korlibs.time.utc
 
 class KottageMigrationTest : KottageSpec("migration", body = {
     describe("Database Migration") {
