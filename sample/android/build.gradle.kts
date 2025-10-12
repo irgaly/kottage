@@ -9,7 +9,7 @@ android {
     defaultConfig {
         applicationId = "io.github.irgaly.kottage.sample"
         versionName = libs.versions.kottage.get()
-        minSdk = 21
+        minSdk = 26
     }
 }
 
