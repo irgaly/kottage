@@ -10,6 +10,8 @@ plugins {
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.dokka)
     alias(libs.plugins.android.junit5)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.kotest)
 }
 
 android {

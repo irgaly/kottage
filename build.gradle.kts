@@ -1,11 +1,9 @@
-import com.android.build.gradle.BaseExtension
 import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
 import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform) apply false
@@ -13,7 +11,8 @@ plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.kotlinx.serialization) apply false
-    alias(libs.plugins.kotest.multiplatform) apply false
+    alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.kotest) apply false
     alias(libs.plugins.buildlogic.multiplatform.library) apply false
     alias(libs.plugins.buildlogic.android.application) apply false
     alias(libs.plugins.buildlogic.android.library) apply false
