@@ -2,6 +2,7 @@ package io.github.irgaly.kottage.platform
 
 import korlibs.time.DateTime
 import korlibs.time.DateTimeTz
+import korlibs.time.utc
 
 data class TestCalendar(
     var now: DateTimeTz

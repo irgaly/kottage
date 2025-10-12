@@ -8,6 +8,7 @@ import io.github.irgaly.kottage.platform.KottageLogger
 import io.github.irgaly.kottage.platform.TestCalendar
 import korlibs.time.DateTime
 import korlibs.time.milliseconds
+import korlibs.time.utc
 import kotlinx.coroutines.CoroutineScope
 
 fun buildKottage(
