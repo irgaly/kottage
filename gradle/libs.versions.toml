@@ -42,7 +42,7 @@ sqldelight-driver-jvm = { module = "app.cash.sqldelight:sqlite-driver", version.
 sqldelight-driver-native = { module = "app.cash.sqldelight:native-driver", version.ref = "sqldelight" }
 sqldelight-driver-js = { module = "app.cash.sqldelight:sqljs-driver", version.ref = "sqldelight" }
 indexeddb = { module = "com.juul.indexeddb:core", version = "0.9.0" }
-korlibs-time = { module = "com.soywiz.korge:korlibs-time", version = "5.4.0" }
+korlibs-time = { module = "com.soywiz:korlibs-time", version = "6.0.0" }
 kottage = { module = "io.github.irgaly.kottage:kottage", version.ref = "kottage" }
 faker = { module = "io.github.serpro69:kotlin-faker", version = "1.16.0" }
 
