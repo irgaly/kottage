@@ -4,13 +4,13 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.tasks.TaskAction
-import java.util.Locale
 
 @Suppress("unused")
 open class ProjectDependencyGraphTask : DefaultTask() {
     @TaskAction
     fun run() {
-        val md = project.rootProject.buildDir.resolve("reports/dependency-graph/project.md")
+        val md = project.rootProject.layout.buildDirectory
+            .file("reports/dependency-graph/project.md").get().asFile
         md.parentFile.mkdirs()
         md.delete()
 
@@ -75,8 +75,8 @@ open class ProjectDependencyGraphTask : DefaultTask() {
             project.configurations.all {
                 getDependencies()
                     .filterIsInstance<ProjectDependency>()
-                    .filter { project != it.dependencyProject }
-                    .map { it.dependencyProject }
+                    .filter { project.path != it.path }
+                    .map { project.project(it.path) }
                     .forEach { dependency ->
                         projects.add(project)
                         projects.add(dependency)
@@ -85,7 +85,7 @@ open class ProjectDependencyGraphTask : DefaultTask() {
                         val graphKey = Pair(project, dependency)
                         val traits = dependencies.computeIfAbsent(graphKey) { mutableListOf() }
 
-                        if (name.toLowerCase(Locale.getDefault()).endsWith("implementation")) {
+                        if (name.lowercase().endsWith("implementation")) {
                             traits.add("dotted")
                         }
                     }
@@ -99,8 +99,6 @@ open class ProjectDependencyGraphTask : DefaultTask() {
 
         md.appendText("\n    %% Modules\n\n")
         for (project in projects) {
-            val traits = mutableListOf<String>()
-
             var brackets = Pair("[", "]")
             if (rootProjects.contains(project)) {
                 brackets = Pair("([", "])")
