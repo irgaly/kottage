@@ -2,7 +2,8 @@
 
 #### Improvement
 
-* Support watchosDeviceArm64, update SQLite 2.0.1 [#170](https://github.com/irgaly/kottage/pull/170)
+* Support watchosDeviceArm64, update SQLDelight
+  2.0.1 [#170](https://github.com/irgaly/kottage/pull/170)
 * Support linuxArm64 target [#233](https://github.com/irgaly/kottage/pull/233)
 
 #### Maintenance
