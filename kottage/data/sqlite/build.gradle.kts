@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.buildlogic.multiplatform.library)
     alias(libs.plugins.buildlogic.android.library)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.kotest)
 }
 
 sqldelight {
@@ -29,6 +31,7 @@ kotlin {
             linkerOpts("-LC:/msys64/mingw64/lib", "-lsqlite3")
         }
     }
+    applyDefaultHierarchyTemplate()
     sourceSets {
         commonMain {
             dependencies {
@@ -51,15 +54,15 @@ kotlin {
                 implementation(libs.sqldelight.driver.jvm)
             }
         }
-        val nativeMain by getting {
+        nativeMain {
             dependencies {
                 implementation(libs.sqldelight.driver.native)
             }
         }
         val jsMain by getting {
             dependencies {
-                implementation(npm("better-sqlite3", "9.2.2"))
-                //implementation(npm("@types/better-sqlite3", "9.2.2", generateExternals = true))
+                implementation(npm("better-sqlite3", "12.4.1"))
+                //implementation(npm("@types/better-sqlite3", "12.4.1", generateExternals = true))
             }
         }
     }

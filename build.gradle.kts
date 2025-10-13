@@ -1,11 +1,9 @@
-import com.android.build.gradle.BaseExtension
 import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
-import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsEnvSpec
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
 import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform) apply false
@@ -13,7 +11,8 @@ plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.kotlinx.serialization) apply false
-    alias(libs.plugins.kotest.multiplatform) apply false
+    alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.kotest) apply false
     alias(libs.plugins.buildlogic.multiplatform.library) apply false
     alias(libs.plugins.buildlogic.android.application) apply false
     alias(libs.plugins.buildlogic.android.library) apply false
@@ -128,33 +127,36 @@ subprojects {
 }
 
 plugins.withType<NodeJsRootPlugin> {
-    extensions.configure<NodeJsRootExtension> {
-        nodeVersion = "20.18.2"
+    extensions.configure<NodeJsEnvSpec> {
+        version = "22.0.0"
         val installBetterSqlite3 by tasks.registering(Exec::class) {
-            val nodeExtension = this@configure
-            val nodeEnv = nodeExtension.requireConfigured()
-            val node = nodeEnv.nodeExecutable.replace(File.separator, "/")
-            val nodeDir = nodeEnv.dir.path.replace(File.separator, "/")
-            val nodeBinDir = nodeEnv.nodeBinDir.path.replace(File.separator, "/")
+            val envSpec = this@configure
+            val node = envSpec.executable.get().replace(File.separator, "/")
+            val nodeDir = if (OperatingSystem.current().isWindows) {
+                File(node).parent.replace(File.separator, "/")
+            } else {
+                File(node).parentFile.parent
+            }
+            val nodeBinDir = File(node).parent.replace(File.separator, "/")
             val npmCli = if (OperatingSystem.current().isWindows) {
                 "$nodeDir/node_modules/npm/bin/npm-cli.js"
             } else {
                 "$nodeDir/lib/node_modules/npm/bin/npm-cli.js"
             }
             val npm = "\"$node\" \"$npmCli\""
-            val betterSqlite3 = buildDir.resolve("js/node_modules/better-sqlite3")
+            val betterSqlite3 = layout.buildDirectory.dir("js/node_modules/better-sqlite3")
             dependsOn(tasks.withType<KotlinNpmInstallTask>())
-            inputs.files(betterSqlite3.resolve("package.json"))
-            inputs.property("node-version", nodeVersion)
-            outputs.files(betterSqlite3.resolve("build/Release/better_sqlite3.node"))
+            inputs.files(betterSqlite3.get().file("package.json"))
+            inputs.property("node-version", envSpec.version)
+            outputs.files(betterSqlite3.get().file("build/Release/better_sqlite3.node"))
             outputs.cacheIf { true }
-            workingDir = betterSqlite3
+            workingDir = betterSqlite3.get().asFile
             commandLine = if (OperatingSystem.current().isWindows) {
                 listOf(
                     "sh",
                     "-c",
                     // pwd で C:/... -> /c/... 変換
-                    "PATH=\$(cd $nodeBinDir;pwd):\$PATH $npm run install --verbose"
+                    "PATH=\$(cd ${nodeBinDir};pwd):\$PATH $npm run install --verbose"
                 )
             } else {
                 listOf(

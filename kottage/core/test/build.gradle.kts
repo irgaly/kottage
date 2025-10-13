@@ -1,5 +1,7 @@
 plugins {
     alias(libs.plugins.buildlogic.multiplatform.library)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.kotest)
 }
 
 kotlin {
