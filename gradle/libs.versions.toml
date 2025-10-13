@@ -31,7 +31,7 @@ compose-navigation = { module = "androidx.navigation:navigation-compose", versio
 test-kotest-runner = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 test-kotest-assertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 test-kotest-engine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
-test-android-junit5 = { module = "org.junit.jupiter:junit-jupiter-api", version = "5.13.3" }
+test-android-junit5 = { module = "org.junit.jupiter:junit-jupiter-api", version = "6.0.0" }
 test-android-junit5-core = { module = "de.mannodermaus.junit5:android-test-core", version.ref = "junit5-android-test" }
 test-android-junit5-runner = { module = "de.mannodermaus.junit5:android-test-runner", version.ref = "junit5-android-test" }
 test-android-runner = { module = "androidx.test:runner", version = "1.7.0" }
