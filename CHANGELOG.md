@@ -1,3 +1,11 @@
+# v1.9.0 - 2025/10/14 JST
+
+#### Maintenance
+
+* update: kotest v6.0.3, Kotlin v2.2.0, Android minSdk = 26, Node 22.0.0, better-sqlite3
+  v12.4.1 [#330](https://github.com/irgaly/kottage/pull/330)
+* Update SQLDelight v2.1.0 [#312](https://github.com/irgaly/kottage/pull/312)
+
 # v1.8.0 - 2024/06/09 JST
 
 #### Improvement
