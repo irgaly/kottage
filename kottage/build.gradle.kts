@@ -1,5 +1,5 @@
 import org.gradle.internal.os.OperatingSystem
-import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.dokka.gradle.tasks.DokkaGeneratePublicationTask
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 import org.jetbrains.kotlin.gradle.targets.js.testing.KotlinJsTest
@@ -166,10 +166,9 @@ dependencies {
     androidTestRuntimeOnly(libs.test.android.junit5.runner)
 }
 
-val dokkaHtml by tasks.getting(DokkaTask::class)
+val dokkaGeneratePublicationHtml by tasks.getting(DokkaGeneratePublicationTask::class)
 val javadocJar by tasks.registering(Jar::class) {
-    dependsOn(dokkaHtml)
-    from(dokkaHtml.outputDirectory)
+    from(dokkaGeneratePublicationHtml.outputDirectory)
     archiveClassifier = "javadoc"
 }
 
