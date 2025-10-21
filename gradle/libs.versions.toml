@@ -1,6 +1,6 @@
 [versions]
 kottage = "1.9.0"
-kotlin = "2.2.0"
+kotlin = "2.2.20"
 kotlinx-coroutines = "1.10.1"
 kotest = "6.0.4"
 gradle-android = "8.13.0"
@@ -63,7 +63,7 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 android-application = { id = "com.android.application", version.ref = "gradle-android" }
 android-library = { id = "com.android.library", version.ref = "gradle-android" }
-ksp = { id = "com.google.devtools.ksp", version = "2.2.0-2.0.2" }
+ksp = { id = "com.google.devtools.ksp", version = "2.2.20-2.0.4" }
 kotest = { id = "io.kotest", version.ref = "kotest" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 buildlogic-android-application = { id = "build-logic.android.application" }
