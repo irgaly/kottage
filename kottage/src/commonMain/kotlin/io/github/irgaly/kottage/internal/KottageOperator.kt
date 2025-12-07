@@ -362,24 +362,32 @@ internal class KottageOperator(
         itemRepository.updateLastRead(transaction.transaction, key, itemType, now)
     }
 
-    override suspend fun deleteLeastRecentlyUsed(transaction: KottageTransaction, itemType: String, limit: Long) {
+    override suspend fun deleteLeastRecentlyUsed(
+        transaction: KottageTransaction,
+        itemType: String,
+        limit: Long
+    ): Pair<Long, Long> {
         var deleted = 0L
+        var deletedBytes = 0L
         itemRepository.getLeastRecentlyUsedKeys(transaction.transaction, itemType, null) { key ->
             val itemListEntryIds = itemListRepository.getIds(transaction.transaction, itemType = itemType, itemKey = key)
             if (itemListEntryIds.isEmpty()) {
                 // ItemList に存在しなければ削除可能
-                deleteItemInternal(transaction.transaction, key, itemType)
+                val deletedItemBytes = deleteItemInternal(transaction.transaction, key, itemType)
                 deleted++
+                deletedBytes += deletedItemBytes
             }
             (deleted < limit)
         }
+        return Pair(deleted, deletedBytes)
     }
 
     override suspend fun deleteLeastRecentlyUsedByBytes(
         transaction: KottageTransaction,
         itemType: String,
         atLeastBytes: Long
-    ) {
+    ): Pair<Long, Long> {
+        var deleted = 0L
         var deletedBytes = 0L
         itemRepository.getLeastRecentlyUsedKeys(transaction.transaction, itemType, null) { key ->
             val itemListEntryIds = itemListRepository.getIds(
@@ -389,34 +397,41 @@ internal class KottageOperator(
             )
             if (itemListEntryIds.isEmpty()) {
                 // ItemList に存在しなければ削除可能
-                val item = itemRepository.get(transaction.transaction, key, itemType)
-                if (item != null) {
-                    deletedBytes += item.getEstimateValueBytes()
-                    deleteItemInternal(transaction.transaction, key, itemType)
-                }
+                val deletedItemBytes = deleteItemInternal(transaction.transaction, key, itemType)
+                deleted++
+                deletedBytes += deletedItemBytes
             }
             (deletedBytes < atLeastBytes)
         }
+        return Pair(deleted, deletedBytes)
     }
 
-    override suspend fun deleteOlderItems(transaction: KottageTransaction, itemType: String, limit: Long) {
+    override suspend fun deleteOlderItems(
+        transaction: KottageTransaction,
+        itemType: String,
+        limit: Long
+    ): Pair<Long, Long> {
         var deleted = 0L
+        var deletedBytes = 0L
         itemRepository.getOlderKeys(transaction.transaction, itemType, null) { key ->
             val itemListEntryIds = itemListRepository.getIds(transaction.transaction, itemType = itemType, itemKey = key)
             if (itemListEntryIds.isEmpty()) {
                 // ItemList に存在しなければ削除可能
-                deleteItemInternal(transaction.transaction, key, itemType)
+                val deletedItemBytes = deleteItemInternal(transaction.transaction, key, itemType)
                 deleted++
+                deletedBytes += deletedItemBytes
             }
             (deleted < limit)
         }
+        return Pair(deleted, deletedBytes)
     }
 
     override suspend fun deleteOlderItemsByBytes(
         transaction: KottageTransaction,
         itemType: String,
         atLeastBytes: Long
-    ) {
+    ): Pair<Long, Long> {
+        var deleted = 0L
         var deletedBytes = 0L
         itemRepository.getOlderKeys(transaction.transaction, itemType, null) { key ->
             val itemListEntryIds = itemListRepository.getIds(
@@ -426,29 +441,34 @@ internal class KottageOperator(
             )
             if (itemListEntryIds.isEmpty()) {
                 // ItemList に存在しなければ削除可能
-                val item = itemRepository.get(transaction.transaction, key, itemType)
-                if (item != null) {
-                    deletedBytes += item.getEstimateValueBytes()
-                    deleteItemInternal(transaction.transaction, key, itemType)
-                }
+                val deletedItemBytes = deleteItemInternal(transaction.transaction, key, itemType)
+                deleted++
+                deletedBytes += deletedItemBytes
             }
             (deletedBytes < atLeastBytes)
         }
+        return Pair(deleted, deletedBytes)
     }
 
-    override suspend fun deleteExpiredItems(transaction: KottageTransaction, itemType: String, now: Long): Long {
+    override suspend fun deleteExpiredItems(
+        transaction: KottageTransaction,
+        itemType: String,
+        now: Long
+    ): Pair<Long, Long> {
         var deleted = 0L
+        var deletedBytes = 0L
         // List Invalidate を処理しておく
         invalidateExpiredListEntries(transaction.transaction, now)
         itemRepository.getExpiredKeys(transaction.transaction, now, itemType) { key, _ ->
             val itemListEntryIds = itemListRepository.getIds(transaction.transaction, itemType = itemType, itemKey = key)
             if (itemListEntryIds.isEmpty()) {
                 // ItemList に存在しなければ削除可能
-                deleteItemInternal(transaction.transaction, key, itemType)
+                val deletedItemBytes = deleteItemInternal(transaction.transaction, key, itemType)
                 deleted++
+                deletedBytes += deletedItemBytes
             }
         }
-        return deleted
+        return Pair(deleted, deletedBytes)
     }
 
     /**
@@ -456,10 +476,21 @@ internal class KottageOperator(
      * This should be called in transaction
      *
      * ItemList の存在チェックなしで Item を削除する
+     *
+     * @return deleted items size
      */
-    suspend fun deleteItemInternal(transaction: Transaction, key: String, itemType: String) {
+    suspend fun deleteItemInternal(transaction: Transaction, key: String, itemType: String): Long {
+        val item = checkNotNull(itemRepository.get(transaction, key, itemType))
+        val size = item.getEstimateValueBytes()
         itemRepository.delete(transaction, key, itemType)
         itemRepository.decrementStatsCount(transaction, itemType, 1)
+        val totalSize = itemRepository.getStatsByteSize(transaction, itemType)
+        itemRepository.updateStatsByteSize(
+            transaction,
+            itemType,
+            (totalSize - size).coerceAtLeast(0)
+        )
+        return size
     }
 
     /**

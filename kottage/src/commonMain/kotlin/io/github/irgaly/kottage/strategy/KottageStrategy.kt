@@ -19,6 +19,7 @@ interface KottageStrategy {
         key: String,
         itemType: String,
         itemCount: Long,
+        estimateTotalBytes: Long,
         now: Long,
         operator: KottageStrategyOperator
     )

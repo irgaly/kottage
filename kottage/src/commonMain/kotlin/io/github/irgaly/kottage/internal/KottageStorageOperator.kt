@@ -64,12 +64,13 @@ internal class KottageStorageOperator(
             }
         }
         if (isCreate) {
-            val count = itemRepository.getStatsCount(transaction, item.type)
+            val stats = checkNotNull(itemRepository.getStats(transaction, item.type))
             storageOptions.strategy.onPostItemCreate(
                 KottageTransaction(transaction),
                 item.key,
                 item.type,
-                count,
+                stats.count,
+                stats.byteSize,
                 now,
                 operator
             )
