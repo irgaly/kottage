@@ -28,7 +28,7 @@ internal suspend fun <Item, PrimaryKey, SortKey> Queryable.iterateWithChunk(
         var consumedKeys = mapOf<SortKey, Set<PrimaryKey>>()
         var nextRange = initialRange
         while (takeNext) {
-            val results = openCursor(nextRange).map { cursor ->
+            val results = openCursor(nextRange, autoContinue = true).map { cursor ->
                 cursor.value.unsafeCast<Item>()
             }.filter {
                 // すでに処理した項目はスキップする
@@ -80,7 +80,7 @@ internal suspend fun <Item, PrimaryKey> Queryable.deleteWithChunk(
         var takeNext = true
         var deleted = 0L
         while (takeNext) {
-            val results = openCursor(query)
+            val results = openCursor(query, autoContinue = true)
                 .take(
                     limit?.let { (it - deleted).coerceAtMost(chunkSize) } ?: chunkSize
                 ).map {

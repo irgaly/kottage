@@ -4,8 +4,8 @@ import com.juul.indexeddb.Key
 import com.juul.indexeddb.ObjectStore
 import com.juul.indexeddb.WriteTransaction
 import com.juul.indexeddb.bound
-import com.juul.indexeddb.only
 import com.juul.indexeddb.lowerBound
+import com.juul.indexeddb.only
 import io.github.irgaly.kottage.data.indexeddb.extension.jso
 import io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_list
 import io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_list_stats
@@ -153,7 +153,8 @@ internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
                         arrayOf(type),
                         arrayOf(type, beforeExpireAt.toDouble()),
                         upperOpen = true
-                    )
+                    ),
+                    autoContinue = true,
                 )
             } else {
                 store.index("item_list_type_expire_at").openCursor(
@@ -161,7 +162,8 @@ internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
                     bound(
                         arrayOf(type),
                         arrayOf(type, emptyArray<Any>())
-                    )
+                    ),
+                    autoContinue = true,
                 )
             }).map { cursor ->
                 cursor.value.unsafeCast<Item_list>()
@@ -185,7 +187,8 @@ internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
     ): Long {
         return transaction.store { store ->
             store.index("item_list_type").openCursor(
-                Key(type)
+                Key(type),
+                autoContinue = true,
             ).count { cursor ->
                 (cursor.value.unsafeCast<Item_list>().item_key == null)
             }.toLong()
@@ -224,9 +227,11 @@ internal class KottageIndexeddbItemListRepository : KottageItemListRepository {
                 bound(
                     arrayOf(type),
                     arrayOf(type, emptyArray<Any>())
-                )
+                ),
+                autoContinue = false,
             ).collect { cursor ->
                 cursor.delete()
+                cursor.`continue`()
             }
         }
     }

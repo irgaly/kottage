@@ -240,7 +240,7 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
     ): List<ItemStats> {
         return transaction.statsStore { store ->
             // SQLite 側に合わせて index なしで総当たり処理
-            store.openCursor().map { cursor ->
+            store.openCursor(autoContinue = true).map { cursor ->
                 cursor.value.unsafeCast<Item_stats>()
             }.filter { stats ->
                 ((stats.count.toLong() <= 0L) && (stats.event_count.toLong() <= 0))
@@ -260,9 +260,11 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
         transaction.store { store ->
             store.index("item_type").openCursor(
                 // type = itemType
-                Key(itemType)
+                Key(itemType),
+                autoContinue = false,
             ).collect { cursor ->
                 cursor.delete()
+                cursor.`continue`()
             }
         }
     }
