@@ -97,7 +97,7 @@ jobs:
           # Windows で gradle cache を保存するために
           # .gradle/caches/8.0/kotlin-dsl/kotlin-dsl.lock の使用中ロックを解除する
           ./gradlew --stop
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         if: always()
         with:
           name: test-results-${{ matrix.platform }}
@@ -109,7 +109,7 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     steps:
-      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
       - uses: EnricoMi/publish-unit-test-result-action@3a74b2957438d0b6e2e61d67b05318aa25c9e6c6 # v2.20.0
         with:
           junit_files: "**/test-results/*/*.xml"
