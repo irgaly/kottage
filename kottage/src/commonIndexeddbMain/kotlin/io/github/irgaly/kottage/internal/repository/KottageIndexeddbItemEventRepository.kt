@@ -103,7 +103,8 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
             store.index("item_event_created_at")
                 .openCursor(
                     // created_at DESC
-                    direction = Cursor.Direction.Previous
+                    direction = Cursor.Direction.Previous,
+                    autoContinue = true,
                 ).map { cursor ->
                     cursor.value.unsafeCast<Item_event>().created_at.toLong()
                 }.firstOrNull()
@@ -176,9 +177,11 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
                 bound(
                     arrayOf(itemType),
                     arrayOf(itemType, emptyArray<Any>())
-                )
+                ),
+                autoContinue = false,
             ).take(limit).collect { cursor ->
                 cursor.delete()
+                cursor.`continue`()
             }
         }
     }
@@ -187,9 +190,11 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
         transaction.store { store ->
             store.index("item_event_created_at").openCursor(
                 // created_at < createdAt
-                upperBound(createdAt.toDouble(), true)
+                upperBound(createdAt.toDouble(), true),
+                autoContinue = false,
             ).collect { cursor ->
                 cursor.delete()
+                cursor.`continue`()
             }
         }
     }
@@ -201,9 +206,11 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
                 bound(
                     arrayOf(itemType),
                     arrayOf(itemType, emptyArray<Any>())
-                )
+                ),
+                autoContinue = false,
             ).collect { cursor ->
                 cursor.delete()
+                cursor.`continue`()
             }
         }
     }
@@ -215,9 +222,11 @@ internal class KottageIndexeddbItemEventRepository : KottageItemEventRepository 
                 bound(
                     arrayOf(listType),
                     arrayOf(listType, emptyArray<Any>())
-                )
+                ),
+                autoContinue = false,
             ).collect { cursor ->
                 cursor.delete()
+                cursor.`continue`()
             }
         }
     }
