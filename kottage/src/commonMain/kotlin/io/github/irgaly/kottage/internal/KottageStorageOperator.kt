@@ -231,6 +231,7 @@ internal class KottageStorageOperator(
         [ storage "$itemType" ]
         Stats count: ${stats?.count ?: "(no stats)"}
         Stats event count: ${stats?.eventCount ?: "(no stats)"}
+        Stats byte size: ${stats?.byteSize ?: "(no stats)"}
         SQL item count: $count
         """.trimIndent()
     }
