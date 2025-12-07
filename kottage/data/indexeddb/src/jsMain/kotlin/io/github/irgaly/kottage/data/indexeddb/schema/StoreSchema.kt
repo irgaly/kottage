@@ -4,7 +4,11 @@ import com.juul.indexeddb.Database
 import com.juul.indexeddb.VersionChangeTransaction
 
 interface StoreSchema {
-    fun VersionChangeTransaction.migrate(database: Database, oldVersion: Int, newVersion: Int)
+    suspend fun VersionChangeTransaction.migrate(
+        database: Database,
+        oldVersion: Int,
+        newVersion: Int
+    )
 }
 
 fun allStoreSchemaNames(): Array<String> {

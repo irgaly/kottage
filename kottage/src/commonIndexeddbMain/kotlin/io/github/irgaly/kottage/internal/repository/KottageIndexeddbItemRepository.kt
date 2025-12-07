@@ -327,6 +327,7 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
                 item_type = itemType
                 count = 0L.toDouble()
                 event_count = 0L.toDouble()
+                byte_size = 0L.toDouble()
             }
             store.add(stats)
         }

@@ -4,4 +4,5 @@ external interface Item_stats {
   var item_type: String
   var count: Double
   var event_count: Double
+  var byte_size: Double
 }

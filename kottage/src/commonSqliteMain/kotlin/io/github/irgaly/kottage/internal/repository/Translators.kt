@@ -71,7 +71,8 @@ internal fun io.github.irgaly.kottage.data.sqlite.Item_stats.toDomain(): ItemSta
     return ItemStats(
         itemType = item_type,
         count = count,
-        eventCount = event_count
+        eventCount = event_count,
+        byteSize = byte_size,
     )
 }
 

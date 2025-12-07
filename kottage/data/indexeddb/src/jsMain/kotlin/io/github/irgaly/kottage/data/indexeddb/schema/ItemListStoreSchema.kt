@@ -5,7 +5,11 @@ import com.juul.indexeddb.KeyPath
 import com.juul.indexeddb.VersionChangeTransaction
 
 class ItemListStoreSchema: StoreSchema {
-    override fun VersionChangeTransaction.migrate(database: Database, oldVersion: Int, newVersion: Int) {
+    override suspend fun VersionChangeTransaction.migrate(
+        database: Database,
+        oldVersion: Int,
+        newVersion: Int
+    ) {
         val store = if (oldVersion < 3) {
             database.createObjectStore("item_list", KeyPath("id"))
         } else {

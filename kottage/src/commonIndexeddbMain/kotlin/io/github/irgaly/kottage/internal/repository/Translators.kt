@@ -72,7 +72,8 @@ internal fun io.github.irgaly.kottage.data.indexeddb.schema.entity.Item_stats.to
     return ItemStats(
         itemType = item_type,
         count = count.toLong(),
-        eventCount = event_count.toLong()
+        eventCount = event_count.toLong(),
+        byteSize = byte_size.toLong(),
     )
 }
 
