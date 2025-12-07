@@ -11,9 +11,8 @@
       "enabled": false
     },
     {
-      "groupName": "Kotlin, KSP",
+      "groupName": "Kotlin",
       "matchPackageNames": [
-        "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin",
         "org.jetbrains.kotlin:*",
         "org.jetbrains.kotlin.*"
       ],
