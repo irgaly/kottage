@@ -375,6 +375,30 @@ internal class KottageOperator(
         }
     }
 
+    override suspend fun deleteLeastRecentlyUsedByBytes(
+        transaction: KottageTransaction,
+        itemType: String,
+        atLeastBytes: Long
+    ) {
+        var deletedBytes = 0L
+        itemRepository.getLeastRecentlyUsedKeys(transaction.transaction, itemType, null) { key ->
+            val itemListEntryIds = itemListRepository.getIds(
+                transaction.transaction,
+                itemType = itemType,
+                itemKey = key
+            )
+            if (itemListEntryIds.isEmpty()) {
+                // ItemList に存在しなければ削除可能
+                val item = itemRepository.get(transaction.transaction, key, itemType)
+                if (item != null) {
+                    deletedBytes += item.getEstimateValueBytes()
+                    deleteItemInternal(transaction.transaction, key, itemType)
+                }
+            }
+            (deletedBytes < atLeastBytes)
+        }
+    }
+
     override suspend fun deleteOlderItems(transaction: KottageTransaction, itemType: String, limit: Long) {
         var deleted = 0L
         itemRepository.getOlderKeys(transaction.transaction, itemType, null) { key ->
@@ -385,6 +409,30 @@ internal class KottageOperator(
                 deleted++
             }
             (deleted < limit)
+        }
+    }
+
+    override suspend fun deleteOlderItemsByBytes(
+        transaction: KottageTransaction,
+        itemType: String,
+        atLeastBytes: Long
+    ) {
+        var deletedBytes = 0L
+        itemRepository.getOlderKeys(transaction.transaction, itemType, null) { key ->
+            val itemListEntryIds = itemListRepository.getIds(
+                transaction.transaction,
+                itemType = itemType,
+                itemKey = key
+            )
+            if (itemListEntryIds.isEmpty()) {
+                // ItemList に存在しなければ削除可能
+                val item = itemRepository.get(transaction.transaction, key, itemType)
+                if (item != null) {
+                    deletedBytes += item.getEstimateValueBytes()
+                    deleteItemInternal(transaction.transaction, key, itemType)
+                }
+            }
+            (deletedBytes < atLeastBytes)
         }
     }
 
