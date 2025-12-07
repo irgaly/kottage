@@ -47,5 +47,7 @@ internal interface KottageItemRepository {
     suspend fun incrementStatsCount(transaction: Transaction, itemType: String, count: Long)
     suspend fun decrementStatsCount(transaction: Transaction, itemType: String, count: Long)
     suspend fun updateStatsCount(transaction: Transaction, itemType: String, count: Long)
+    suspend fun getStatsByteSize(transaction: Transaction, itemType: String): Long
+    suspend fun updateStatsByteSize(transaction: Transaction, itemType: String, bytes: Long)
     suspend fun deleteStats(transaction: Transaction, itemType: String)
 }

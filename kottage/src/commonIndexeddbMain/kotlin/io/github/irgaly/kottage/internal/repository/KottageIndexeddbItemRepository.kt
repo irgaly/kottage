@@ -311,6 +311,27 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
         }
     }
 
+    override suspend fun getStatsByteSize(
+        transaction: Transaction,
+        itemType: String
+    ): Long {
+        return transaction.statsStore { store ->
+            store.get(Key(itemType))?.unsafeCast<Item_stats>()?.byte_size?.toLong() ?: 0
+        }
+    }
+
+    override suspend fun updateStatsByteSize(
+        transaction: Transaction,
+        itemType: String,
+        bytes: Long
+    ) {
+        transaction.statsStore { store ->
+            val stats = getOrCreate(store, itemType)
+            stats.byte_size = bytes.toDouble()
+            store.put(stats)
+        }
+    }
+
     override suspend fun deleteStats(transaction: Transaction, itemType: String) {
         transaction.statsStore { store ->
             store.delete(Key(itemType))
