@@ -21,16 +21,6 @@
         "patch"
       ],
       "enabled": true
-    },
-    {
-      "groupName": "docker gcc",
-      "enabled": false,
-      "matchPackageNames": [
-        "gcc"
-      ],
-      "matchDatasources": [
-        "docker"
-      ]
     }
   ]
 }
