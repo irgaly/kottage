@@ -1,17 +1,18 @@
 CREATE TABLE item_stats (
   item_type TEXT PRIMARY KEY,
   count INTEGER NOT NULL DEFAULT 0,
-  event_count INTEGER NOT NULL DEFAULT 0
+  event_count INTEGER NOT NULL DEFAULT 0,
+  byte_size INTEGER NOT NULL DEFAULT 0
 );
 
 insertIfNotExists:
 INSERT OR IGNORE INTO item_stats(item_type) VALUES(?);
 
 select:
-SELECT item_type, count, event_count FROM item_stats WHERE item_type = ?;
+SELECT item_type, count, event_count, byte_size FROM item_stats WHERE item_type = ?;
 
 selectEmptyStats:
-SELECT item_type, count, event_count FROM item_stats WHERE count = 0 AND event_count = 0 LIMIT :limit;
+SELECT item_type, count, event_count, byte_size FROM item_stats WHERE count = 0 AND event_count = 0 LIMIT :limit;
 
 incrementCount:
 UPDATE item_stats SET count = count + ? WHERE item_type = ?;
@@ -30,6 +31,12 @@ UPDATE item_stats SET event_count = event_count - ? WHERE item_type = ?;
 
 updateEventCount:
 UPDATE item_stats SET event_count = ? WHERE item_type = ?;
+
+selectByteSize:
+SELECT byte_size FROM item_stats WHERE item_type = ?;
+
+updateByteSize:
+UPDATE item_stats SET byte_size = ? WHERE item_type = ?;
 
 delete:
 DELETE FROM item_stats WHERE item_type = ?;

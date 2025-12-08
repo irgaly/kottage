@@ -27,11 +27,20 @@ internal class KottageStorageOperator(
      * This should be called in transaction
      */
     suspend fun upsertItem(transaction: Transaction, item: Item, now: Long) {
-        val isCreate = !itemRepository.exists(transaction, item.key, item.type)
+        val previousItem = itemRepository.get(transaction, item.key, item.type)
+        val isCreate = (previousItem == null)
         itemRepository.upsert(transaction, item)
         if (isCreate) {
             itemRepository.incrementStatsCount(transaction, item.type, 1)
         }
+        val stats = checkNotNull(itemRepository.getStats(transaction, item.type))
+        // トータルサイズの減算は0を下回らないことを保証する
+        val totalBytesOnDelete =
+            (stats.byteSize - (previousItem?.getEstimateValueBytes() ?: 0)).coerceAtLeast(0)
+        // トータルサイズの上限はLong.MAX_VALUEの8EB(エクサバイト)だが、
+        // これをオーバーフローすることは想定しない
+        val totalBytes = totalBytesOnDelete + item.getEstimateValueBytes()
+        itemRepository.updateStatsByteSize(transaction, item.type, totalBytes)
         operator.addEvent(
             transaction,
             now = now,
@@ -64,12 +73,12 @@ internal class KottageStorageOperator(
             }
         }
         if (isCreate) {
-            val count = itemRepository.getStatsCount(transaction, item.type)
             storageOptions.strategy.onPostItemCreate(
                 KottageTransaction(transaction),
                 item.key,
                 item.type,
-                count,
+                stats.count,
+                totalBytes,
                 now,
                 operator
             )
@@ -222,6 +231,7 @@ internal class KottageStorageOperator(
         [ storage "$itemType" ]
         Stats count: ${stats?.count ?: "(no stats)"}
         Stats event count: ${stats?.eventCount ?: "(no stats)"}
+        Stats byte size: ${stats?.byteSize ?: "(no stats)"}
         SQL item count: $count
         """.trimIndent()
     }

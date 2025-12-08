@@ -16,7 +16,7 @@ class KottageIndexeddbDatabase(
         /**
          * Indexeddb Schema Version 定義
          */
-        private const val schemaVersion = 4
+        private const val schemaVersion = 5
 
         suspend fun open(name: String): KottageIndexeddbDatabase {
             val database = openDatabase(name, schemaVersion) { database, oldVersion, newVersion ->

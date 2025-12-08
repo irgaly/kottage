@@ -6,12 +6,12 @@ import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.db.SqlSchema
 
-class KottageDatabase4(
+class KottageDatabase5(
     driver: SqlDriver
 ) : TransacterImpl(driver) {
     object Schema : SqlSchema<QueryResult.Value<Unit>> {
         override val version: Long
-            get() = 4
+            get() = 5
 
         override fun create(driver: SqlDriver): QueryResult.Value<Unit> {
             driver.execute(
@@ -75,7 +75,8 @@ class KottageDatabase4(
           |CREATE TABLE item_stats (
           |  item_type TEXT PRIMARY KEY,
           |  count INTEGER NOT NULL DEFAULT 0,
-          |  event_count INTEGER NOT NULL DEFAULT 0
+          |  event_count INTEGER NOT NULL DEFAULT 0,
+          |  byte_size INTEGER NOT NULL DEFAULT 0
           |)
           """.trimMargin(), 0
             )
@@ -135,7 +136,7 @@ class KottageDatabase4(
             )
             driver.execute(
                 null,
-                "INSERT INTO item_stats(item_type, count, event_count) VALUES('cache1', 1, 1)",
+                "INSERT INTO item_stats(item_type, count, event_count, byte_size) VALUES('cache1', 1, 1, 6)",
                 0
             )
             driver.execute(

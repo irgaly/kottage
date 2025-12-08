@@ -213,6 +213,24 @@ internal class KottageSqliteItemRepository(
             .updateCount(count, itemType)
     }
 
+    override suspend fun getStatsByteSize(
+        transaction: Transaction,
+        itemType: String
+    ): Long {
+        return database.item_statsQueries
+            .select(itemType)
+            .executeAsOneOrNull()?.byte_size ?: 0
+    }
+
+    override suspend fun updateStatsByteSize(
+        transaction: Transaction,
+        itemType: String,
+        bytes: Long
+    ) {
+        database.item_statsQueries.insertIfNotExists(itemType)
+        database.item_statsQueries.updateByteSize(bytes, itemType)
+    }
+
     override suspend fun deleteStats(transaction: Transaction, itemType: String) {
         database.item_statsQueries
             .delete(itemType)
