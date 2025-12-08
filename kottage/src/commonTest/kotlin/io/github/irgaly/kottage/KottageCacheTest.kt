@@ -97,6 +97,36 @@ class KottageCacheTest : KottageSpec("kottage_cache", body = {
                 cache.exists("5") shouldBe true
             }
         }
+        context("FIFO Strategy + Cache Size") {
+            val (kottage, calendar) = kottage()
+            val cache = kottage.cache("fifo_cache_size") {
+                strategy = KottageFifoStrategy(
+                    maxCacheSize = 10,
+                    reduceSize = 5,
+                )
+            }
+            it("maxCacheSize を超えたら reduceSize だけ削除される") {
+                // 3 bytes
+                cache.put("1", "123")
+                calendar.now += 1.milliseconds
+                // 3 + 3 = 6 bytes
+                cache.put("2", "123")
+                calendar.now += 1.milliseconds
+                // 6 + 3 = 9 bytes
+                cache.put("3", "123")
+                calendar.now += 1.milliseconds
+                // 9 - 3 + 3 = 9 bytes
+                cache.put("3", "456")
+                cache.exists("1") shouldBe true
+                calendar.now += 1.milliseconds
+                // 9 + 3 = 12 bytes
+                cache.put("4", "123")
+                cache.exists("1") shouldBe false
+                cache.exists("2") shouldBe false
+                cache.exists("3") shouldBe true
+                cache.exists("4") shouldBe true
+            }
+        }
         context("LRU Strategy") {
             val (kottage, calendar) = kottage()
             val cache = kottage.cache("lru") {
@@ -120,6 +150,38 @@ class KottageCacheTest : KottageSpec("kottage_cache", body = {
                 cache.exists("3") shouldBe false
                 cache.exists("4") shouldBe true
                 cache.exists("5") shouldBe true
+            }
+        }
+        context("LRU Strategy + Cache Size") {
+            val (kottage, calendar) = kottage()
+            val cache = kottage.cache("lru_cache_size") {
+                strategy = KottageLruStrategy(
+                    maxCacheSize = 10,
+                    reduceSize = 4,
+                )
+            }
+            it("maxCacheSize を超えたら reduceSize だけ削除される") {
+                // 3 bytes
+                cache.put("1", "123")
+                calendar.now += 1.milliseconds
+                // 3 + 3 = 6 bytes
+                cache.put("2", "123")
+                calendar.now += 1.milliseconds
+                // 6 + 3 = 9 bytes
+                cache.put("3", "123")
+                calendar.now += 1.milliseconds
+                // 9 - 3 + 3 = 9 bytes
+                cache.put("3", "456")
+                cache.exists("1") shouldBe true
+                calendar.now += 1.milliseconds
+                // "2" へアクセス
+                cache.get<String>("2")
+                // 9 + 3 = 12 bytes
+                cache.put("4", "123")
+                cache.exists("1") shouldBe false
+                cache.exists("2") shouldBe true
+                cache.exists("3") shouldBe false
+                cache.exists("4") shouldBe true
             }
         }
         context("List") {
