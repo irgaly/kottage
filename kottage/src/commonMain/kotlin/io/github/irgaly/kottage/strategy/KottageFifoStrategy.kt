@@ -3,10 +3,13 @@ package io.github.irgaly.kottage.strategy
 /**
  * FIFO Strategy
  *
+ * The maxEntryCount or maxCacheSize must be specified.
+ * Both of count based configuration and size based configuration can be enabled at the same time.
+ *
  * @param maxEntryCount decrease item if the item count exceeded this value
  * @param reduceCount the target count to remove, default 25% of maxEntryCount
  * @param maxCacheSize the size of bytes that decrease item if the estimate total items size exceeded it
- * @param reduceCount the target size to remove, default 25% of maxCacheSize
+ * @param reduceSize the target size to remove, default 25% of maxCacheSize
  */
 class KottageFifoStrategy(
     private val maxEntryCount: Long? = null,
