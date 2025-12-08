@@ -1,3 +1,14 @@
+# v1.10.0 - 2025/12/9 JST
+
+#### Feature
+
+* KottageFifoStrategy, KottageLruStrategy supports
+  maxCacheSize [#346](https://github.com/irgaly/kottage/pull/346)
+
+#### Maintenance
+
+* fix(deps): update sqldelight to v2.2.1 [#343](https://github.com/irgaly/kottage/pull/343)
+
 # v1.9.0 - 2025/10/14 JST
 
 #### Maintenance
