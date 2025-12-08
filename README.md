@@ -118,7 +118,11 @@ import kotlin.time.Duration.Companion.days
 val cache: KottageStorage = kottage.cache("timeline_item_cache") {
     // There are some options
     strategy = KottageFifoStrategy(maxEntryCount = 1000) // default strategy in cache mode
+    //strategy = KottageFifoStrategy(maxCacheSize = 512 * 1024 * 1024) // FIFO strategy with cache sized based eviction (bytes)
+    //strategy = KottageFifoStrategy(maxEntryCount = 1000, maxCacheSize = 512 * 1024 * 1024) // FIFO strategy with item count and cache sized based eviction (bytes)
     //strategy = KottageLruStrategy(maxEntryCount = 1000) // LRU cache strategy
+    //strategy = KottageLruStrategy(maxCacheSize = 512 * 1024 * 1024) // LRU strategy with cache sized based eviction (bytes)
+    //strategy = KottageLruStrategy(maxEntryCount = 1000, maxCacheSize = 512 * 1024 * 1024) // LRU strategy with item count and cache sized based eviction (bytes)
     defaultExpireTime = 30.days // cache item expiration time in kotlin.time.Duration
 }
 
