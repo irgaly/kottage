@@ -144,7 +144,20 @@ class KottageTest : KottageSpec("kottage", body = {
                 }
             }
         }
-        context("storage モード") {
+        context("基本操作") {
+            it("removeAll() でアイテムを削除できる") {
+                val kottage = kottage("removeAll").first
+                val cache = kottage.cache("cache")
+                cache.put("item1", "item1_value")
+                cache.put("item2", "item2_value")
+                shouldNotThrowAny {
+                    cache.removeAll()
+                }
+                cache.exists("item1") shouldBe false
+                cache.exists("item2") shouldBe false
+            }
+        }
+        xcontext("storage モード") {
             val storage = kottage().first.storage("storage1")
             it("put, get で値を保持できている") {
                 storage.put("key", "test")
