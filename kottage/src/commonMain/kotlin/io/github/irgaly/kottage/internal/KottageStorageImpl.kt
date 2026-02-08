@@ -63,12 +63,22 @@ internal class KottageStorageImpl(
         return getOrNullInternal(key, type)
     }
 
+    override suspend fun <T : Any> getOrPut(
+        key: String,
+        type: KType,
+        defaultValue: () -> T,
+        defaultValueExpireTime: Duration?,
+    ): T {
+        return getOrPutInternal(key, type, defaultValue, defaultValueExpireTime)
+    }
+
     /**
      * @throws ClassCastException when decode failed
      * @throws SerializationException when json decode failed
      */
     private suspend fun <T : Any> getOrNullInternal(
-        key: String, type: KType
+        key: String,
+        type: KType,
     ): T? = withContext(dispatcher) {
         val storageOperator = storageOperator.await()
         transactionWithAutoCompaction { operator, now ->
@@ -85,6 +95,51 @@ internal class KottageStorageImpl(
                 } else throw exception
             }
         }
+    }
+
+    /**
+     * @throws ClassCastException when decode failed
+     * @throws SerializationException when json encode / decode failed
+     */
+    private suspend fun <T : Any> getOrPutInternal(
+        key: String,
+        type: KType,
+        defaultValue: (() -> T),
+        defaultValueExpireTime: Duration?,
+    ): T = withContext(dispatcher) {
+        val storageOperator = storageOperator.await()
+        val (result, created) = transactionWithAutoCompaction { operator, now ->
+            operator.invalidateExpiredListEntries(this, now)
+            var result = storageOperator.getOrNull(this, key, now)?.let { item ->
+                strategy.onItemRead(KottageTransaction(this), key, itemType, now, operator)
+                try {
+                    encoder.decode<T>(item, type)
+                } catch (exception: SerializationException) {
+                    if (options.ignoreJsonDeserializationError) {
+                        null
+                    } else throw exception
+                }
+            }
+            if (result != null) {
+                Pair(result, false)
+            } else {
+                val value = defaultValue()
+                val item = encoder.encodeItem(
+                    this@KottageStorageImpl,
+                    key,
+                    value,
+                    type,
+                    now,
+                    defaultValueExpireTime
+                )
+                storageOperator.upsertItem(this, item, now)
+                Pair(value, true)
+            }
+        }
+        if (created) {
+            databaseManager.onEventCreated()
+        }
+        result
     }
 
     override suspend fun <T : Any> getEntry(key: String, type: KType): KottageEntry<T> {
