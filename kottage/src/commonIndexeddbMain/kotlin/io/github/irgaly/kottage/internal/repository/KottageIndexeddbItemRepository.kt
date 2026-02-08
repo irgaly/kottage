@@ -109,7 +109,7 @@ internal class KottageIndexeddbItemRepository : KottageItemRepository {
                         )
                     }
                 ) { item ->
-                    receiver(item.key)
+                    receiver(Item.keyFromEntityKey(item.key, itemType))
                     true
                 }
         }
