@@ -1,3 +1,14 @@
+# v1.11.0 - 2026/2/9 JST
+
+#### Feature
+
+* add KottageStorage.getOrPut() [#362](https://github.com/irgaly/kottage/pull/362)
+
+#### Fix
+
+* Fix jsBrowser (indexeddb) KottageStorage.removeAll() throws
+  IllegalStateException#361 [#361](https://github.com/irgaly/kottage/pull/361)
+
 # v1.10.0 - 2025/12/9 JST
 
 #### Feature
