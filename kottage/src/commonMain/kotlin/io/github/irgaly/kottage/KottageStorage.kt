@@ -38,6 +38,22 @@ interface KottageStorage {
     suspend fun <T : Any> getOrNull(key: String, type: KType): T?
 
     /**
+     * @throws ClassCastException when decode failed
+     * @throws SerializationException when json decode / decode failed
+     */
+    @Throws(
+        ClassCastException::class,
+        SerializationException::class,
+        CancellationException::class,
+    )
+    suspend fun <T : Any> getOrPut(
+        key: String,
+        type: KType,
+        defaultValue: () -> T,
+        defaultValueExpireTime: Duration? = null
+    ): T
+
+    /**
      * @throws NoSuchElementException when key does not exist
      */
     @Throws(
@@ -146,6 +162,23 @@ suspend inline fun <reified T : Any> KottageStorage.get(key: String): T {
 )
 suspend inline fun <reified T : Any> KottageStorage.getOrNull(key: String): T? {
     return getOrNull(key, typeOf<T>())
+}
+
+/**
+ * @throws ClassCastException when decode failed
+ * @throws SerializationException when json decode / encode failed
+ */
+@Throws(
+    ClassCastException::class,
+    SerializationException::class,
+    CancellationException::class,
+)
+suspend inline fun <reified T : Any> KottageStorage.getOrPut(
+    key: String,
+    noinline defaultValue: () -> T,
+    defaultValueExpireTime: Duration? = null
+): T {
+    return getOrPut(key, typeOf<T>(), defaultValue, defaultValueExpireTime)
 }
 
 @Throws(

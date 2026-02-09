@@ -157,11 +157,20 @@ class KottageTest : KottageSpec("kottage", body = {
                 cache.exists("item2") shouldBe false
             }
         }
-        xcontext("storage モード") {
+        context("storage モード") {
             val storage = kottage().first.storage("storage1")
             it("put, get で値を保持できている") {
                 storage.put("key", "test")
                 storage.get<String>("key") shouldBe "test"
+            }
+            it("getOrPut() で値を読み取れる") {
+                storage.put("getOrPut_get", "test")
+                storage.getOrPut<String>("getOrPut_get", { "default" }) shouldBe "test"
+            }
+            it("getOrPut() で値を書き込める") {
+                storage.getOrPut<String>("getOrPut_put", { "default" }) shouldBe "default"
+                storage.get<String>("getOrPut_put") shouldBe "default"
+
             }
         }
         context("独立 Kottage インスタンス") {
