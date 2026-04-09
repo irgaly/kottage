@@ -51,7 +51,6 @@ kotlin {
         }
     }
     iosArm64(configure = configureXcf)
-    iosX64(configure = configureXcf)
     iosSimulatorArm64(configure = configureXcf)
     watchosArm64(configure = configureXcf)
     watchosDeviceArm64(configure = configureXcf)
