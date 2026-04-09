@@ -55,10 +55,8 @@ kotlin {
     iosSimulatorArm64(configure = configureXcf)
     watchosArm64(configure = configureXcf)
     watchosDeviceArm64(configure = configureXcf)
-    watchosX64(configure = configureXcf)
     watchosSimulatorArm64(configure = configureXcf)
     tvosArm64(configure = configureXcf)
-    tvosX64(configure = configureXcf)
     tvosSimulatorArm64(configure = configureXcf)
     macosArm64(configure = configureXcf)
     // JS
