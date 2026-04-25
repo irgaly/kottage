@@ -5,9 +5,11 @@ import io.github.irgaly.kottage.platform.contextOf
 import io.github.irgaly.kottage.test.KottageSpec
 import io.kotest.common.KotestInternal
 import io.kotest.core.spec.Spec
+import io.kotest.core.spec.SpecRef
 import io.kotest.engine.TestEngineLauncher
 import io.kotest.engine.listener.CollectingTestEngineListener
 import io.kotest.engine.test.TestResult
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -23,36 +25,37 @@ class AndroidTest {
     }
 
     @Test
-    fun kottageCacheTest() {
+    fun kottageCacheTest() = runTest {
         executeTest(KottageCacheTest::class)
     }
 
     @Test
-    fun kottageEventTest() {
+    fun kottageEventTest() = runTest {
         executeTest(KottageEventTest::class)
     }
 
     @Test
-    fun kottageListTest() {
+    fun kottageListTest() = runTest {
         executeTest(KottageListTest::class)
     }
 
     @Test
-    fun kottageMigrationTest() {
+    fun kottageMigrationTest() = runTest {
         executeTest(KottageMigrationTest::class)
     }
 
     @Test
-    fun kottageTest() {
+    fun kottageTest() = runTest {
         executeTest(KottageTest::class)
     }
 
     @OptIn(KotestInternal::class)
-    private fun<T: Spec> executeTest(targetClass: KClass<T>) {
+    private suspend fun <T : Spec> executeTest(targetClass: KClass<T>) {
         val listener = CollectingTestEngineListener()
         TestEngineLauncher()
             .withListener(listener)
-            .withClasses(targetClass).launch()
+            .withSpecRefs(SpecRef.Reference(targetClass))
+            .execute()
         listener.tests.map { entry ->
             {
                 val testCase = entry.key
