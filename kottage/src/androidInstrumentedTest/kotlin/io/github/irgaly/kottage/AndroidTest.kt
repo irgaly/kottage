@@ -9,7 +9,6 @@ import io.kotest.core.spec.SpecRef
 import io.kotest.engine.TestEngineLauncher
 import io.kotest.engine.listener.CollectingTestEngineListener
 import io.kotest.engine.test.TestResult
-import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -25,27 +24,27 @@ class AndroidTest {
     }
 
     @Test
-    fun kottageCacheTest() = runTest {
+    suspend fun kottageCacheTest() {
         executeTest(KottageCacheTest::class)
     }
 
     @Test
-    fun kottageEventTest() = runTest {
+    suspend fun kottageEventTest() {
         executeTest(KottageEventTest::class)
     }
 
     @Test
-    fun kottageListTest() = runTest {
+    suspend fun kottageListTest() {
         executeTest(KottageListTest::class)
     }
 
     @Test
-    fun kottageMigrationTest() = runTest {
+    suspend fun kottageMigrationTest() {
         executeTest(KottageMigrationTest::class)
     }
 
     @Test
-    fun kottageTest() = runTest {
+    suspend fun kottageTest() {
         executeTest(KottageTest::class)
     }
 
