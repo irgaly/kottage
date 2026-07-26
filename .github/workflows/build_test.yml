@@ -104,6 +104,7 @@ jobs:
           path: |
             **/build/test-results/*/*.xml
             **/build/reports/tests/*
+            **/build/reports/androidTests/*
   publish-test-results:
     needs: build-test
     runs-on: ubuntu-latest
