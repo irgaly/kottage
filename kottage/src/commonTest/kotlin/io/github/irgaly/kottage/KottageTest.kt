@@ -1,12 +1,11 @@
 package io.github.irgaly.kottage
 
 import io.github.irgaly.kottage.encoder.KottageEncoder
-import io.github.irgaly.kottage.platform.KottageContext
 import io.github.irgaly.kottage.platform.Platform
 import io.github.irgaly.kottage.platform.TestCalendar
 import io.github.irgaly.kottage.property.KottageStore
 import io.github.irgaly.kottage.test.KottageSpec
-import io.kotest.assertions.retry
+import io.kotest.assertions.nondeterministic.eventually
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
@@ -20,7 +19,6 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlin.experimental.xor
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 class KottageTest : KottageSpec("kottage", body = {
@@ -74,7 +72,7 @@ class KottageTest : KottageSpec("kottage", body = {
                             "_'_\"_\\_ _あ_😄_:_".sanitizePath()
                         }",
                         KottageEnvironment(
-                            KottageContext(),
+                            getContext(),
                             TestCalendar(DateTime(2022, 1, 1).utc)
                         ),
                         specScope
@@ -87,7 +85,7 @@ class KottageTest : KottageSpec("kottage", body = {
                         "test_'_\"_\\_ _あ_😄_:_".sanitizePath(),
                         tempDirectory,
                         KottageEnvironment(
-                            KottageContext(),
+                            getContext(),
                             TestCalendar(DateTime(2022, 1, 1).utc)
                         ),
                         specScope
@@ -100,7 +98,7 @@ class KottageTest : KottageSpec("kottage", body = {
                         "test_/_:_\\_",
                         tempDirectory,
                         KottageEnvironment(
-                            KottageContext(),
+                            getContext(),
                             TestCalendar(DateTime(2022, 1, 1).utc)
                         ),
                         specScope
@@ -135,7 +133,7 @@ class KottageTest : KottageSpec("kottage", body = {
                 storage.put("test", "test")
                 kottage.closed shouldBe false
                 scope.cancel()
-                retry(10, 10.seconds, delay = 100.milliseconds) {
+                eventually(10.seconds) {
                     // GlobalScope で Kottage.close() が処理されるため、処理完了まで非同期で待つ
                     kottage.closed shouldBe true
                     shouldThrow<IllegalStateException> {

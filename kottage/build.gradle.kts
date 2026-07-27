@@ -9,7 +9,6 @@ plugins {
     alias(libs.plugins.buildlogic.android.library)
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.dokka)
-    alias(libs.plugins.android.junit5)
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotest)
 }
@@ -18,8 +17,6 @@ android {
     namespace = "io.github.irgaly.kottage"
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        testInstrumentationRunnerArguments["runnerBuilder"] =
-            "de.mannodermaus.junit5.AndroidJUnit5Builder"
     }
     testOptions {
         managedDevices {
@@ -118,9 +115,6 @@ kotlin {
         }
         val androidInstrumentedTest by getting {
             dependsOn(commonTest.get())
-            dependencies {
-                implementation(libs.bundles.test.android.instrumented)
-            }
         }
         val jvmMain by getting {
             dependsOn(sqliteMain)
@@ -160,10 +154,6 @@ kotlin {
             }
         }
     }
-}
-
-dependencies {
-    androidTestRuntimeOnly(libs.test.android.junit5.runner)
 }
 
 val dokkaGeneratePublicationHtml by tasks.getting(DokkaGeneratePublicationTask::class)

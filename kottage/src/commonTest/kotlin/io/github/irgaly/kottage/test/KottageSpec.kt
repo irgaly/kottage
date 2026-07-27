@@ -29,7 +29,12 @@ open class KottageSpec(
     constructor() : this("KottageSpec::dummy")
 
     companion object {
-        var context: KottageContext = KottageContext()
+        var _context: KottageContext? = null
+        fun getContext(): KottageContext {
+            return _context ?: KottageContext().also {
+                _context = it
+            }
+        }
     }
 
     val tempDirectory: String
@@ -52,7 +57,7 @@ open class KottageSpec(
     fun kottage(
         name: String = this.name,
         scope: CoroutineScope = specScope,
-        context: KottageContext = Companion.context,
+        context: KottageContext = getContext(),
         builder: (KottageOptions.Builder.() -> Unit)? = null
     ): Pair<Kottage, TestCalendar> = buildKottage(name, tempDirectory, scope, context, builder)
 
@@ -60,7 +65,7 @@ open class KottageSpec(
         name: String,
         directory: String,
         scope: CoroutineScope,
-        context: KottageContext = Companion.context,
+        context: KottageContext = getContext(),
         builder: (KottageOptions.Builder.() -> Unit)? = null
     ): Pair<Kottage, TestCalendar> {
         return io.github.irgaly.kottage.extension.buildKottage(

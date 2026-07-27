@@ -72,7 +72,9 @@ jobs:
         uses: reactivecircus/android-emulator-runner@e89f39f1abbbd05b1113a29cf4db69e7540cae5a # v2.37.0
         if: contains(matrix.platform, 'ubuntu')
         with:
-          api-level: 29
+          api-level: 30
+          target: google_apis
+          arch: x86_64
           script: ./gradlew connectedDebugAndroidTest
       - name: Linux Test
         if: contains(matrix.platform, 'ubuntu')
@@ -104,6 +106,7 @@ jobs:
           path: |
             **/build/test-results/*/*.xml
             **/build/reports/tests/*
+            **/build/reports/androidTests/*
   publish-test-results:
     needs: build-test
     runs-on: ubuntu-latest
