@@ -17,7 +17,6 @@ dependencies {
     implementation(dependencies.platform(libs.compose.bom))
     implementation(libs.kotlin.reflect)
     implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.lifecycle)
     implementation(libs.bundles.compose)
     implementation(libs.kotlinx.serialization)
