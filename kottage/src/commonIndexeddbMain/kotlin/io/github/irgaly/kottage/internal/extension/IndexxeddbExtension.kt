@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.toList
  * chunkSize ごとにアイテムを処理する
  * 重複可能な SortKey にも対応
  */
-internal suspend fun <Item, PrimaryKey, SortKey> Queryable.iterateWithChunk(
+internal suspend fun <Item, PrimaryKey : Any, SortKey : Any> Queryable.iterateWithChunk(
     transaction: WriteTransaction,
     chunkSize: Long,
     primaryKey: (item: Item) -> PrimaryKey,
@@ -67,7 +67,7 @@ internal suspend fun <Item, PrimaryKey, SortKey> Queryable.iterateWithChunk(
 /**
  * chunkSize ごとにデータを取得して削除する
  */
-internal suspend fun <Item, PrimaryKey> Queryable.deleteWithChunk(
+internal suspend fun <Item, PrimaryKey : Any> Queryable.deleteWithChunk(
     transaction: WriteTransaction,
     store: ObjectStore,
     query: Key,
