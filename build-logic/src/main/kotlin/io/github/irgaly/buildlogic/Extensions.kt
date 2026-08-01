@@ -21,13 +21,13 @@ import javax.inject.Inject
 fun Project.configureAndroid() {
     extensions.configure<BaseExtension> {
         (this as CommonExtension<*, *, *, *, *, *>).apply {
-            compileSdk = libs.version("gradle-android-compile-sdk").toInt()
+            compileSdk = libs.version("android-compile-sdk").toInt()
             defaultConfig {
-                minSdk = libs.version("gradle-android-min-sdk").toInt()
+                minSdk = libs.version("android-min-sdk").toInt()
             }
             if (this is ApplicationExtension) {
                 defaultConfig {
-                    targetSdk = libs.version("gradle-android-target-sdk").toInt()
+                    targetSdk = libs.version("android-target-sdk").toInt()
                 }
             }
         }

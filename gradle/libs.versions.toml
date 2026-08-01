@@ -4,9 +4,9 @@ kotlin = "2.3.20"
 kotlinx-coroutines = "1.10.1"
 kotest = "6.1.11"
 gradle-android = "8.13.0"
-gradle-android-compile-sdk = "37"
-gradle-android-target-sdk = "37"
-gradle-android-min-sdk = "26"
+android-compile-sdk = "37"
+android-target-sdk = "37"
+android-min-sdk = "26"
 sqldelight = "2.3.2"
 
 [libraries]
