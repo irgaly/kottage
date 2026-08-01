@@ -3,7 +3,7 @@ kottage = "1.11.0"
 kotlin = "2.3.20"
 kotlinx-coroutines = "1.10.1"
 kotest = "6.1.11"
-gradle-android = "8.13.0"
+gradle-android = "9.0.0"
 android-compile-sdk = "37"
 android-target-sdk = "37"
 android-min-sdk = "26"
@@ -58,7 +58,7 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 android-application = { id = "com.android.application", version.ref = "gradle-android" }
-android-library = { id = "com.android.library", version.ref = "gradle-android" }
+android-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "gradle-android" }
 ksp = { id = "com.google.devtools.ksp", version = "2.3.5" }
 kotest = { id = "io.kotest", version.ref = "kotest" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
