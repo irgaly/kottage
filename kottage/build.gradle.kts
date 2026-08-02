@@ -13,30 +13,6 @@ plugins {
     alias(libs.plugins.kotest)
 }
 
-android {
-    namespace = "io.github.irgaly.kottage"
-    defaultConfig {
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-    testOptions {
-        managedDevices {
-            val pixel6android13 by devices.registering(com.android.build.api.dsl.ManagedVirtualDevice::class) {
-                device = "Pixel 6"
-                apiLevel = 33 // Android 13
-            }
-            val pixel6android8 by devices.registering(com.android.build.api.dsl.ManagedVirtualDevice::class) {
-                device = "Pixel 6"
-                apiLevel = 27 // Android 8
-            }
-            groups {
-                register("pixel6") {
-                    targetDevices.addAll(listOf(pixel6android13.get(), pixel6android8.get()))
-                }
-            }
-        }
-    }
-}
-
 kotlin {
     val xcf = XCFramework("Kottage")
     val configureXcf: KotlinNativeTarget.() -> Unit = {
@@ -80,6 +56,33 @@ kotlin {
             linkerOpts("-lrpcrt4", "-LC:/msys64/mingw64/lib", "-lsqlite3")
         }
     }
+    android {
+        namespace = "io.github.irgaly.kottage"
+        withDeviceTest {
+            managedDevices {
+                localDevices {
+                    val pixel6android13 by registering {
+                        device = "Pixel 6"
+                        apiLevel = 33 // Android 13
+                    }
+                    val pixel6android8 by registering {
+                        device = "Pixel 6"
+                        apiLevel = 27 // Android 8
+                    }
+                }
+                groups {
+                    register("pixel6") {
+                        targetDevices.addAll(
+                            listOf(
+                                localDevices["pixel6android13"],
+                                localDevices["pixel6android8"],
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    }
     applyDefaultHierarchyTemplate()
     sourceSets {
         commonMain {
@@ -113,7 +116,7 @@ kotlin {
         val androidMain by getting {
             dependsOn(sqliteMain)
         }
-        val androidInstrumentedTest by getting {
+        val androidDeviceTest by getting {
             dependsOn(commonTest.get())
         }
         val jvmMain by getting {

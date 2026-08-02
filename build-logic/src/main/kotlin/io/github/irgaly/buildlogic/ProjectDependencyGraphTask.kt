@@ -54,6 +54,7 @@ open class ProjectDependencyGraphTask : DefaultTask() {
                 multiplatformProjects.add(project)
             }
             if (project.plugins.hasPlugin("com.android.library")
+                || project.plugins.hasPlugin("com.android.kotlin.multiplatform.library")
                 || project.plugins.hasPlugin("com.android.application")
             ) {
                 androidProjects.add(project)

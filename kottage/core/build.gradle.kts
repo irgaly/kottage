@@ -6,11 +6,11 @@ plugins {
     alias(libs.plugins.kotest)
 }
 
-android {
-    namespace = "io.github.irgaly.kottage.core"
-}
 
 kotlin {
+    android {
+        namespace = "io.github.irgaly.kottage.core"
+    }
     // JS
     js(IR) {
         browser()

@@ -29,7 +29,7 @@ jobs:
       - name: Android Build
         if: contains(matrix.platform, 'ubuntu')
         run: |
-          ./gradlew packageDebugAndroidTest
+          ./gradlew packageAndroidDeviceTest
       - name: Linux Test Build
         if: contains(matrix.platform, 'ubuntu')
         run: |
@@ -75,7 +75,7 @@ jobs:
           api-level: 30
           target: google_apis
           arch: x86_64
-          script: ./gradlew connectedDebugAndroidTest
+          script: ./gradlew connectedAndroidDeviceTest
       - name: Linux Test
         if: contains(matrix.platform, 'ubuntu')
         run: |

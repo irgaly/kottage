@@ -17,11 +17,10 @@ sqldelight {
     }
 }
 
-android {
-    namespace = "io.github.irgaly.kottage.data.sqlite"
-}
-
 kotlin {
+    android {
+        namespace = "io.github.irgaly.kottage.data.sqlite"
+    }
     // JS
     js(IR) {
         nodejs()
