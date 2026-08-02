@@ -1,7 +1,7 @@
 [versions]
 kottage = "1.11.0"
 kotlin = "2.3.20"
-kotlinx-coroutines = "1.10.1"
+kotlinx-coroutines = "1.11.0"
 kotest = "6.1.11"
 gradle-android = "9.0.0"
 android-compile-sdk = "37"
