@@ -19,7 +19,7 @@ kotlinx-coroutines-js = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-cor
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.10.0" }
 androidx-core = { module = "androidx.core:core", version = "1.18.0" }
-androidx-lifecycle = { module = "androidx.lifecycle:lifecycle-runtime", version = "2.10.0" }
+androidx-lifecycle = { module = "androidx.lifecycle:lifecycle-runtime", version = "2.11.0" }
 compose-bom = { group = "androidx.compose", name = "compose-bom", version = "2026.03.01" }
 compose-material = { module = "androidx.compose.material:material" }
 compose-material3 = { module = "androidx.compose.material3:material3" }
