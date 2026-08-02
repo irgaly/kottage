@@ -20,7 +20,7 @@ kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-t
 kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.11.0" }
 androidx-core = { module = "androidx.core:core", version = "1.18.0" }
 androidx-lifecycle = { module = "androidx.lifecycle:lifecycle-runtime", version = "2.11.0" }
-compose-bom = { group = "androidx.compose", name = "compose-bom", version = "2026.03.01" }
+compose-bom = { group = "androidx.compose", name = "compose-bom", version = "2026.06.01" }
 compose-material = { module = "androidx.compose.material:material" }
 compose-material3 = { module = "androidx.compose.material3:material3" }
 compose-uiTooling = { module = "androidx.compose.ui:ui-tooling" }
